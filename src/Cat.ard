@@ -1,0 +1,28 @@
+\import Paths
+\import Prelude
+
+\record Cat (Ob : \Type)
+            (Hom : Ob -> Ob -> \Type)
+            (id : \Pi {a : Ob} -> Hom a a)
+            (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c )
+            (l_unit : \Pi {a b : Ob} (f : Hom a b) -> comp id f = f )
+            (r_unit : \Pi {a b : Ob} (f : Hom a b) -> comp f id = f )
+            (assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> comp (comp f g) h = comp f (comp g h)  )
+
+\func op (C : Cat) : Cat \cowith
+      | Ob => C.Ob
+      | Hom a b => C.Hom b a
+      | id => C.id
+      | comp => \lam {a} {b} {c} f g => C.comp g f
+      | l_unit => \lam {a} {b} f => C.r_unit f
+      | r_unit => \lam {a} {b} f => C.l_unit f
+      | assoc => \lam {a} {b} {c} {d} f g h => inv (C.assoc h g f)
+
+\func \infix 5 <x> (C : Cat) (D : Cat) : Cat \cowith
+    | Ob => \Sigma C.Ob D.Ob
+    | Hom a b => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
+    | id => \lam {a} => (C.id, D.id)
+    | comp => \lam {a} {b} {c} f g => (C.comp f.1 g.1, D.comp f.2 g.2)
+    | l_unit => \lam {a} {b} f => SigmaExt {C.Hom a.1 b.1} (\lam u => C.Hom a.2 b.2) f 
+
+
