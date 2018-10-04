@@ -1,8 +1,9 @@
+\import lib.Equiv
 \import lib.Paths
 \import lib.Data.Unit
 \import Prelude
 
-\record Cat (Ob : \Type)
+\record Cat {Ob : \Type}
             (Hom : Ob -> Ob -> \Type)
             (id : \Pi {a : Ob} -> Hom a a)
             (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c )
@@ -41,4 +42,12 @@
   | l_unit f => idp
   | r_unit f => idp
   | assoc f g h => idp
+
+\func cmp {C : Cat} {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => C.comp f g
+
+\record Functor {C D : Cat}
+                (ob : C.Ob -> D.Ob )
+                (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))
+                (ident : \Pi {a : C.Ob} -> map (C.id {a}) = D.id {ob a} )
+                (comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) -> D.comp (map f) (map g) = map (C.comp f g) )
 
