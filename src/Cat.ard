@@ -52,22 +52,30 @@
                 (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))
                 (k_id : \Pi {a : C.Ob} -> map (C.id {a}) = D.id {ob a} )
                 (k_comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) -> D.comp (map f) (map g) = map (C.comp f g) )
+                \where {
 
-\func id_functor {C : Cat} : Functor \cowith
- | C => C
- | D => C
- | ob x => x
- | map f => f
- | k_id => \lam {a} => idp
- | k_comp => \lam {a} {b} {c} f g => idp
+        \func id {C : Cat} : Functor \cowith
+         | C => C
+         | D => C
+         | ob x => x
+         | map f => f
+         | k_id => \lam {a} => idp
+         | k_comp => \lam {a} {b} {c} f g => idp
 
-\func cmp_functor {C D E : Cat } (F : Functor {D} {E}) (G : Functor {C} {D}) : Functor \cowith
- | C => C
- | D => E
- | ob x => F.ob (G.ob x)
- | map => \lam {a} {b} f => F.map (G.map f)
- | k_id => \lam {a} => pmap F.map G.k_id *> F.k_id
- | k_comp => \lam {a} {b} {c} f g => F.k_comp (G.map f) (G.map g) *> pmap F.map (G.k_comp f g)
+        \func comp {C D E : Cat } (F : Functor {D} {E}) (G : Functor {C} {D}) : Functor \cowith
+         | C => C
+         | D => E
+         | ob x => F.ob (G.ob x)
+         | map => \lam {a} {b} f => F.map (G.map f)
+         | k_id => \lam {a} => pmap F.map G.k_id *> F.k_id
+         | k_comp => \lam {a} {b} {c} f g => F.k_comp (G.map f) (G.map g) *> pmap F.map (G.k_comp f g)
+
+       \func l_unit {C D : Cat} (F : Functor {C} {D}) : comp {C} {D} {D} id F = F => {?}
+    }
+
+
+
+
 
 
 
