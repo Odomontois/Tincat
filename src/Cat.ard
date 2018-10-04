@@ -1,4 +1,4 @@
-\import Paths
+\import lib.Paths
 \import Prelude
 
 \record Cat (Ob : \Type)
@@ -18,11 +18,17 @@
       | r_unit => \lam {a} {b} f => C.l_unit f
       | assoc => \lam {a} {b} {c} {d} f g h => inv (C.assoc h g f)
 
-\func \infix 5 <x> (C : Cat) (D : Cat) : Cat \cowith
-    | Ob => \Sigma C.Ob D.Ob
-    | Hom a b => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
-    | id => \lam {a} => (C.id, D.id)
-    | comp => \lam {a} {b} {c} f g => (C.comp f.1 g.1, D.comp f.2 g.2)
-    | l_unit => \lam {a} {b} f => SigmaExt {C.Hom a.1 b.1} (\lam u => C.Hom a.2 b.2) f 
+\func \infix 5 <x> (C : Cat) (D : Cat) : Cat =>
+    \let | Ob => \Sigma C.Ob D.Ob
+         | hom  (a : Ob) (b : Ob) => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
+    \in \new Cat {
+        | Ob => Ob
+        | Hom => hom
+        | id => \lam {a} => (C.id, D.id)
+        | comp => \lam {a} {b} {c} f g => (C.comp f.1 g.1, D.comp f.2 g.2)
+        | l_unit => \lam {a} {b} f => {?l_unit_prod}
+        | r_unit => {?}
+        | assoc => {?}
+    }
 
 
