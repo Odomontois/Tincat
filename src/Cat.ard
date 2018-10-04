@@ -66,16 +66,8 @@
  | D => E
  | ob x => F.ob (G.ob x)
  | map => \lam {a} {b} f => F.map (G.map f)
- | k_id => {?}
- | k_comp => {?}
-
-\func cmp_functor_1 {C D E : Cat } (F : Functor {D} {E}) (G : Functor {C} {D}) : Functor \cowith
- | C => C
- | D => E
- | ob x => F.ob (G.ob x)
- | map f => F.map (G.map f)
- | k_id => {?}
- | k_comp => {?}
+ | k_id => \lam {a} => pmap F.map G.k_id *> F.k_id
+ | k_comp => \lam {a} {b} {c} f g => F.k_comp (G.map f) (G.map g) *> pmap F.map (G.k_comp f g)
 
 
 
