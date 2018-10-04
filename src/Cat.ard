@@ -61,4 +61,23 @@
  | k_id => \lam {a} => idp
  | k_comp => \lam {a} {b} {c} f g => idp
 
+\func cmp_functor {C D E : Cat } (F : Functor {D} {E}) (G : Functor {C} {D}) : Functor \cowith
+ | C => C
+ | D => E
+ | ob x => F.ob (G.ob x)
+ | map => \lam {a} {b} f => F.map (G.map f)
+ | k_id => {?}
+ | k_comp => {?}
+
+\func cmp_functor_1 {C D E : Cat } (F : Functor {D} {E}) (G : Functor {C} {D}) : Functor \cowith
+ | C => C
+ | D => E
+ | ob x => F.ob (G.ob x)
+ | map f => F.map (G.map f)
+ | k_id => {?}
+ | k_comp => {?}
+
+
+
+
 
