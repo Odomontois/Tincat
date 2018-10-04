@@ -1,0 +1,30 @@
+\import Cat
+\import lib.Paths
+
+\record Iso {C : Cat}
+            {a : C.Ob}
+            {b : C.Ob}
+            (f : C.Hom a b)
+            (f_op : C.Hom b a)
+            (l_comp : C.comp f_op f = C.id)
+            (r_comp : C.comp f f_op = C.id)
+
+\func \infix 9 ~= {C : Cat}
+                  (a b : C.Ob)
+                  {iso : Iso {C} {a} {b}} => iso
+
+\func iso_refl {C : Cat}
+               {a : C.Ob} =>
+  \let iso => \new Iso {C} {a} {a} C.id C.id (C.l_unit C.id) (C.r_unit C.id)
+  \in a ~= {C} a
+
+\func unique_f_op {C : Cat}
+                  {a b : C.Ob}
+                  {f : C.Hom a b}
+                  (iso1 : Iso {C} {a} {b} f)
+                  (iso2 : Iso {C} {a} {b} f) : iso1.f_op = iso2.f_op =>
+  inv (C.l_unit iso1.f_op) *>
+  pmap (\lam x => C.comp x iso1.f_op) (inv iso2.l_comp) *>
+  C.assoc iso2.f_op f iso1.f_op *>
+  pmap (C.comp iso2.f_op) iso1.r_comp *>
+  C.r_unit iso2.f_op
