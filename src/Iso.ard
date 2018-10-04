@@ -12,8 +12,8 @@
 \func unique_f_op {C : Cat}
                   {a b : C.Ob}
                   {f : C.Hom a b}
-                  (iso1 : Iso {C} {a} {b} f)
-                  (iso2 : Iso {C} {a} {b} f) : iso1.f_op = iso2.f_op =>
+                  (iso1 : Iso f)
+                  (iso2 : Iso f) : iso1.f_op = iso2.f_op =>
   inv (C.l_unit iso1.f_op) *>
   pmap (\lam x => C.comp x iso1.f_op) (inv iso2.l_comp) *>
   C.assoc iso2.f_op f iso1.f_op *>
