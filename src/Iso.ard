@@ -9,8 +9,14 @@
             (l_comp : C.comp f_op f = C.id)
             (r_comp : C.comp f f_op = C.id)
 
+\func \infix 9 ~= {C : Cat}
+                  (a b : C.Ob)
+                  {iso : Iso {C} {a} {b}} => iso
+
 \func iso_refl {C : Cat}
-               {a : C.Ob} => Iso {C} {a} {a} C.id C.id (C.l_unit C.id) (C.r_unit C.id)
+               {a : C.Ob} =>
+  \let iso => \new Iso {C} {a} {a} C.id C.id (C.l_unit C.id) (C.r_unit C.id)
+  \in a ~= {C} a
 
 \func unique_f_op {C : Cat}
                   {a b : C.Ob}
