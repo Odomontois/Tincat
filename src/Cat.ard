@@ -24,21 +24,12 @@
          | id {a : Ob} : Hom a a => (C.id, D.id)
          | comp {a b c : Ob} (f : Hom b c) (g : Hom a b) => (C.comp f.1 g.1, D.comp f.2 g.2)
          | constDHom (a b : Ob) (chom : C.Hom a.1 b.1) => D.Hom a.2 b.2
-         | l_unit {a b : Ob} (f : Hom a b) : comp id f = f =>
-            SigmaExt (constDHom a b) (comp id f) f (C.l_unit f.1) (D.l_unit f.2)
-         | r_unit {a b : Ob} (f : Hom a b) : comp f id = f =>
-            SigmaExt (constDHom a b) (comp f id) f (C.r_unit f.1) (D.r_unit f.2)
-         | assoc {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) : comp (comp f g) h = comp f (comp g h) =>
-            SigmaExt (constDHom a d) (comp (comp f g) h) (comp f (comp g h)) (C.assoc f.1 g.1 h.1) (D.assoc f.2 g.2 h.2)
-
     \in \new Cat {
-        | Ob => Ob
-        | Hom => Hom
-        | id => id
-        | comp => \lam {a} {b} {c} f g => (C.comp f.1 g.1, D.comp f.2 g.2)
-        | l_unit => l_unit
-        | r_unit => r_unit
-        | assoc => assoc
+        | Ob => Ob | Hom => Hom  | id => id | comp => comp
+        | l_unit => \lam {a} {b} f => SigmaExt (constDHom a b) (comp id f) f (C.l_unit f.1) (D.l_unit f.2)
+        | r_unit => \lam {a} {b} f => SigmaExt (constDHom a b) (comp f id) f (C.r_unit f.1) (D.r_unit f.2)
+        | assoc  => \lam {a} {b} {c} {d} f g h =>
+            SigmaExt (constDHom a d) (comp (comp f g) h) (comp f (comp g h)) (C.assoc f.1 g.1 h.1) (D.assoc f.2 g.2 h.2)
     }
 
 
