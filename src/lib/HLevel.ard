@@ -1,7 +1,7 @@
-\import Equiv
-\import Paths
-\import Data.Nat(-, <=)
-\import Data.Nat.Properties
+\import lib.Equiv
+\import lib.Paths
+\import lib.Data.Nat(-, <=)
+\import lib.Data.Nat.Properties
 \open Nat(+)
 
 -- # Prop
