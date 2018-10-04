@@ -45,9 +45,20 @@
 
 \func cmp {C : Cat} {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => C.comp f g
 
+\open Cat (comp)
+
 \record Functor {C D : Cat}
                 (ob : C.Ob -> D.Ob )
                 (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))
-                (ident : \Pi {a : C.Ob} -> map (C.id {a}) = D.id {ob a} )
-                (comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) -> D.comp (map f) (map g) = map (C.comp f g) )
+                (k_id : \Pi {a : C.Ob} -> map (C.id {a}) = D.id {ob a} )
+                (k_comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) -> D.comp (map f) (map g) = map (C.comp f g) )
+
+\func id_functor {C : Cat} : Functor \cowith
+ | C => C
+ | D => C
+ | ob x => x
+ | map f => f
+ | k_id => \lam {a} => idp
+ | k_comp => \lam {a} {b} {c} f g => idp
+
 
