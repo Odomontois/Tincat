@@ -1,4 +1,5 @@
 \import lib.Paths
+\import lib.Data.Unit
 \import Prelude
 
 \record Cat (Ob : \Type)
@@ -23,13 +24,21 @@
          | Hom  (a : Ob) (b : Ob) => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
          | id {a : Ob} : Hom a a => (C.id, D.id)
          | comp {a b c : Ob} (f : Hom b c) (g : Hom a b) => (C.comp f.1 g.1, D.comp f.2 g.2)
-         | constDHom (a b : Ob) (chom : C.Hom a.1 b.1) => D.Hom a.2 b.2
+         | constDHom {a b : Ob} (chom : C.Hom a.1 b.1) => D.Hom a.2 b.2
     \in \new Cat {
         | Ob => Ob | Hom => Hom  | id => id | comp => comp
-        | l_unit => \lam {a} {b} f => SigmaExt (constDHom a b) (comp id f) f (C.l_unit f.1) (D.l_unit f.2)
-        | r_unit => \lam {a} {b} f => SigmaExt (constDHom a b) (comp f id) f (C.r_unit f.1) (D.r_unit f.2)
-        | assoc  => \lam {a} {b} {c} {d} f g h =>
-            SigmaExt (constDHom a d) (comp (comp f g) h) (comp f (comp g h)) (C.assoc f.1 g.1 h.1) (D.assoc f.2 g.2 h.2)
+        | l_unit => \lam {a} {b} f => SigmaExt constDHom (comp id f) f (C.l_unit f.1) (D.l_unit f.2)
+        | r_unit => \lam {a} {b} f => SigmaExt constDHom (comp f id) f (C.r_unit f.1) (D.r_unit f.2)
+        | assoc => \lam {a} {b} {c} {d} f g h =>
+            SigmaExt constDHom (comp (comp f g) h) (comp f (comp g h)) (C.assoc f.1 g.1 h.1) (D.assoc f.2 g.2 h.2)
     }
 
+\func cat1 : Cat \cowith
+  | Ob => Unit
+  | Hom a b => Unit
+  | id => \lam {a} => unit
+  | comp f g => unit
+  | l_unit f => idp
+  | r_unit f => idp
+  | assoc f g h => idp
 
