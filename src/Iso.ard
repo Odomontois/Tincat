@@ -10,8 +10,7 @@
             (r_comp : C.comp f f_op = C.id)
 
 \func \infix 1 ~= {C : Cat}
-                  (a : C.Ob)
-                  (b : C.Ob) => Iso {C} {a} {b}
+                  (a b : C.Ob) => Iso {C} {a} {b}
 
 \func iso_refl {C : Cat}
                {a : C.Ob} : a ~= a =>
@@ -25,7 +24,7 @@
 \func iso_trans {C : Cat}
                 {a b c : C.Ob}
                 (i : a ~= {C} b)
-                (j : b ~= {C} c) : a ~= {C} c =>
+                (j : b ~= {C} c) : a ~= c =>
   \let r : C.comp (C.comp j.f i.f) (C.comp i.f_op j.f_op) = C.id =>
      C.assoc j.f i.f (C.comp i.f_op j.f_op) *>
      inv (pmap (C.comp j.f) (C.assoc i.f i.f_op j.f_op)) *>
