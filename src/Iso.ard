@@ -12,6 +12,15 @@
 \func \infix 1 ~= {C : Cat}
                   (a b : C.Ob) => Iso {C} {a} {b}
 
+\func eq_iso {C : Cat}
+             (a : C.Ob)
+             (b : C.Ob)
+             {e : a = b} : a ~= {C} b =>
+  tr (pmap (~= {C} a) e) (iso_refl {C} {a}) \where {
+    \func tr {X Y : \Type} (e : X = Y) (x : X) : Y =>
+        (transport (\lam (T : \Type) => X -> T) e (\lam (x : X) => x)) x
+  }
+
 \func iso_refl {C : Cat}
                {a : C.Ob} : a ~= a =>
   \new Iso {C} {a} {a} C.id C.id (C.l_unit C.id) (C.r_unit C.id)
