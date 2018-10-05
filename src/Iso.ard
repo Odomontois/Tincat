@@ -1,6 +1,5 @@
 \import Cat
 \import lib.Paths
-\import Prelude
 
 \record Iso {C : Cat}
             {a : C.Ob}
@@ -10,7 +9,7 @@
             (l_comp : C.comp f_op f = C.id)
             (r_comp : C.comp f f_op = C.id)
 
-\func \infix 9 ~= {C : Cat}
+\func \infix 1 ~= {C : Cat}
                   (a : C.Ob)
                   (b : C.Ob) => Iso {C} {a} {b}
 
@@ -20,8 +19,25 @@
 
 \func iso_sym {C : Cat}
               {a b : C.Ob}
-              (i : a ~= {C} b) : b ~= {C} a =>
+              (i : a ~= {C} b) : b ~= a =>
   \new Iso {C} {b} {a} i.f_op i.f i.r_comp i.l_comp
+
+\func iso_trans {C : Cat}
+                {a b c : C.Ob}
+                (i : a ~= {C} b)
+                (j : b ~= {C} c) : a ~= {C} c =>
+  \let r : C.comp (C.comp j.f i.f) (C.comp i.f_op j.f_op) = C.id =>
+     C.assoc j.f i.f (C.comp i.f_op j.f_op) *>
+     inv (pmap (C.comp j.f) (C.assoc i.f i.f_op j.f_op)) *>
+     pmap (C.comp j.f) (pmap (\lam x => C.comp x j.f_op) i.r_comp) *>
+     pmap (C.comp j.f) (C.l_unit j.f_op) *>
+     j.r_comp \in
+  \let l : C.comp (C.comp i.f_op j.f_op) (C.comp j.f i.f) = C.id =>
+     C.assoc i.f_op j.f_op (C.comp j.f i.f) *>
+     inv (pmap (C.comp i.f_op) (C.assoc j.f_op j.f i.f)) *>
+     pmap (C.comp i.f_op) (pmap (\lam x => C.comp x i.f) j.l_comp) *>
+     pmap (C.comp i.f_op) (C.l_unit i.f) *> i.l_comp \in
+   \new Iso {C} {a} {c} (C.comp j.f i.f) (C.comp i.f_op j.f_op) l r
 
 \func unique_f_op {C : Cat}
                   {a b : C.Ob}
