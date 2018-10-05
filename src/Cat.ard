@@ -1,10 +1,13 @@
+\import Set
 \import lib.Equiv
+\import lib.HLevel
 \import lib.Paths
 \import lib.Data.Unit
 \import Prelude
 
 \record Cat {Ob : \Type}
             (Hom : Ob -> Ob -> \Type)
+            (homSet : \Pi {a b : Ob} -> isSet (Hom a b))
             (id : \Pi {a : Ob} -> Hom a a)
             (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c )
             (l_unit : \Pi {a b : Ob} (f : Hom a b) -> comp id f = f )
@@ -14,6 +17,7 @@
 \func op (C : Cat) : Cat \cowith
       | Ob => C.Ob
       | Hom a b => C.Hom b a
+      | homSet => \lam {a} {b} => C.homSet
       | id => C.id
       | comp => \lam {a} {b} {c} f g => C.comp g f
       | l_unit => \lam {a} {b} f => C.r_unit f
@@ -28,22 +32,26 @@
          | constDHom {a b : Ob} (chom : C.Hom a.1 b.1) => D.Hom a.2 b.2
     \in \new Cat {
         | Ob => Ob | Hom => Hom  | id => id | comp => comp
+        | homSet => \lam {a} {b} => pairSet C.homSet D.homSet
         | l_unit => \lam {a} {b} f => SigmaExt constDHom (comp id f) f (C.l_unit f.1) (D.l_unit f.2)
         | r_unit => \lam {a} {b} f => SigmaExt constDHom (comp f id) f (C.r_unit f.1) (D.r_unit f.2)
         | assoc => \lam {a} {b} {c} {d} f g h =>
             SigmaExt constDHom (comp (comp f g) h) (comp f (comp g h)) (C.assoc f.1 g.1 h.1) (D.assoc f.2 g.2 h.2)
     }
 
+
+
 \func cat1 : Cat \cowith
   | Ob => Unit
   | Hom a b => Unit
+  | homSet => \lam {a} {b} => unit_isSet
   | id => \lam {a} => unit
   | comp f g => unit
   | l_unit f => idp
   | r_unit f => idp
   | assoc f g h => idp
 
-\func cmp {C : Cat} {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => C.comp f g
+\func \infix 6 cmp {C : Cat} {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => C.comp f g
 
 \open Cat (comp)
 
@@ -73,10 +81,6 @@
        \func transpt {C D : Cat} (F G : Functor {C} {D})
                      (tOb : \Pi {a : C.Ob} -> F.ob a = G.ob a)
                      (tMap : \Pi {a b : C.Ob} (f : C.Hom a b) -> transport2 D.Hom tOb tOb (F.map f) = G.map f)
-                     (t_k_id : \Pi {a : C.Ob} ->  (F.map (C.id {a}) = D.id {F.ob a}) = (G.map (C.id {a}) = D.id {G.ob a}))
-                     (t_k_comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) ->
-                        (D.comp (F.map f) (F.map g) = F.map (C.comp f g)) = (D.comp (G.map f) (G.map g) = G.map (C.comp f g))
-                     )
                      : F = G => {?}
 
        -- лолкот гарантирует
