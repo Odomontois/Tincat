@@ -1,5 +1,6 @@
 \import Cat
 \import lib.Paths
+\import Prelude
 
 \record Iso {C : Cat}
             {a : C.Ob}
@@ -10,13 +11,17 @@
             (r_comp : C.comp f f_op = C.id)
 
 \func \infix 9 ~= {C : Cat}
-                  (a b : C.Ob)
-                  {iso : Iso {C} {a} {b}} => iso
+                  (a : C.Ob)
+                  (b : C.Ob) => Iso {C} {a} {b}
 
 \func iso_refl {C : Cat}
-               {a : C.Ob} =>
-  \let iso => \new Iso {C} {a} {a} C.id C.id (C.l_unit C.id) (C.r_unit C.id)
-  \in a ~= {C} a
+               {a : C.Ob} : a ~= a =>
+  \new Iso {C} {a} {a} C.id C.id (C.l_unit C.id) (C.r_unit C.id)
+
+\func iso_sym {C : Cat}
+              {a b : C.Ob}
+              (i : a ~= {C} b) : b ~= {C} a =>
+  \new Iso {C} {b} {a} i.f_op i.f i.r_comp i.l_comp
 
 \func unique_f_op {C : Cat}
                   {a b : C.Ob}
