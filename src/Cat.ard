@@ -78,10 +78,11 @@
          | k_id => \lam {a} => pmap F.map G.k_id *> F.k_id
          | k_comp => \lam {a} {b} {c} f g => F.k_comp (G.map f) (G.map g) *> pmap F.map (G.k_comp f g)
 
-       \func transpt {C D : Cat} (F G : Functor {C} {D})
+       \func equiv   {C D : Cat} (F G : Functor {C} {D})
                      (tOb : \Pi {a : C.Ob} -> F.ob a = G.ob a)
-                     (tMap : \Pi {a b : C.Ob} (f : C.Hom a b) -> transport2 D.Hom tOb tOb (F.map f) = G.map f)
-                     : F = G => {?}
+                     (tMap : \Pi {a b : C.Ob} (f : C.Hom a b) -> Path (\lam i => D.Hom (tOb {a} @ i) (tOb {b} @ i)) (F.map f) (G.map f))
+                     : F = G =>
+                     path (\lam i => Functor {C} {D} (\lam a => tOb {a} @ i) (\lam {a} {b} f => tMap {a} {b} f @ i)  {?} {?})
 
        -- лолкот гарантирует
        \func l_unit {C D : Cat} (F : Functor {C} {D}) : comp {C} {D} {D} id F = F => {?}

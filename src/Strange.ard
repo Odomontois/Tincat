@@ -1,0 +1,2 @@
+\func check : 0 = 1 =>
+    path (\lam i => \case i \with {| left => 0 | right => 1})
