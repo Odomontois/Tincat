@@ -82,7 +82,19 @@
                      (tOb : \Pi {a : C.Ob} -> F.ob a = G.ob a)
                      (tMap : \Pi {a b : C.Ob} (f : C.Hom a b) -> Path (\lam i => D.Hom (tOb {a} @ i) (tOb {b} @ i)) (F.map f) (G.map f))
                      : F = G =>
-                     path (\lam i => Functor {C} {D} (\lam a => tOb {a} @ i) (\lam {a} {b} f => tMap {a} {b} f @ i)  {?} {?})
+                     path (\lam i => \new Functor {
+                        | C => C
+                        | D => D
+                        | ob => \lam a => tOb {a} @ i
+                        | map => \lam {a} {b} f => tMap {a} {b} f @ i
+                        | k_id => \lam {a} =>
+                                \let | dOb => tOb {a} @ i
+                                      | lhs => tMap {a} {a} (C.id) @ i
+                                      | rhs => D.id {tOb {a} @ i}
+
+                                \in D.homSet {dOb} {dOb} lhs rhs (F.k_id {a}) (G.k_id {a}) @ i
+                        | k_comp => {?}
+                     })
 
        -- лолкот гарантирует
        \func l_unit {C D : Cat} (F : Functor {C} {D}) : comp {C} {D} {D} id F = F => {?}
