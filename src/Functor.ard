@@ -15,6 +15,8 @@
 \record Functor \extends FunctorStruct, FunctorIdLaw, FunctorCompLaw
                 \where {
 
+        \coerce struct (F : Functor) : FunctorStruct => F
+
         \func Id {C : Cat} : Functor \cowith
             | C => C
             | D => C
@@ -32,7 +34,7 @@
          | id => \lam {a} => pmap F.map G.id *> F.id
          | comp => \lam {a} {b} {c} f g => F.comp (G.map f) (G.map g) *> pmap F.map (G.comp f g)
 
-        \func equiv {C D : Cat} (F G : Functor C D)
+        \func equiv {C D : Cat} (F G : Functor C D) (eq : struct F = struct G) : F = G => {?}
 
 --       \func equiv   {C D : Cat} (F G : Functor {C} {D})
 --                     (tOb : \Pi {a : C.Ob} -> F.ob a = G.ob a)
@@ -56,5 +58,5 @@
 --                     })
 
        -- лолкот гарантирует
-       \func l_unit {C D : Cat} (F : Functor ) : Comp {C} {D} {D} Id F = F => {?}
+       \func l_unit {C D : Cat} (F : Functor C D) : Comp {C} {D} {D} Id F = F => {?}
     }
