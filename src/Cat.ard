@@ -6,7 +6,7 @@
 \import Prelude
 
 \record Cat {Ob : \Type}
-            (Hom : Ob -> Ob -> \Type)
+            (Hom : Ob -> Ob -> \Set)
             (homSet : \Pi {a b : Ob} -> isSet (Hom a b))
             (id : \Pi {a : Ob} -> Hom a a)
             (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c )
@@ -55,50 +55,7 @@
 
 \open Cat (comp)
 
-\record Functor {C D : Cat}
-                (ob : C.Ob -> D.Ob )
-                (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))
-                (k_id : \Pi {a : C.Ob} -> map (C.id {a}) = D.id {ob a} )
-                (k_comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) -> D.comp (map f) (map g) = map (C.comp f g) )
-                \where {
 
-        \func id {C : Cat} : Functor \cowith
-         | C => C
-         | D => C
-         | ob x => x
-         | map f => f
-         | k_id => \lam {a} => idp
-         | k_comp => \lam {a} {b} {c} f g => idp
-
-        \func comp {C D E : Cat } (F : Functor {D} {E}) (G : Functor {C} {D}) : Functor \cowith
-         | C => C
-         | D => E
-         | ob x => F.ob (G.ob x)
-         | map => \lam {a} {b} f => F.map (G.map f)
-         | k_id => \lam {a} => pmap F.map G.k_id *> F.k_id
-         | k_comp => \lam {a} {b} {c} f g => F.k_comp (G.map f) (G.map g) *> pmap F.map (G.k_comp f g)
-
-       \func equiv   {C D : Cat} (F G : Functor {C} {D})
-                     (tOb : \Pi {a : C.Ob} -> F.ob a = G.ob a)
-                     (tMap : \Pi {a b : C.Ob} (f : C.Hom a b) -> Path (\lam i => D.Hom (tOb {a} @ i) (tOb {b} @ i)) (F.map f) (G.map f))
-                     : F = G =>
-                     path (\lam i => \new Functor {
-                        | C => C
-                        | D => D
-                        | ob => \lam a => tOb {a} @ i
-                        | map => \lam {a} {b} f => tMap {a} {b} f @ i
-                        | k_id => \lam {a} =>
-                                \let | dOb => tOb {a} @ i
-                                      | lhs => tMap {a} {a} (C.id) @ i
-                                      | rhs => D.id {tOb {a} @ i}
-
-                                \in D.homSet {dOb} {dOb} lhs rhs (F.k_id {a}) (G.k_id {a}) @ i
-                        | k_comp => {?}
-                     })
-
-       -- лолкот гарантирует
-       \func l_unit {C D : Cat} (F : Functor {C} {D}) : comp {C} {D} {D} id F = F => {?}
-    }
 
 
 
