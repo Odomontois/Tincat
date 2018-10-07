@@ -1,0 +1,13 @@
+\import Cat
+\import Iso
+
+\record terminal {C : Cat}
+                 (t : C.Ob)
+                 (terminal : \Pi (x : C.Ob) -> x ->> {C} t)
+                 (keep : \Pi {x : C.Ob} (f : x ->> {C} t) -> f = terminal x)
+
+--\func one {C : Cat}
+--          {t : terminal {C}} => t.t
+
+\func terminal_iso {C : Cat}
+                   (t1 t2 : terminal {C}) : t1.t ~= {C} t2.t => {?}
