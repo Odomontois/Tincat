@@ -1,0 +1,7 @@
+\import lib.HLevel
+
+\record monoid {Ob : \Type}
+               {set : isSet Ob}
+               (comp : \Pi Ob -> Ob -> Ob)
+               (unit : Ob)
+               (assoc : \Pi {a b c : Ob} -> comp (comp a b) c = comp a (comp b c))
