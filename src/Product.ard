@@ -1,6 +1,6 @@
 \import Cat
 \import Iso
-
+\import lib.Paths
 
 
 \record Product
@@ -33,7 +33,7 @@
    (collect : prod p pi1 pi2 = C.id)
 
 
-\func product_symmetry {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
+\func product_inv {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
     | pi1 => pab.pi2
     | pi2 => pab.pi1
     | prod x f1 f2 => pab.prod x f2 f1
@@ -41,13 +41,17 @@
     | keep2 x f2 f1 => pab.keep1 x f1 f2
     | collect => pab.collect
 
+\func product_symmetry {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab => idp
+
 \func product_associativity {C : Cat} (a b c : Cat.Ob {C})
          (pab : Product2 {C} a b)
          (pab_c : Product2 {C} pab.p c )
          (pbc : Product2 {C} b c)
-         (pa_bc : Product2 {C} a pab.p) : pab_c.p ~= {C} pa_bc.p \cowith
-             | f => {?}
-             | f_op => {?}
+         (pa_bc : Product2 {C} a pbc.p) : Iso {C} {pab_c.p} {pa_bc.p} \cowith
+             | f => \let pr => \lam (P : Product2 {C}) => P.prod pab_c.p
+                    \in pr pa_bc (pab.pi1 cmp {C} pab_c.pi1) ( pr pbc (pab.pi2 cmp {C} pab_c.pi1) pab_c.pi2 )
+             | f_op => \let pr => \lam (P : Product2 {C}) => P.prod pa_bc.p
+                       \in pr pab_c (pr pab pa_bc.pi1 (pbc.pi1 cmp {C} pa_bc.pi2)) (pbc.pi2 cmp {C} pa_bc.pi2)
              | l_comp => {?}
              | r_comp => {?}
 
