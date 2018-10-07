@@ -1,0 +1,41 @@
+\import Cat
+\import Set
+\import lib.Paths
+
+\record FunctorStruct (C D : Cat)
+                      (ob : C.Ob -> D.Ob)
+                      (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))
+
+\record FunctorIdLaw (id : \Pi {a : C.Ob} -> map (C.id {a}) = D.id {ob a}) \extends FunctorStruct
+
+\record FunctorCompLaw (
+   comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) -> D.comp (map f) (map g) = map (C.comp f g)
+  ) \extends FunctorStruct
+
+\record Functor \extends  FunctorIdLaw, FunctorCompLaw
+                \where {
+
+        \coerce struct (F : Functor) : FunctorStruct => F
+
+        \func Id {C : Cat} : Functor \cowith
+            | C => C
+            | D => C
+            | ob x => x
+            | map f => f
+            | id => \lam {a} => idp
+            | comp => \lam {a} {b} {c} f g => idp
+
+
+        \func Comp {C D E : Cat } (F : Functor D E) (G : Functor C D) : Functor \cowith
+         | C => C
+         | D => E
+         | ob x => F.ob (G.ob x)
+         | map => \lam {a} {b} f => F.map (G.map f)
+         | id => \lam {a} => pmap F.map G.id *> F.id
+         | comp => \lam {a} {b} {c} f g => F.comp (G.map f) (G.map g) *> pmap F.map (G.comp f g)
+
+        \func equiv {C D : Cat} (F G : Functor C D) (eq : struct F = struct G) : F = G => {?}
+
+       -- лолкот гарантирует
+        \func l_unit {C D : Cat} (F : Functor C D) : Comp {C} {D} {D} Id F = F => {?}
+    }

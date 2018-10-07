@@ -1,3 +1,11 @@
+\import lib.HLevel
+\import lib.Paths
+
+
 \class Unit
 
 \func unit => \new Unit
+
+\func unit_isProp : isProp Unit => \lam (u1 u2 : Unit) => idp
+
+\func unit_isSet : isSet Unit => isProp=>isSet Unit unit_isProp

@@ -1,19 +1,25 @@
+\import Set
 \import lib.Equiv
+\import lib.HLevel
 \import lib.Paths
 \import lib.Data.Unit
 \import Prelude
 
 \record Cat {Ob : \Type}
-            (Hom : Ob -> Ob -> \Type)
+            (Hom : Ob -> Ob -> \Set)
+            (homSet : \Pi {a b : Ob} -> isSet (Hom a b))
             (id : \Pi {a : Ob} -> Hom a a)
             (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c )
             (l_unit : \Pi {a b : Ob} (f : Hom a b) -> comp id f = f )
             (r_unit : \Pi {a b : Ob} (f : Hom a b) -> comp f id = f )
             (assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> comp (comp f g) h = comp f (comp g h)  )
 
+\func \infix 6 ->> {C : Cat} (a b : C.Ob) => C.Hom a b
+
 \func op (C : Cat) : Cat \cowith
       | Ob => C.Ob
       | Hom a b => C.Hom b a
+      | homSet => \lam {a} {b} => C.homSet
       | id => C.id
       | comp => \lam {a} {b} {c} f g => C.comp g f
       | l_unit => \lam {a} {b} f => C.r_unit f
@@ -28,50 +34,30 @@
          | constDHom {a b : Ob} (chom : C.Hom a.1 b.1) => D.Hom a.2 b.2
     \in \new Cat {
         | Ob => Ob | Hom => Hom  | id => id | comp => comp
+        | homSet => \lam {a} {b} => pairSet C.homSet D.homSet
         | l_unit => \lam {a} {b} f => SigmaExt constDHom (comp id f) f (C.l_unit f.1) (D.l_unit f.2)
         | r_unit => \lam {a} {b} f => SigmaExt constDHom (comp f id) f (C.r_unit f.1) (D.r_unit f.2)
         | assoc => \lam {a} {b} {c} {d} f g h =>
             SigmaExt constDHom (comp (comp f g) h) (comp f (comp g h)) (C.assoc f.1 g.1 h.1) (D.assoc f.2 g.2 h.2)
     }
 
+
+
 \func cat1 : Cat \cowith
   | Ob => Unit
   | Hom a b => Unit
+  | homSet => \lam {a} {b} => unit_isSet
   | id => \lam {a} => unit
   | comp f g => unit
   | l_unit f => idp
   | r_unit f => idp
   | assoc f g h => idp
 
-\func cmp {C : Cat} {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => C.comp f g
+\func \infix 6 cmp {C : Cat} {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => C.comp f g
 
 \open Cat (comp)
 
-\record Functor {C D : Cat}
-                (ob : C.Ob -> D.Ob )
-                (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))
-                (k_id : \Pi {a : C.Ob} -> map (C.id {a}) = D.id {ob a} )
-                (k_comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) -> D.comp (map f) (map g) = map (C.comp f g) )
-                \where {
 
-        \func id {C : Cat} : Functor \cowith
-         | C => C
-         | D => C
-         | ob x => x
-         | map f => f
-         | k_id => \lam {a} => idp
-         | k_comp => \lam {a} {b} {c} f g => idp
-
-        \func comp {C D E : Cat } (F : Functor {D} {E}) (G : Functor {C} {D}) : Functor \cowith
-         | C => C
-         | D => E
-         | ob x => F.ob (G.ob x)
-         | map => \lam {a} {b} f => F.map (G.map f)
-         | k_id => \lam {a} => pmap F.map G.k_id *> F.k_id
-         | k_comp => \lam {a} {b} {c} f g => F.k_comp (G.map f) (G.map g) *> pmap F.map (G.k_comp f g)
-
-       \func l_unit {C D : Cat} (F : Functor {C} {D}) : comp {C} {D} {D} id F = F => {?}
-    }
 
 
 

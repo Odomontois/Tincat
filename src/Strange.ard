@@ -1,0 +1,6 @@
+\import lib.Paths
+
+\func check : 0 = 1 =>
+    path (\lam i => \case i \with {| left => 0 | right => 1})
+
+\func propCheck (A : \Prop ) (x y : A) : x = y => idp
