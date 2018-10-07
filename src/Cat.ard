@@ -14,6 +14,8 @@
             (r_unit : \Pi {a b : Ob} (f : Hom a b) -> comp f id = f )
             (assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> comp (comp f g) h = comp f (comp g h)  )
 
+\func \infix 6 ->> {C : Cat} (a b : C.Ob) => C.Hom a b
+
 \func op (C : Cat) : Cat \cowith
       | Ob => C.Ob
       | Hom a b => C.Hom b a
