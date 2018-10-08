@@ -55,7 +55,6 @@
 
 \func \infix 6 cmp {C : Cat} {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => C.comp f g
 
-\open Cat (comp)
 
 
 

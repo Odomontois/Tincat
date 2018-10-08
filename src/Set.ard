@@ -15,5 +15,22 @@
   | true
   | false
 
-
+\func set_equalities_are_equal
+    {A : \Type}
+    (B : A -> \Type)
+    (b_set : \Pi (a : A) -> isSet (B a))
+    (b b' : \Pi (a : A) -> B a)
+    (a a' : A)
+    (aeq : a = a')
+    (beq1 : b a = b' a)
+    (beq2 : b a' = b' a') :
+    Path (\lam i => \let ai => aeq @ i \in b ai = b' ai ) beq1 beq2 =>
+        path ( \lam i =>
+             \let | ai => aeq @ i
+                  | b_eq_prop => b_set (aeq @ i) (b ai) (b' ai)
+                  | b_eq (i : I) => b ( aeq @ i ) = b' ( aeq @ i)
+                  | b_eq' (i : I) => b ( inv aeq @ i) = b' (inv aeq @ i)
+                  | b_l => coe b_eq beq1 i
+                  | b_r => coe b_eq' beq2 i
+              \in {?}  )
 
