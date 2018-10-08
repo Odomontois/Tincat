@@ -1,21 +1,22 @@
 \import Cat
 \import Iso
 \import Unique
+\import lib.HLevel
 \import lib.Paths
 
 \record Terminal {C : Cat}
                  (one : C.Ob)
-                 (terminal : \Pi (x : C.Ob) -> UniqueT (x ->> {C} one))
+                 (terminal : \Pi (x : C.Ob) -> UniqueT {x ->> {C} one})
 
 \func terminal_only_id {C : Cat}
                        (t : Terminal {C})
-                       (m : t.one ->> {C} t.one): m = C.id =>
-    \let u : UniqueT => t.terminal t.one \in inv (u.unique m) *> (u.unique C.id)
+                       (m : t.one ->> {C} t.one) : m = C.id =>
+    \let u : UniqueT {t.one ->> {C} t.one} => t.terminal t.one \in u.prop m C.id
 
 \func terminal_iso {C : Cat}
                    (t1 t2 : Terminal {C}) : t1.one ~= {C} t2.one =>
-    \let uniqueT1 : UniqueT => t1.terminal t2.one \in
-    \let uniqueT2 : UniqueT => t2.terminal t1.one \in
+    \let uniqueT1 : UniqueT {t2.one ->> {C} t1.one} => t1.terminal t2.one \in
+    \let uniqueT2 : UniqueT {t1.one ->> {C} t2.one} => t2.terminal t1.one \in
     \let f => uniqueT2.t \in
     \let f_op => uniqueT1.t \in
     \new Iso {C} {t1.one} {t2.one} f f_op (terminal_only_id t1 (f_op cmp {C} f)) (terminal_only_id t2 (f cmp {C} f_op))
