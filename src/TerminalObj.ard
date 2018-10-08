@@ -1,13 +1,27 @@
 \import Cat
 \import Iso
+\import Unique
+\import lib.Data.Unit
+\import lib.Paths
 
-\record terminal {C : Cat}
-                 (t : C.Ob)
-                 (terminal : \Pi (x : C.Ob) -> x ->> {C} t)
-                 (keep : \Pi {x : C.Ob} (f : x ->> {C} t) -> f = terminal x)
+\record UniqueT (T : \Type)
+                (t : T)
+                (unique : \Pi (a' : T) -> t = a')
 
---\func one {C : Cat}
---          {t : terminal {C}} => t.t
+\func uniqueT (u : UniqueT) =>
+    \new Unique u.T (\lam _ => Unit) u.t unit (\lam a' _ => u.unique a')
+
+\record Terminal {C : Cat}
+                 (one : C.Ob)
+                 (terminal : \Pi (x : C.Ob) -> UniqueT (x ->> {C} one))
+
+\func terminal_only_id {C : Cat}
+                       (t : Terminal {C})
+                       (m : t.one ->> {C} t.one): m = C.id =>
+  \let u : UniqueT => t.terminal t.one \in inv (u.unique m) *> (u.unique C.id)
 
 \func terminal_iso {C : Cat}
-                   (t1 t2 : terminal {C}) : t1.t ~= {C} t2.t => {?}
+                   (t1 t2 : Terminal {C}) : t1.one ~= {C} t2.one =>
+    \let uniqueT1 : UniqueT => t1.terminal t2.one \in
+    \let uniqueT2 : UniqueT => t2.terminal t1.one \in
+    \new Iso {C} {t1.one} {t2.one} (uniqueT2.t) (uniqueT1.t) ({?}) ({?})
