@@ -4,17 +4,17 @@
 \record Unique
     (A : \Type)
     (B : A -> \Type)
-    (a : A)
-    (b : B a)
-    (unique : \Pi (a' : A) -> B a' -> a = a')
+    (elem : A)
+    (prop : B elem)
+    (unique : \Pi (a' : A) -> B a' -> elem = a')
 
 --there is a unique way to create unique things
 \func unique_fun (U : \Type) (A : U -> \Type) (B : \Pi (u : U) -> A u -> \Type)
                  (f : \Pi (u : U) -> Unique (A u) (B u)):
                  Unique (\Pi (u : U) -> A u) (\lam bf => \Pi (u : U) -> B u (bf u)) =>
-                 \let | a u => Unique.a {f u}
+                 \let | a u => Unique.elem {f u}
                  \in \new Unique (\Pi (u : U) -> A u) (\lam bf => \Pi (u : U) -> B u (bf u)){
-                    | a => a
-                    | b u => Unique.b {f u}
+                    | elem => a
+                    | prop u => Unique.prop {f u}
                     | unique => \lam af' bf' => funExt A a af' (\lam u => Unique.unique {f u} (af' u) (bf' u))
                     }

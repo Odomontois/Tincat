@@ -12,6 +12,37 @@
  (prod : \Pi (x : C.Ob) (f : \Pi (i : I) -> x ->> {C} a i) -> Unique (x ->> {C} p) (\lam pr => \Pi (j : I) -> pi j cmp {C} pr = f j) )
 
 
+\func product_eq_id {C : Cat}(P : Product {C}) (f : C.Hom P.p P.p ) (eqs : \Pi (i : P.I) -> P.pi i cmp {C} f = P.pi i) : f = C.id =>
+    \let | u : Unique => P.prod P.p (P.pi)
+         | u_eq_id => u.unique C.id (\lam i => C.r_unit (P.pi i))
+         | u_eq_f => u.unique f eqs
+    \in (inv u_eq_f) *> u_eq_id
+
+--product object is unique up to isoporphism
+\func product_ob_unique {C : Cat} (pr : Product {C}) (pr' : Product {C} pr.I pr.a) : pr.p ~= {C} pr'.p =>
+    \let | f : Unique => pr'.prod pr.p pr.pi
+         | f-1 : Unique => pr.prod pr'.p pr'.pi
+         | rc => f.elem cmp {C} f-1.elem
+         | rc_eqs (i : pr.I)  => transport (\lam a => a = pr'.pi i) (C.assoc (pr'.pi i) f.elem f-1.elem)
+                                (transport {C.Hom pr.p (pr.a i)}
+                                (\lam h => h cmp {C} f-1.elem = pr'.pi i)
+                                {pr.pi i} {pr'.pi i cmp {C} f.elem}
+                                (inv (f.prop i)) (f-1.prop i))
+         | lc => f-1.elem cmp {C} f.elem
+         | lc_eqs (i : pr.I)  => transport (\lam a => a = pr.pi i) (C.assoc (pr.pi i) f-1.elem f.elem)
+                                 (transport {C.Hom pr'.p (pr'.a i)}
+                                 (\lam h => h cmp {C} f.elem = pr.pi i)
+                                 {pr'.pi i} {pr.pi i cmp {C} f-1.elem}
+                                 (inv (f-1.prop i)) (f.prop i))
+
+
+    \in \new Iso {C} {pr.p} {pr'.p} {
+       | f => f.elem
+       | f_op => f-1.elem
+       | l_comp => product_eq_id pr  lc lc_eqs
+       | r_comp => product_eq_id pr' rc rc_eqs
+    }
+
 \record Product2
    {C : Cat}
    (a b : Cat.Ob {C})
@@ -31,8 +62,8 @@
         \let orig : Unique => pab.prod x f2 f1
         \in \new Unique orig.A {
           | B pr => \Sigma (pab.pi2 cmp {C} pr = f1) (pab.pi1 cmp {C} pr = f2)
-          | a => orig.a
-          | b => (orig.b.2, orig.b.1)
+          | elem => orig.elem
+          | prop => (orig.prop.2, orig.prop.1)
           | unique f' prod' => orig.unique f' (prod'.2, prod'.1)
           }
 
