@@ -1,7 +1,29 @@
 \import lib.HLevel
+\import Cat
+\import lib.Paths
 
-\record monoid {Ob : \Type}
-               {set : isSet Ob}
+\record Monoid {Ob : \Set}
                (comp : \Pi Ob -> Ob -> Ob)
                (unit : Ob)
                (assoc : \Pi {a b c : Ob} -> comp (comp a b) c = comp a (comp b c))
+
+\func \infix 6 |+| {m : Monoid} (a b : m.Ob) : m.Ob => m.comp a b
+
+\record Homo (m1 m2 : Monoid)
+             (f : m1.Ob -> m2.Ob)
+             (keep : \Pi (x y : m1.Ob) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y))
+
+\func id_homo {m : Monoid} : Homo m m \cowith
+  | f => \lam x => x
+  | keep => {?}
+
+\func Mon : Cat \cowith {
+  | Ob => Monoid
+  | Hom => \lam (x y : Monoid) => Homo x y
+  | homSet => {?}
+  | id => id_homo
+  | comp => {?}
+  | l_unit => {?}
+  | r_unit => {?}
+  | assoc => {?}
+  }
