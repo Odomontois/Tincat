@@ -4,13 +4,21 @@
 \record Iso {C : Cat}
             {a : C.Ob}
             {b : C.Ob}
-            (f : C.Hom a b)
-            (f_op : C.Hom b a)
-            (l_comp : C.comp f_op f = C.id)
-            (r_comp : C.comp f f_op = C.id)
+            (f : a ->> {C} b)
+            (f_op : b ->> {C} a)
+            (l_comp : f_op cmp {C} f = C.id)
+            (r_comp : f cmp {C} f_op = C.id)
 
 \func \infix 1 ~= {C : Cat}
                   (a b : C.Ob) => Iso {C} {a} {b}
+
+\func eq_iso {C : Cat}
+             (a b : C.Ob)
+             {e : a = b} : a ~= {C} b =>
+  tr (pmap (~= {C} a) e) (iso_refl {C} {a}) \where {
+    \func tr {X Y : \Type} (e : X = Y) (x : X) : Y =>
+        (transport (\lam (T : \Type) => X -> T) e (\lam (x : X) => x)) x
+  }
 
 \func iso_refl {C : Cat}
                {a : C.Ob} : a ~= a =>

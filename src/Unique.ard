@@ -1,3 +1,5 @@
+\import lib.Data.Unit
+\import lib.HLevel
 \import lib.Paths
 
 -- unique element of A such that B
@@ -21,3 +23,11 @@
                     | prop u => Unique.prop {f u}
                     | unique => \lam af' bf' => funExt A a af' (\lam u => Unique.unique {f u} (af' u) (bf' u))
                     }
+
+-- unique element of A
+\record UniqueT {T : \Type}
+                (t : T)
+                (prop : isProp T)
+
+\func uniqueT_to_unique (u : UniqueT) =>
+    \new Unique u.T (\lam _ => Unit) u.t unit (\lam a' _ => u.prop u.t a')
