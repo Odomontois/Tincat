@@ -1,5 +1,6 @@
 \import Cat
 \import Iso
+\import Unique
 \import lib.Paths
 
 
@@ -8,12 +9,8 @@
  (a : I -> C.Ob)
  (p : C.Ob)
  (pi : \Pi (i : I) -> p ->> {C} a i)
- (prod : \Pi (x : C.Ob) ( \Pi (i : I) -> x ->> {C} a i) -> (x ->> {C} p))
- (keep : \Pi (x : C.Ob)
-              (f : \Pi (i : I) -> x ->> {C} a i)
-              (j : I) ->
-              pi j cmp {C} prod x f  = f j)
- (collect : prod p pi = C.id)
+ (prod : \Pi (x : C.Ob) (f : \Pi (i : I) -> x ->> {C} a i) -> Unique (x ->> {C} p) (\lam pr => \Pi (j : I) -> pi j cmp {C} pr = f j) )
+
 
 \record Product2
    {C : Cat}
@@ -21,25 +18,16 @@
    (p : C.Ob)
    (pi1 : p ->> {C} a)
    (pi2 : p ->> {C} b)
-   (prod : \Pi (x : C.Ob) (x ->> {C} a) (x ->> {C} b) -> (x ->> {C} p))
-   (keep1 : \Pi (x : C.Ob)
-                (f1 : x ->> {C} a)
-                (f2 : x ->> {C} b) ->
-                pi1 cmp {C} prod x f1 f2 = f1 )
-   (keep2 : \Pi (x : C.Ob)
-               (f1 : x ->> {C} a)
-               (f2 : x ->> {C} b) ->
-               pi2 cmp {C} prod x f1 f2 = f2 )
-   (collect : prod p pi1 pi2 = C.id)
+   (prod : \Pi (x : C.Ob) (f : x ->> {C} a) (g : x ->> {C} b) -> Unique (x ->> {C} p) (\lam pr => \Sigma
+    (pi1 cmp {C} pr = f)
+    (pi2 cmp {C} pr = g)
+   ))
 
 
 \func product_inv {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
     | pi1 => pab.pi2
     | pi2 => pab.pi1
     | prod x f1 f2 => pab.prod x f2 f1
-    | keep1 x f1 f2 => pab.keep2 x f2 f1
-    | keep2 x f2 f1 => pab.keep1 x f1 f2
-    | collect => pab.collect
 
 \func product_symmetry {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab => idp
 
