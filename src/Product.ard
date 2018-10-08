@@ -79,11 +79,14 @@
     \func prod_of_prod_ass_l {C : Cat} (a b c : C.Ob)
                              (pab : Product2 {C} a b) (pab_c : Product2 {C} pab.p c)
                              : Product {C} three (make3X a b c) pab_c.p \cowith
-       | pi i => make3D (pab.pi1 cmp {C} pab_c.pi1 )( pab.pi2 cmp {C} pab_c.pi1 ) pab_c.pi2 i
+       | pi i => make3D {C.Ob} {\lam ob => C.Hom pab_c.p ob} {make3X a b c}
+                (pab.pi1 cmp {C} pab_c.pi1 )( pab.pi2 cmp {C} pab_c.pi1 ) pab_c.pi2 i
        | prod x f =>
-        \let | pel => {?}
+        \let
+             | pab_x : Unique => pab.prod x (f first_of3) (f second_of3)
+             | pab_c_x : Unique => pab_c.prod x pab_x.elem (f third_of3)
              | prop => {?}
              | qq => {?}
-        \in uniq pel prop qq
+        \in uniq pab_c_x.elem prop qq
 }
 
