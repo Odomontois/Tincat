@@ -27,7 +27,14 @@
 \func product_inv {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
     | pi1 => pab.pi2
     | pi2 => pab.pi1
-    | prod x f1 f2 => pab.prod x f2 f1
+    | prod x f1 f2 =>
+        \let orig : Unique => pab.prod x f2 f1
+        \in \new Unique orig.A {
+          | B pr => \Sigma (pab.pi2 cmp {C} pr = f1) (pab.pi1 cmp {C} pr = f2)
+          | a => orig.a
+          | b => (orig.b.2, orig.b.1)
+          | unique =>\lam f' prod' => orig.unique f' (prod'.2, prod'.1)
+          }
 
 \func product_symmetry {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab => idp
 
