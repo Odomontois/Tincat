@@ -8,6 +8,9 @@
     (prop : B elem)
     (unique : \Pi (a' : A) -> B a' -> elem = a')
 
+\func uniq {A : \Type} {B : A -> \Type} (elem : A) (prop : B elem) (unique : \Pi (a' : A) -> B a' -> elem = a') =>
+    Unique A B elem prop unique
+
 --there is a unique way to create unique things
 \func unique_fun (U : \Type) (A : U -> \Type) (B : \Pi (u : U) -> A u -> \Type)
                  (f : \Pi (u : U) -> Unique (A u) (B u)):

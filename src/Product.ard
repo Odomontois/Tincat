@@ -1,7 +1,9 @@
 \import Cat
 \import Iso
+\import Set
 \import Unique
 \import lib.Paths
+\import Three
 
 
 \record Product
@@ -65,9 +67,23 @@
 
 \func product_symmetry {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab => idp
 
+
+
 \func product_associativity {C : Cat} (a b c : Cat.Ob {C})
          (pab : Product2 {C} a b)
          (pab_c : Product2 {C} pab.p c )
          (pbc : Product2 {C} b c)
-         (pa_bc : Product2 {C} a pbc.p) : pab_c.p ~= {C} pa_bc.p => {?}
+         (pa_bc : Product2 {C} a pbc.p) : pab_c.p ~= {C} pa_bc.p => {?} \where{
+
+
+    \func prod_of_prod_ass_l {C : Cat} (a b c : C.Ob)
+                             (pab : Product2 {C} a b) (pab_c : Product2 {C} pab.p c)
+                             : Product {C} three (make3X a b c) pab_c.p \cowith
+       | pi i => make3D (pab.pi1 cmp {C} pab_c.pi1 )( pab.pi2 cmp {C} pab_c.pi1 ) pab_c.pi2 i
+       | prod x f =>
+        \let | pel => {?}
+             | prop => {?}
+             | qq => {?}
+        \in uniq pel prop qq
+}
 
