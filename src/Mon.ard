@@ -19,6 +19,7 @@
 
 \func keep_set {m1 m2 : Monoid}
                (f : m1.Set -> m2.Set) : isSet (\Pi (x y : m1.Set) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y)) => {?}
+--  funSet {\Sigma m1.Set m1.Set} (\lam x y => f (x |+| {m1} y) = f (x) |+| {m2} f (y)))
 
 \func id_homo {m : Monoid} : Homo {m} {m} \cowith
   | f => id m.Set

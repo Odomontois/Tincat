@@ -11,6 +11,10 @@
                  (p1 : isSet A)
                  (p2 : \Pi (a : A) -> isSet (B a)) : isSet (\Sigma (a : A) (B a)) => {?}
 
+\func funSet {A : \Type} (B : A -> \Type) (bSet : \Pi (a : A) -> isSet (B a)) : isSet (\Pi (a : A) -> isSet (B a)) => {?}
+
+\func eqSet {A : \Type} (bSet : isSet A) (x y : A) : isSet (x = y) => {?}
+
 \func propPath {A B : \Type } (p : A = B) : \Type =>
     \Pi (a : A) (b : B) -> Path (\lam i => p @ i) a b
 
