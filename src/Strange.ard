@@ -4,3 +4,22 @@
     path (\lam i => \case i \with {| left => 0 | right => 1})
 
 \func propCheck (A : \Prop ) (x y : A) : x = y => idp
+
+\data bool
+    | false
+    | true
+
+\func nat_or_bool (x : bool) : \Type
+    | false => Nat
+    | true  => bool
+
+\func foo_t (b : bool) : nat_or_bool b =>
+    \case b \as y \return (nat_or_bool y) \with {
+      | false => 1
+      | true => true
+    }
+\func foo_h (b : bool) : nat_or_bool b =>
+    \lam x => \case x \return (nat_or_bool x) \with {
+      | false => 1
+      | true => true
+    }

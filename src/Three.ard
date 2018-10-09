@@ -1,0 +1,32 @@
+-- Finite set of 3 elements and  3-tuples
+
+\data three
+   | el3_1
+   | el3_2
+   | el3_3
+
+\func make3T (A B C : \Type) ( t : three) : \Type \elim  t
+    | el3_1 => A
+    | el3_2 => B
+    | el3_3 => C
+
+\func make3 {A B C : \Type} (a : A) (b : B) (c : C) (t : three) : make3T A B C t \elim t
+    | el3_1 => a
+    | el3_2 => b
+    | el3_3 => c
+
+\func make3X {A : \Type} (a b c : A) (t : three) : A \elim t
+    | el3_1 => a
+    | el3_2 => b
+    | el3_3 => c
+
+\func make3D {A : \Type} {B : \Pi (t : A) -> \Type } {f : three -> A}
+  (b1 : B (f el3_1))
+  (b2 : B (f el3_2))
+  (b3 : B (f el3_3))
+  (t : three)
+  : B (f t) \elim t
+      | el3_1 => b1
+      | el3_2 => b2
+      | el3_3 => b3
+
