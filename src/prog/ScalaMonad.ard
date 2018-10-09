@@ -1,3 +1,5 @@
+\import lib.Paths
+
 \class Scala[_] (F : \Type -> \Type )
 
 \class ScalaFunctor  (map : \Pi {A B : \Type} -> F A -> (A -> B)  -> F B)
@@ -14,7 +16,10 @@
 \class ScalaMonad \extends ScalaMonadProto , ScalaFunctor {
    | map fa f => flatMap  fa (\lam x => pure (f x))
    | identity => right_unit
-   | composition fa f g => associativity fa (\lam x => f x) (\lam x => g x)
+   | composition {A} {B} {C}  fa f g =>
+   \let | gp x => pure (g x)
+         | lu_extended => funExt {B} (\lam _ => F C)  (\lam b => gp b) (\lam b => flatMap (pure b) gp) (\lam b => inv ( left_unit b gp))
+   \in pmap (\lam u => flatMap fa (\lam x => u (f x))) lu_extended *>   associativity fa (\lam x => pure (f x)) gp
 }
 
 
