@@ -2,6 +2,7 @@
 \import Iso
 \import Set
 \import Unique
+\import lib.Equiv
 \import lib.Paths
 \import Three
 
@@ -41,6 +42,23 @@
           \in (inv u_eq_f) *> u_eq_id
     }
 
+
+--\func product_shuffle {C : Cat} { I : \Set} {a : I -> C.Ob}  (p : C.Ob)
+--  (shuffle : QEquiv {I} {I}) (pr : Product {C} I a p)
+--  => \new Product {C} I (\lam i => a (shuffle.f i)) p {
+--    | pi i => pr.pi (shuffle.f i)
+--    | prod x ms =>
+--    \let
+--          | A => x ->> {C} pr.p
+--          | B (m : A ) => \Pi (i : I) -> pr.pi (shuffle.f i) cmp {C} m = ms i
+--          | orig : Unique => pr.prod x (\lam i => transport (\lam j => x ->> {C} a j) (shuffle.f_sec i) (ms (shuffle.ret i)))
+--    \in \new Unique A B {
+--      | elem => orig.elem
+--      | prop i => orig.prop (shuffle.f i)
+--      | unique => {?}
+--    }
+--  }
+
 \record Product2
    {C : Cat}
    (a b : Cat.Ob {C})
@@ -73,7 +91,11 @@
          (pab : Product2 {C} a b)
          (pab_c : Product2 {C} pab.p c )
          (pbc : Product2 {C} b c)
-         (pa_bc : Product2 {C} a pbc.p) : pab_c.p ~= {C} pa_bc.p => {?} \where{
+         (pa_bc : Product2 {C} a pbc.p) : pab_c.p ~= {C} pa_bc.p =>
+          product_ob_unique
+          (prod_of_prod_ass_l a b c pab pab_c)
+          (prod_of_prod_ass_r a b c pbc pa_bc)
+          \where{
 
 
     \func prod_of_prod_ass_l {C : Cat} (a b c : C.Ob)
@@ -97,18 +119,55 @@
                        | el3_2 => C.assoc (pab.pi2) (pab_c.pi1) pm *> transport (\lam m => pab.pi2 cmp {C} m = f el3_2) (inv pab_c_x.prop.1) pab_x.prop.2
                        | el3_3 => pab_c_x.prop.2
                     }
-                    | qq (am : C.Hom x pab_c.p) (am_eqs : ut am) : pm = am =>
+                    | uni (am : C.Hom x pab_c.p) (am_eqs : ut am) : pm = am =>
                         \let | eq1 : pab_x.elem = pab_c.pi1 cmp {C} am => pab_x.unique (pab_c.pi1 cmp {C} am) (
                              inv (ass {C}) *> (am_eqs el3_1),
                              inv (ass {C}) *> (am_eqs el3_2)
                            )
                         \in pab_c_x.unique am (inv eq1 , am_eqs el3_3)
 
-               \in \new Unique ( x ->> {C} pab_c.p) ut pab_c_x.elem prop qq
+               \in \new Unique (x ->> {C} pab_c.p) ut pab_c_x.elem prop uni
+       \in \new Product {C} three ob pab_c.p {
+               | pi => pi
+               | prod  => prod
+              }
 
-      \in \new Product {C} three ob pab_c.p {
-       | pi => pi
-       | prod  => prod
-      }
+
+
+    \func prod_of_prod_ass_r {C : Cat} (a b c : C.Ob)
+                             (pbc : Product2 {C} b c) (pa_bc : Product2 {C} a pbc.p)
+                             : Product {C} three (make3X a b c) pa_bc.p  =>
+       \let
+            | ob   => make3X a b c
+            | pi idx => \case idx \as i \return (C.Hom pa_bc.p (ob i)) \with {
+                      | el3_1 => pa_bc.pi1
+                      | el3_2 => pbc.pi1 cmp {C} pa_bc.pi2
+                      | el3_3 => pbc.pi2 cmp {C} pa_bc.pi2
+                     }
+            | prod (x : C.Ob) (f : \Pi (i : three) -> C.Hom x (ob i)) =>
+               \let
+                    | ut m => \Pi (i : three) -> (pi i cmp {C} m = f i)
+                    | pbc_x : Unique => pbc.prod x (f el3_2) (f el3_3)
+                    | pa_bc_x : Unique => pa_bc.prod x  (f el3_1) pbc_x.elem
+                    | pm => pa_bc_x.elem
+                    | prop idx => \case idx \as i \return (pi i cmp {C} pm = f i) \with {
+                       | el3_1 => pa_bc_x.prop.1
+                       | el3_2 => C.assoc (pbc.pi1) (pa_bc.pi2) pm *> transport (\lam m => pbc.pi1 cmp {C} m = f el3_2) (inv pa_bc_x.prop.2) pbc_x.prop.1
+                       | el3_3 => C.assoc (pbc.pi2) (pa_bc.pi2) pm *> transport (\lam m => pbc.pi2 cmp {C} m = f el3_3) (inv pa_bc_x.prop.2) pbc_x.prop.2
+                    }
+                    | uni (am : C.Hom x pa_bc.p) (am_eqs : ut am) : pm = am =>
+                        \let | eq1 : pbc_x.elem = pa_bc.pi2 cmp {C} am => pbc_x.unique (pa_bc.pi2 cmp {C} am) (
+                             inv (ass {C}) *> (am_eqs el3_2),
+                             inv (ass {C}) *> (am_eqs el3_3)
+                           )
+                        \in pa_bc_x.unique am (am_eqs el3_1, inv eq1)
+
+               \in \new Unique ( x ->> {C} pa_bc.p) ut pa_bc_x.elem prop uni
+      \in \new Product {C} three ob pa_bc.p {
+              | pi => pi
+              | prod  => prod
+             }
+
+
    }
 
