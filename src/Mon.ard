@@ -1,29 +1,34 @@
+\import Set
+\import lib.Data.Unit
 \import lib.HLevel
 \import Cat
 \import lib.Paths
-\import Set
+\import SetCat
 
-\record Monoid {Ob : \Set}
-               (comp : \Pi Ob -> Ob -> Ob)
-               (unit : Ob)
-               (assoc : \Pi {a b c : Ob} -> comp (comp a b) c = comp a (comp b c))
+\record Monoid (Set : \Type)
+               (obSet : SetCat.Set Set)
+               (comp : \Pi Set -> Set -> Set)
+               (unit : Set)
+               (assoc : \Pi {a b c : Set} -> comp (comp a b) c = comp a (comp b c))
 
-\func \infix 6 |+| {m : Monoid} (a b : m.Ob) : m.Ob => m.comp a b
+\func \infix 6 |+| {m : Monoid} (a b : m.Set) : m.Set => m.comp a b
 
 \record Homo {m1 m2 : Monoid}
-             (f : m1.Ob -> m2.Ob)
-             (keep : \Pi (x y : m1.Ob) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y))
+             (f : m1.Set -> m2.Set)
+             (keep : \Pi (x y : m1.Set) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y))
+
+\func keep_set {m1 m2 : Monoid}
+               (f : m1.Set -> m2.Set) : isSet (\Pi (x y : m1.Set) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y)) => {?}
 
 \func id_homo {m : Monoid} : Homo {m} {m} \cowith
-  | f => \lam x => x
-  | keep => \lam (x y : m.Ob) => qed (x |+| {m} y)
+  | f => id m.Set
+  | keep => \lam (x y : m.Set) => qed (x |+| {m} y)
 
 \func homo_comp {a b c : Monoid}
                 (h1 : Homo {b} {c})
                 (h2 : Homo {a} {b}) : Homo {a} {c} =>
-  \let f : a.Ob -> c.Ob => func_comp h1.f h2.f \in
-  \new Homo {a} {c} f {
-    | keep => \lam (x y : a.Ob) =>
+  \new Homo {a} {c} (func_comp h1.f h2.f) {
+    | keep => \lam (x y : a.Set) =>
       pmap h1.f (h2.keep x y) *> h1.keep (h2.f x) (h2.f y)
   }
 
@@ -37,7 +42,12 @@
 \func Mon : Cat \cowith {
   | Ob => Monoid
   | Hom => \lam (x y : Monoid) => Homo {x} {y}
-  | homSet => {?}
+  | homSet => \lam {m1 m2 : Monoid} => \lam (h1 h2 : Homo {m1} {m2}) =>
+    \let w : isSet (\Sigma (f : m1.Set -> m2.Set) (\Pi (x y : m1.Set) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y))) =>
+      (depPairSet {m1.Set -> m2.Set}
+      (\lam f => \Pi (x y : m1.Set) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y))
+      (func_is_set m1.obSet m2.obSet)
+      (\lam f => keep_set {m1} {m2} f)) \in {?}
   | id => id_homo
   | comp => \lam {a b c : Monoid} (h1 : Homo {b} {c}) (h2 : Homo {a} {b}) => homo_comp h1 h2
   | l_unit => {?}

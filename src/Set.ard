@@ -1,4 +1,3 @@
-\import Cat
 \import lib.HLevel
 \import lib.Paths
 
@@ -6,6 +5,11 @@
 \func pairSet {A B : \Type} (p1 : isSet A) (p2 : isSet B) : isSet (\Sigma A B) =>
     HLevel_-2+1=>HLevel_-1 (\Sigma A B) 1
          (HLevels-sigma {A} (\lam _ => B) {2} (HLevel_-1=>HLevel_-2+1 A 1 p1) (\lam _ => HLevel_-1=>HLevel_-2+1 B 1 p2))
+
+\func depPairSet {A : \Type}
+                 (B : A -> \Type)
+                 (p1 : isSet A)
+                 (p2 : \Pi (a : A) -> isSet (B a)) : isSet (\Sigma (a : A) (B a)) => {?}
 
 \func propPath {A B : \Type } (p : A = B) : \Type =>
     \Pi (a : A) (b : B) -> Path (\lam i => p @ i) a b
@@ -34,43 +38,3 @@
                   | b_l => coe b_eq beq1 i
                   | b_r => coe b_eq' beq2 i
               \in {?}  )
-
-\func id {X : \Set} (x : X) => x
-
-\func func_eq {X Y : \Set}
-              (f g : X -> Y)
-              (eq : \Pi (x : X) -> f x = g x) : f = g => funExt {X} (\lam _ => Y) f g eq
-
-\func func_comp {X Y Z : \Set}
-                (f : Y -> Z)
-                (g : X -> Y) : X -> Z =>
-  \lam x => f (g (x))
-
-\func func_id_right {X Y : \Set}
-                    (f : X -> Y) : func_comp f id = f =>
-  func_eq (func_comp f id) f (\lam x => qed (f x))
-
-\func func_id_left {X Y : \Set}
-                   (f : X -> Y) : func_comp id f = f =>
-  func_eq (func_comp id f) f (\lam x => qed (f x))
-
-\func func_assoc {A B C D : \Set }
-                 (f : C -> D)
-                 (g : B -> C)
-                 (h : A -> B) : func_comp f (func_comp g h) = func_comp (func_comp f g) h =>
-  func_eq (func_comp f (func_comp g h)) (func_comp (func_comp f g) h) (\lam x => qed (f (g (h (x)))))
-
-\func func_set {X Y : \Set} : isSet (X -> Y) =>
-  \lam (f g : X -> Y) => \lam (e1 e2 : f = g) => {?}
-
--- probably move somewhere
-\func Set : Cat \cowith {
-  | Ob => \Set
-  | Hom => \lam x y => x -> y
-  | homSet => func_set
-  | id => id
-  | comp => func_comp
-  | l_unit => func_id_left
-  | r_unit => func_id_right
-  | assoc => func_assoc
-  }

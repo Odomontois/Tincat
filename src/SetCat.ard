@@ -1,0 +1,49 @@
+\import Cat
+\import lib.HLevel
+\import lib.Paths
+
+\record Set (S : \Type)
+            (is_set : isSet S)
+
+\func id (X : \Type) => \lam (x : X) => x
+
+\func func_comp {X Y Z : \Type}
+                (f : Y -> Z)
+                (g : X -> Y) : X -> Z =>
+  \lam (x : X) => f (g (x))
+
+\func func_is_set (X Y : Set) : isSet (X.S -> Y.S) =>
+  \lam (f g : X.S -> Y.S) =>
+  \lam (e1 e2 : f = g) =>
+  \let z : e1 = e2 => {?}
+  \in z
+
+\func func_eq {X Y : \Type}
+              (f g : X -> Y)
+              (eq : \Pi (x : X) -> f x = g x) : f = g =>
+  funExt {X} (\lam _ => Y) f g eq
+
+\func func_id_right {X Y : \Type}
+                    (f : X -> Y) : func_comp f (id X) = f =>
+  func_eq (func_comp f (id X)) f (\lam x => qed (f x))
+
+\func func_id_left {X Y : \Type}
+                   (f : X -> Y) : func_comp (id Y) f  = f =>
+  func_eq (func_comp (id Y) f) f (\lam x => qed (f x))
+
+\func func_assoc {A B C D : \Type}
+                 (f : C -> D)
+                 (g : B -> C)
+                 (h : A -> B) : func_comp f (func_comp g h) = func_comp (func_comp f g) h =>
+  func_eq (func_comp f (func_comp g h)) (func_comp (func_comp f g) h) (\lam x => qed (f (g (h (x)))))
+
+\func SetC : Cat \cowith {
+  | Ob => Set
+  | Hom => \lam (X Y : Set) => X.S -> Y.S
+  | homSet => \lam {X Y : Set} => func_is_set X Y
+  | id => \lam x => x
+  | comp => \lam {x y z : Set} => func_comp {x.S} {y.S} {z.S}
+  | l_unit => \lam {x y : Set} => func_id_left {x.S} {y.S}
+  | r_unit => \lam {x y : Set} => func_id_right {x.S} {y.S}
+  | assoc => \lam {a b c d : Set} => func_assoc {a.S} {b.S} {c.S} {d.S}
+  }
