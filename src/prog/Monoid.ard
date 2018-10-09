@@ -9,9 +9,6 @@
                (right_unit : \Pi (a : T) -> combine a empty = a)
                \extends Semigroup
 
-\func natZeroSum (a : Nat) :  0 + a = a
-    | zero => idp
-    | suc (a') => pmap suc (natZeroSum a')
 
 \open Nat
 \instance natMonoid : Monoid Nat
@@ -19,5 +16,13 @@
     | empty => 0
     | left_unit => natZeroSum
     | right_unit a => idp
-    | associativity a b c => {?}
+    | associativity => natAssoc
+
+\func natZeroSum (a : Nat) :  0 + a = a
+    | zero => idp
+    | suc a' => pmap suc (natZeroSum a')
+
+\func natAssoc (a b c : Nat) : (a + b) + c = a + (b + c) \elim c
+    | zero => idp
+    | suc c' => pmap suc (natAssoc a b c')
 
