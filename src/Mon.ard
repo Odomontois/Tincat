@@ -15,14 +15,27 @@
 
 \func id_homo {m : Monoid} : Homo m m \cowith
   | f => \lam x => x
-  | keep => {?}
+  | keep => \lam (x y : m.Ob) => qed (x |+| {m} y)
+
+\func homo_comp {a b c : Monoid}
+                (h1 : Homo b c)
+                (h2 : Homo a b) : Homo a c =>
+  \let f : a.Ob -> c.Ob => \lam x => h1.f (h2.f x) \in
+  \new Homo a c f {
+    | keep => \lam (x y : a.Ob) =>
+      pmap h1.f (h2.keep x y) *> h1.keep (h2.f x) (h2.f y)
+  }
+
+\func id_homo_left {m1 m2 : Monoid}
+                   (h : Homo m1 m2) : (homo_comp {m1} {m1} {m2} h id_homo) = h => {?}
+
 
 \func Mon : Cat \cowith {
   | Ob => Monoid
   | Hom => \lam (x y : Monoid) => Homo x y
   | homSet => {?}
   | id => id_homo
-  | comp => {?}
+  | comp => \lam {a b c : Monoid} (h1 : Homo b c) (h2 : Homo a b) => homo_comp h1 h2
   | l_unit => {?}
   | r_unit => {?}
   | assoc => {?}
