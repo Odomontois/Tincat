@@ -1,25 +1,55 @@
 \import lib.Paths
+\import prog.funs
 
-\class Scala[_] (F : \Type -> \Type )
 
-\class ScalaFunctor  (map : \Pi {A B : \Type} -> F A -> (A -> B)  -> F B)
+\class Scala[_] (T : \Type ) (F : \Type -> \Type )
+
+\class Functor  (map : \Pi {A B : \Type} -> F A -> (A -> B)  -> F B)
                      (identity : \Pi { A : \Type } (fa : F A) -> map fa (\lam x => x) = fa)
-                     (composition : \Pi { A B C : \Type } (fa : F A) (f : A -> B) (g : B -> C) -> map fa (\lam x => g (f x)) = map (map fa f) g) \extends Scala[_]
+                     (composition : \Pi { A B C : \Type } (fa : F A) (f : A -> B) (g : B -> C) -> map fa (g ~ f) = map (map fa f) g) \extends Scala[_]
 
 
-\class ScalaMonadProto  (pure : \Pi {A : \Type } -> A -> F A)
+\class Monad'  (pure : \Pi {A : \Type } -> A -> F A)
                         (flatMap : \Pi {A B : \Type } -> F (A) -> (A -> F B) -> F B)
                         (left_unit : \Pi { A B : \Type } (a : A) (f : A -> F B) -> flatMap (pure a) f = f a)
                         (right_unit : \Pi { A : \Type } (fa : F A) -> flatMap fa pure = fa)
                         (associativity : \Pi { A B C : \Type} (fa : F A) (f : A -> F B) (g : B -> F C) ->
                                     flatMap fa (\lam x => flatMap (f x) g) = flatMap ( flatMap fa f ) g ) \extends Scala[_]
-\class ScalaMonad \extends ScalaMonadProto , ScalaFunctor {
+
+\class Monad \extends Monad' , Functor {
    | map fa f => flatMap  fa (\lam x => pure (f x))
    | identity => right_unit
-   | composition {A} {B} {C}  fa f g =>
+   | composition {_} {_} {C}  fa f g =>
    \let | gp x => pure (g x)
-         | lu_extended => funExt {B} (\lam _ => F C)  (\lam b => gp b) (\lam b => flatMap (pure b) gp) (\lam b => inv ( left_unit b gp))
-   \in pmap (\lam u => flatMap fa (\lam x => u (f x))) lu_extended *>   associativity fa (\lam x => pure (f x)) gp
+         | lu_extended => funExt (\lam _ => F C)  (\lam b => gp b) (\lam b => flatMap (pure b) gp) (\lam b => inv ( left_unit b gp))
+   \in pmap (\lam u => flatMap fa (\lam x => u (f x))) lu_extended *>  associativity fa (\lam x => pure (f x)) gp
 }
+
+\data Identity | Identity
+\instance identityMonad : Monad Identity
+    | F => id
+    | pure x => x
+    | flatMap fa f => f fa
+    | left_unit _ _ => idp
+    | right_unit _ => idp
+    | associativity _ _ _ => idp
+
+\data State (s : \Type) | State s
+\instance stateMonad (S : \Type) : Monad (State S)
+    | F a => S -> \Sigma S a
+    | pure x s => (s, x)
+    | flatMap fa f s => \let sa => fa s \in f sa.2 sa.1
+    | left_unit _ _ => idp
+    | right_unit _ => idp
+    | associativity _ _ _ => idp
+
+\data Reader (r : \Type) | Reader r
+\instance  readerMonad (R : \Type ) : Monad (Reader R)
+    | F a => R -> a
+    | pure x a => x
+    | flatMap fa f r => f (fa r) r
+    | left_unit _ _ => idp
+    | right_unit _ => idp
+    | associativity _ _ _ => idp
 
 

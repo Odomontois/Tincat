@@ -1,0 +1,2 @@
+\func id {A : \Type} (x : A) => x
+\func \infixr 6 ~ {A B C : \Type } (f : B -> C) ( g : A -> B) (x : A) => f (g x)
