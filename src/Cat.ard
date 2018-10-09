@@ -26,6 +26,19 @@
       | r_unit => \lam {a} {b} f => C.l_unit f
       | assoc => \lam {a} {b} {c} {d} f g h => inv (C.assoc h g f)
 
+\func op_is_revertible (C : Cat) : op (op C) = C =>
+    path ( \lam i => \new Cat {
+      | Ob => C.Ob
+      | Hom => C.Hom
+      | homSet => C.homSet
+      | id => C.id
+      | comp => C.comp
+      | l_unit => C.l_unit
+      | r_unit => C.r_unit
+      | assoc => \lam {a} {b} {c} {d} f g h => (inv_inv (C.assoc f g h) @ i)
+    }
+)
+
 \func \infix 5 <x> (C : Cat) (D : Cat) : Cat =>
     \let | Ob => \Sigma C.Ob D.Ob
          | Hom  (a : Ob) (b : Ob) => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
@@ -38,7 +51,7 @@
         | l_unit => \lam {a} {b} f => SigmaExt constDHom (comp id f) f (C.l_unit f.1) (D.l_unit f.2)
         | r_unit => \lam {a} {b} f => SigmaExt constDHom (comp f id) f (C.r_unit f.1) (D.r_unit f.2)
         | assoc => \lam {a} {b} {c} {d} f g h =>
-            SigmaExt constDHom (comp (comp f g) h) (comp f (comp g h)) (C.assoc f.1 g.1 h.1) (D.assoc f.2 g.2 h.2)
+            SigmaExt constDHom (comp (comp f g) h) (comp f (comp g h)) (ass {C}) (D.assoc f.2 g.2 h.2)
     }
 
 
@@ -57,6 +70,8 @@
 
 
 
+
+\func ass {C : Cat} {a b c d : C.Ob} {f : C.Hom c d} {g : C.Hom b c} {h : C.Hom a b} : (f cmp {C} g) cmp {C} h = f cmp {C} (g cmp {C} h)  =>  C.assoc f g h
 
 
 

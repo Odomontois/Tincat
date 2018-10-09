@@ -14,8 +14,8 @@
     | true  => bool
 
 \func foo_t (b : bool) : nat_or_bool b =>
-    \lam x => \case x \return (nat_or_bool x) \with {
-      | false => \let y : x = false => idp \in 1
+    \case b \as y \return (nat_or_bool y) \with {
+      | false => 1
       | true => true
     }
 \func foo_h (b : bool) : nat_or_bool b =>
