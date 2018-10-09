@@ -1,0 +1,20 @@
+\class Scala[_] (F : \Type -> \Type )
+
+\class ScalaFunctor  (map : \Pi {A B : \Type} -> F A -> (A -> B)  -> F B)
+                     (identity : \Pi { A : \Type } (fa : F A) -> map fa (\lam x => x) = fa)
+                     (composition : \Pi { A B C : \Type } (fa : F A) (f : A -> B) (g : B -> C) -> map fa (\lam x => g (f x)) = map (map fa f) g) \extends Scala[_]
+
+
+\class ScalaMonadProto  (pure : \Pi {A : \Type } -> A -> F A)
+                        (flatMap : \Pi {A B : \Type } -> F (A) -> (A -> F B) -> F B)
+                        (left_unit : \Pi { A B : \Type } (a : A) (f : A -> F B) -> flatMap (pure a) f = f a)
+                        (right_unit : \Pi { A : \Type } (fa : F A) -> flatMap fa pure = fa)
+                        (associativity : \Pi { A B C : \Type} (fa : F A) (f : A -> F B) (g : B -> F C) ->
+                                    flatMap fa (\lam x => flatMap (f x) g) = flatMap ( flatMap fa f ) g ) \extends Scala[_]
+\class ScalaMonad \extends ScalaMonadProto , ScalaFunctor {
+   | map fa f => flatMap  fa (\lam x => pure (f x))
+   | identity => right_unit
+   | composition fa f g => associativity fa (\lam x => f x) (\lam x => g x)
+}
+
+
