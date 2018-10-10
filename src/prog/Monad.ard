@@ -1,5 +1,7 @@
 \import lib.Paths
+\import prog.Monoid
 \import prog.funs
+
 
 
 \class Scala[_] (T : \Type ) (F : \Type -> \Type )
@@ -21,8 +23,8 @@
    | identity => right_unit
    | composition {_} {_} {C}  fa f g =>
    \let | gp x => pure (g x)
-         | lu_extended => funExt (\lam _ => F C)  (\lam b => gp b) (\lam b => flatMap (pure b) gp) (\lam b => inv ( left_unit b gp))
-   \in pmap (\lam u => flatMap fa (\lam x => u (f x))) lu_extended *>  associativity fa (\lam x => pure (f x)) gp
+        | lu_extended => funExt (\lam _ => F C) gp (\lam b => flatMap (pure b) gp) (\lam b => inv ( left_unit b gp))
+   \in pmap (\lam u => flatMap fa (u ~ f)) lu_extended *>  associativity fa (pure ~ f) gp
 }
 
 \data Identity | Identity
@@ -51,5 +53,18 @@
     | left_unit _ _ => idp
     | right_unit _ => idp
     | associativity _ _ _ => idp
+
+\open Semigroup
+\data Writer (w : \Type) | Writer w
+\instance  writerMonad {w : \Type} {wmon : Monoid w} : Monad (Writer w)
+    | F a => \Sigma w a
+    | pure x => (wmon.empty, x)
+    | flatMap fa f => \let fb => f (fa.2) \in (fa.1 |+| fb.1, fb.2)
+    | left_unit {_} {B} a f => \let fb => f a \in SigmaExt (const B) (wmon.empty |+| fb.1, fb.2) fb (wmon.left_unit fb.1) idp
+    | right_unit {A} fa => SigmaExt (const A) (fa.1 |+| wmon.empty, fa.2) fa (wmon.right_unit fa.1) idp
+    | associativity {_} {_} {C} fa f g => \let | fb => f fa.2 | fc => g fb.2 \in
+            SigmaExt (const C) (fa.1 |+| (fb.1 |+| fc.1), fc.2)  ((fa.1 |+| fb.1) |+| fc.1, fc.2)
+            (inv (wmon.associativity fa.1 fb.1 fc.1)) idp
+
 
 
