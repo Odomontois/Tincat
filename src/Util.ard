@@ -2,3 +2,5 @@
 
 \func transportTerm {X Y : \Type} (e : X = Y) (x : X) : Y =>
   (transport (\lam (T : \Type) => X -> T) e (\lam (x : X) => x)) x
+
+\func transportTerm' {X Y : \Type} (e : X = Y) (x : X) : Y =>  coe (@ e) x right
