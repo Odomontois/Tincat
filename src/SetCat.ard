@@ -30,7 +30,8 @@
 
 \func func_eq_elim {X Y : \Type}
                    (f g : X -> Y)
-                   (e : f = g) : \Pi (x : X) -> f x = g x => {?}
+                   (e : f = g) : \Pi (x : X) -> f x = g x =>
+  \lam x => pmap {X -> Y} {Y} (\lam u => u x) e
 
 \func func_id_right {X Y : \Type}
                     (f : X -> Y) : func_comp f (id X) = f =>
