@@ -20,12 +20,14 @@
         | nil => idp
         | (:: h la') => pmap (:: h) (assoc la' lb lc)
 
+
+    \instance listMonoid {A : \Type}: Monoid (List A)
+        | empty => nil
+        | combine => List.++
+        | left_unit a => idp
+        | right_unit => List.++nil
+        | associativity  => List.assoc
   }
 
-\instance listMonoid {A : \Type}: Monoid (List A)
-    | empty => nil
-    | combine => List.++
-    | left_unit a => idp
-    | right_unit => List.++nil
-    | associativity  => List.assoc
+
 
