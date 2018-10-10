@@ -1,5 +1,7 @@
 \import Cat
+\import Product
 \import Unique
+\import lib.Data.Empty
 \import lib.Data.Unit
 \import lib.HLevel
 \import lib.Paths
@@ -53,6 +55,11 @@
 
 \func one : Set => \new Set Unit unit_isSet
 
+\func empty_isSet : isSet Empty =>
+  \lam (x y : Empty) => absurd {\Pi (e1 e2 : x = y) -> e1 = e2} x
+
+\func empty : Set => \new Set Empty empty_isSet
+
 \func one_is_terminal : Terminal => \new Terminal {
   | C => SetC
   | one => one
@@ -60,5 +67,28 @@
     | T => X ->> {SetC} one
     | t => \lam (x : X.S) => unit
     | prop => \lam m1 m2 => func_eq m1 m2 (\lam x => unit_isProp (m1 x) (m2 x))
+    }
+  }
+
+\func product_isSet (X : Set)(Y : Set) : isSet (\Sigma X.S Y.S) =>
+  \lam (p1 p2 : \Sigma X.S Y.S) =>
+  \lam (e1 e2 : p1 = p2) =>
+  \let z : e1 = e2 => {?}
+  \in z
+
+\func set_product (A : Set) (B : Set) : Product2 {SetC} =>
+  \let p : Set => \new Set {
+    | S => \Sigma (x : A.S) (y : B.S)
+    | is_set => product_isSet A B
+    } \in
+  \let p1 : p.S -> A.S => \lam s => s.1 \in
+  \let p2 : p.S -> B.S => \lam s => s.2 \in
+  \new Product2 {SetC} A B p p1 p2 {
+  | prod => \lam (X : Set) (q1 : X.S -> A.S) (q2 : X.S -> B.S) => \new Unique {
+    | A => X.S -> p.S
+    | B => \lam pr => \Sigma (func_comp p1 pr = q1) (func_comp p2 pr = q2)
+    | elem => {?}
+    | prop => {?}
+    | unique => {?}
     }
   }
