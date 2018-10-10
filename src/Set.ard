@@ -35,4 +35,7 @@
 \func functExt {A B : \Type} {f f' : A -> B} (eq : \Pi (a : A) -> f a = f' a) : f = f' =>
     funExt (\lam _ => B) f f' eq
 
-
+\func functExtElim {X Y : \Type}
+                   {f g : X -> Y}
+                   (e : f = g) : \Pi (x : X) -> f x = g x =>
+  \lam x => pmap {X -> Y} {Y} (\lam u => u x) e
