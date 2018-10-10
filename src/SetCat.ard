@@ -1,6 +1,9 @@
 \import Cat
+\import Unique
+\import lib.Data.Unit
 \import lib.HLevel
 \import lib.Paths
+\import Terminal
 
 \record Set (S : \Type)
             (is_set : isSet S)
@@ -46,4 +49,16 @@
   | l_unit => \lam {x y : Set} => func_id_left {x.S} {y.S}
   | r_unit => \lam {x y : Set} => func_id_right {x.S} {y.S}
   | assoc => \lam {a b c d : Set} => func_assoc {a.S} {b.S} {c.S} {d.S}
+  }
+
+\func one : Set => \new Set Unit unit_isSet
+
+\func one_is_terminal : Terminal => \new Terminal {
+  | C => SetC
+  | one => one
+  | terminal => \lam (X : Set) => \new Singleton {
+    | T => X ->> {SetC} one
+    | t => \lam (x : X.S) => unit
+    | prop => \lam m1 m2 => func_eq m1 m2 (\lam x => unit_isProp (m1 x) (m2 x))
+    }
   }

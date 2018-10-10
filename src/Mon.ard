@@ -5,6 +5,21 @@
 \import lib.Paths
 \import SetCat
 
+-- TODO: move to Set or Util
+\func depPairSet {A : \Type}
+                 (B : A -> \Type)
+                 (p1 : isSet A)
+                 (p2 : \Pi (a : A) -> isSet (B a)) : isSet (\Sigma (a : A) (B a)) => {?}
+
+\func funSet {A : \Type} (B : A -> \Type) (bSet : \Pi (a : A) -> isSet (B a)) : isSet (\Pi (a : A) -> B a) => {?}
+
+\func eqSet {A : \Type} (bSet : isSet A) (x y : A) : isSet (x = y) => {?}
+
+\func type_curry_eq {A B : \Type}(C : \Pi (a : A) (b : B) -> \Type) : (\Pi (s : \Sigma A B) -> C s.1 s.2) = (\Pi (a : A) (b : B) -> C a b) => {?}
+
+\func transportProp {X Y : \Type}(e : X = Y)(f : \Type -> \Type)(s : f X) : f Y => {?}
+------------------------------------------------------------------------------------------------------------------------
+
 \record Monoid (Set : \Type)
                (obSet : SetCat.Set Set)
                (comp : \Pi Set -> Set -> Set)
@@ -13,13 +28,20 @@
 
 \func \infix 6 |+| {m : Monoid} (a b : m.Set) : m.Set => m.comp a b
 
+\func struct {m1 m2 : Monoid} (f : m1.Set -> m2.Set) (x y : m1.Set) =>
+  f (x |+| {m1} y) = f (x) |+| {m2} f (y)
+
 \record Homo {m1 m2 : Monoid}
              (f : m1.Set -> m2.Set)
-             (keep : \Pi (x y : m1.Set) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y))
+             (keep : \Pi (x y : m1.Set) -> struct {m1} {m2} f x y)
 
 \func keep_set {m1 m2 : Monoid}
-               (f : m1.Set -> m2.Set) : isSet (\Pi (x y : m1.Set) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y)) => {?}
---  funSet {\Sigma m1.Set m1.Set} (\lam x y => f (x |+| {m1} y) = f (x) |+| {m2} f (y)))
+               (f : m1.Set -> m2.Set) : isSet (\Pi (x y : m1.Set) -> struct {m1} {m2} f x y) =>
+  \let z : isSet (\Pi (s : \Sigma m1.Set m1.Set) -> struct {m1} {m2} f s.1 s.2) =>
+    funSet {\Sigma m1.Set m1.Set}
+           (\lam s => struct {m1} {m2} f s.1 s.2)
+           (\lam s => eqSet {m2.Set} (m2.obSet.is_set) (f (s.1 |+| {m1} s.2)) (f (s.1) |+| {m2} f (s.2))) \in
+  transportProp (type_curry_eq (\lam (x y : m1.Set) => struct {m1} {m2} f x y)) (isSet) z
 
 \func id_homo {m : Monoid} : Homo {m} {m} \cowith
   | f => id m.Set
@@ -32,13 +54,6 @@
     | keep => \lam (x y : a.Set) =>
       pmap h1.f (h2.keep x y) *> h1.keep (h2.f x) (h2.f y)
   }
-
---\func id_homo_left {m1 m2 : Monoid}
---                   (h : Homo {m1} {m2}) : (homo_comp {m1} {m1} {m2} h id_homo) = h =>
---  pmap2 {m1.Ob -> m2.Ob} {\Pi (f : m1.Ob -> m2.Ob) (x y : m1.Ob) -> f (x |+| {m1} y) = f (x) |+| {m2} f (y)}
---        (\lam f keep => Homo f (keep f)) (id) {?} \where {
---
---        }
 
 \func Mon : Cat \cowith {
   | Ob => Monoid
