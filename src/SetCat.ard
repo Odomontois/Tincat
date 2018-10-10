@@ -23,24 +23,28 @@
   \let z : e1 = e2 => {?}
   \in z
 
-\func func_eq {X Y : \Type}
-              (f g : X -> Y)
-              (eq : \Pi (x : X) -> f x = g x) : f = g =>
+\func func_eq_intr {X Y : \Type}
+                   (f g : X -> Y)
+                   (eq : \Pi (x : X) -> f x = g x) : f = g =>
   funExt {X} (\lam _ => Y) f g eq
+
+\func func_eq_elim {X Y : \Type}
+                   (f g : X -> Y)
+                   (e : f = g) : \Pi (x : X) -> f x = g x => {?}
 
 \func func_id_right {X Y : \Type}
                     (f : X -> Y) : func_comp f (id X) = f =>
-  func_eq (func_comp f (id X)) f (\lam x => qed (f x))
+  func_eq_intr (func_comp f (id X)) f (\lam x => qed (f x))
 
 \func func_id_left {X Y : \Type}
                    (f : X -> Y) : func_comp (id Y) f  = f =>
-  func_eq (func_comp (id Y) f) f (\lam x => qed (f x))
+  func_eq_intr (func_comp (id Y) f) f (\lam x => qed (f x))
 
 \func func_assoc {A B C D : \Type}
                  (f : C -> D)
                  (g : B -> C)
                  (h : A -> B) : func_comp f (func_comp g h) = func_comp (func_comp f g) h =>
-  func_eq (func_comp f (func_comp g h)) (func_comp (func_comp f g) h) (\lam x => qed (f (g (h (x)))))
+  func_eq_intr (func_comp f (func_comp g h)) (func_comp (func_comp f g) h) (\lam x => qed (f (g (h (x)))))
 
 \func SetC : Cat \cowith {
   | Ob => Set
@@ -66,7 +70,7 @@
   | terminal => \lam (X : Set) => \new Singleton {
     | T => X ->> {SetC} one
     | t => \lam (x : X.S) => unit
-    | prop => \lam m1 m2 => func_eq m1 m2 (\lam x => unit_isProp (m1 x) (m2 x))
+    | prop => \lam m1 m2 => func_eq_intr m1 m2 (\lam x => unit_isProp (m1 x) (m2 x))
     }
   }
 
@@ -84,11 +88,19 @@
   \let p1 : p.S -> A.S => \lam s => s.1 \in
   \let p2 : p.S -> B.S => \lam s => s.2 \in
   \new Product2 {SetC} A B p p1 p2 {
-  | prod => \lam (X : Set) (q1 : X.S -> A.S) (q2 : X.S -> B.S) => \new Unique {
+  | prod => \lam (X : Set) (q1 : X.S -> A.S) (q2 : X.S -> B.S) =>
+  \let m : X.S -> p.S => \lam x => (q1 x, q2 x) \in
+  \new Unique {
     | A => X.S -> p.S
     | B => \lam pr => \Sigma (func_comp p1 pr = q1) (func_comp p2 pr = q2)
-    | elem => {?}
-    | prop => {?}
-    | unique => {?}
+    | elem => m
+    | prop => (func_eq_intr (func_comp p1 m) (q1) (\lam x => qed (q1 x)), func_eq_intr (func_comp p2 m) (q2) (\lam x => qed (q2 x)))
+    | unique => \lam f => \lam s =>
+      func_eq_intr m f (\lam x =>
+        \let fx => f x \in
+        \let fst : fx.1 = q1 x => (func_eq_elim (func_comp p1 f) q1 s.1) x \in
+        \let snd : fx.2 = q2 x => (func_eq_elim (func_comp p2 f) q2 s.2) x \in
+        inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
+      )
     }
   }
