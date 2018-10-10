@@ -1,0 +1,98 @@
+\import Cat
+\import Product
+\import Set
+\import Unique
+\import lib.Data.Empty
+\import lib.Data.Unit
+\import lib.HLevel
+\import lib.Paths
+\import Terminal
+
+\record Set (S : \Type)
+            (is_set : isSet S)
+
+\func id (X : \Type) => \lam (x : X) => x
+
+\func func_comp {X Y Z : \Type}
+                (f : Y -> Z)
+                (g : X -> Y) : X -> Z =>
+  \lam (x : X) => f (g (x))
+
+\func func_is_set (X Y : Set) : isSet (X.S -> Y.S) =>
+  \lam (f g : X.S -> Y.S) =>
+  \lam (e1 e2 : f = g) =>
+  \let z : e1 = e2 => {?}
+  \in z
+
+\func func_id_right {X Y : \Type}
+                    (f : X -> Y) : func_comp f (id X) = f =>
+  functExt (\lam x => qed (f x))
+
+\func func_id_left {X Y : \Type}
+                   (f : X -> Y) : func_comp (id Y) f  = f =>
+  functExt (\lam x => qed (f x))
+
+\func func_assoc {A B C D : \Type}
+                 (f : C -> D)
+                 (g : B -> C)
+                 (h : A -> B) : func_comp f (func_comp g h) = func_comp (func_comp f g) h =>
+  functExt (\lam x => qed (f (g (h (x)))))
+
+\func SetC : Cat \cowith {
+  | Ob => Set
+  | Hom => \lam (X Y : Set) => X.S -> Y.S
+  | homSet => \lam {X Y : Set} => func_is_set X Y
+  | id => \lam x => x
+  | comp => \lam {x y z : Set} => func_comp {x.S} {y.S} {z.S}
+  | l_unit => \lam {x y : Set} => func_id_left {x.S} {y.S}
+  | r_unit => \lam {x y : Set} => func_id_right {x.S} {y.S}
+  | assoc => \lam {a b c d : Set} => func_assoc {a.S} {b.S} {c.S} {d.S}
+  }
+
+\func one : Set => \new Set Unit unit_isSet
+
+\func empty_isSet : isSet Empty =>
+  \lam (x y : Empty) => absurd {\Pi (e1 e2 : x = y) -> e1 = e2} x
+
+\func empty : Set => \new Set Empty empty_isSet
+
+\func one_is_terminal : Terminal => \new Terminal {
+  | C => SetC
+  | one => one
+  | terminal => \lam (X : Set) => \new Singleton {
+    | T => X ->> {SetC} one
+    | t => \lam (x : X.S) => unit
+    | prop => \lam m1 m2 => functExt (\lam x => unit_isProp (m1 x) (m2 x))
+    }
+  }
+
+\func product_isSet (X : Set)(Y : Set) : isSet (\Sigma X.S Y.S) =>
+  \lam (p1 p2 : \Sigma X.S Y.S) =>
+  \lam (e1 e2 : p1 = p2) =>
+  \let z : e1 = e2 => {?}
+  \in z
+
+\func set_product (A : Set) (B : Set) : Product2 {SetC} =>
+  \let p : Set => \new Set {
+    | S => \Sigma (x : A.S) (y : B.S)
+    | is_set => product_isSet A B
+    } \in
+  \let p1 : p.S -> A.S => \lam s => s.1 \in
+  \let p2 : p.S -> B.S => \lam s => s.2 \in
+  \new Product2 {SetC} A B p p1 p2 {
+  | prod => \lam (X : Set) (q1 : X.S -> A.S) (q2 : X.S -> B.S) =>
+  \let m : X.S -> p.S => \lam x => (q1 x, q2 x) \in
+  \new Unique {
+    | A => X.S -> p.S
+    | B => \lam pr => \Sigma (func_comp p1 pr = q1) (func_comp p2 pr = q2)
+    | elem => m
+    | prop => (functExt (\lam x => qed (q1 x)), functExt (\lam x => qed (q2 x)))
+    | unique => \lam f => \lam s =>
+      functExt (\lam x =>
+        \let fx => f x \in
+        \let fst : fx.1 = q1 x => (functExtElim s.1) x \in
+        \let snd : fx.2 = q2 x => (functExtElim s.2) x \in
+        inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
+      )
+    }
+  }

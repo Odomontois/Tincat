@@ -1,4 +1,5 @@
 \import Cat
+\import Util
 \import lib.Paths
 
 \record Iso {C : Cat}
@@ -15,10 +16,7 @@
 \func eq_iso {C : Cat}
              (a b : C.Ob)
              {e : a = b} : a ~= {C} b =>
-  tr (pmap (~= {C} a) e) (iso_refl {C} {a}) \where {
-    \func tr {X Y : \Type} (e : X = Y) (x : X) : Y =>
-        (transport (\lam (T : \Type) => X -> T) e (\lam (x : X) => x)) x
-  }
+  transportTerm (pmap (~= {C} a) e) (iso_refl {C} {a})
 
 \func iso_refl {C : Cat}
                {a : C.Ob} : a ~= a =>
