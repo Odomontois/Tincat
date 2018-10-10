@@ -1,7 +1,8 @@
+\import Set
 \import lib.Paths
+\import prog.List
 \import prog.Monoid
 \import prog.funs
-
 
 
 \class Scala[_] (T : \Type ) (F : \Type -> \Type )
@@ -36,7 +37,7 @@
     | right_unit _ => idp
     | associativity _ _ _ => idp
 
-\data State (s : \Type) | State s
+\data State (S : \Type) | State
 \instance stateMonad (S : \Type) : Monad (State S)
     | F a => S -> \Sigma S a
     | pure x s => (s, x)
@@ -45,7 +46,7 @@
     | right_unit _ => idp
     | associativity _ _ _ => idp
 
-\data Reader (r : \Type) | Reader r
+\data Reader (R : \Type) | Reader
 \instance  readerMonad (R : \Type ) : Monad (Reader R)
     | F a => R -> a
     | pure x a => x
@@ -55,16 +56,38 @@
     | associativity _ _ _ => idp
 
 \open Semigroup
-\data Writer (w : \Type) | Writer w
-\instance  writerMonad {w : \Type} {wmon : Monoid w} : Monad (Writer w)
-    | F a => \Sigma w a
+\data Writer (w : \Type) | Writer
+\instance  writerMonad {W : \Type} {wmon : Monoid W} : Monad (Writer W)
+    | F a => \Sigma W a
     | pure x => (wmon.empty, x)
     | flatMap fa f => \let fb => f (fa.2) \in (fa.1 |+| fb.1, fb.2)
-    | left_unit {_} {B} a f => \let fb => f a \in SigmaExt (const B) (wmon.empty |+| fb.1, fb.2) fb (wmon.left_unit fb.1) idp
-    | right_unit {A} fa => SigmaExt (const A) (fa.1 |+| wmon.empty, fa.2) fa (wmon.right_unit fa.1) idp
-    | associativity {_} {_} {C} fa f g => \let | fb => f fa.2 | fc => g fb.2 \in
-            SigmaExt (const C) (fa.1 |+| (fb.1 |+| fc.1), fc.2)  ((fa.1 |+| fb.1) |+| fc.1, fc.2)
-            (inv (wmon.associativity fa.1 fb.1 fc.1)) idp
+    | left_unit {_} {B} a f => \let fb => f a \in pairExt (wmon.left_unit fb.1) idp
+    | right_unit {A} fa => pairExt (wmon.right_unit fa.1) idp
+    | associativity {_} {_} {C} fa f g => \let | fb => f fa.2 | fc => g fb.2
+                                          \in pairExt (inv (wmon.associativity fa.1 fb.1 fc.1)) idp
+
+
+\data ReaderT (X R : \Type ) | ReaderT
+\instance readerTMonad {X r : \Type} {XM : Monad X} : Monad (ReaderT X r)
+    | F a => r -> XM.F a
+    | pure a => const (XM.pure a)
+    | flatMap fa f r => XM.flatMap (fa r) (\lam a => f a r)
+    | left_unit {_} {B} a f => functExt (\lam r => XM.left_unit a (\lam a => f a r))
+    | right_unit {A} fa => functExt  (\lam r => XM.right_unit (fa r))
+    | associativity {A} {B} {C} fa f g => functExt (\lam r => XM.associativity (fa r) (\lam a => f a r) (\lam b => g b r))
+
+\data StateT (X S : \Type) | StateT
+\instance stateTMonad {X s : \Type } {XM : Monad X} : Monad (StateT X s)
+  | F a => s -> XM.F (\Sigma s a)
+  | pure a s => XM.pure (s, a)
+  | flatMap fa f s => XM.flatMap (fa s) (\lam sa => f sa.2 sa.1)
+  | left_unit a f => functExt (\lam s => XM.left_unit (s, a) (\lam sa => f sa.2 sa.1))
+  | right_unit fa => functExt (\lam s => XM.right_unit (fa s) )
+  | associativity fa f g => functExt (\lam s => XM.associativity (fa s) (\lam sa => f sa.2 sa.1) (\lam sb => g sb.2 sb.1) )
+
+
+
+
 
 
 

@@ -26,3 +26,11 @@
     (beq2 : b a' = b' a') :
     transport (\lam aa => b aa = b' aa ) aeq beq1 = beq2 =>
        b_set a' (b a') (b' a') (transport (\lam aa => (b aa = b' aa)) aeq beq1) beq2
+
+--simple form of SigmaExt
+\func pairExt {A B : \Type} {a a' : A} {b b' : B} (eqA : a = a') (eqB : b = b') : ((a,b) = (a',b')) =>
+    SigmaExt (\lam _ => B) (a, b) (a', b') eqA eqB
+
+--simple form of funExt
+\func functExt {A B : \Type} {f f' : A -> B} (eq : \Pi (a : A) -> f a = f' a) : f = f' =>
+    funExt (\lam _ => B) f f' eq
