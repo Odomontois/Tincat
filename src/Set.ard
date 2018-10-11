@@ -20,7 +20,7 @@
     (B : A -> \Type)
     (b_set : \Pi (a : A) -> isSet (B a))
     (b b' : \Pi (a : A) -> B a)
-    (a a' : A)
+    {a a' : A}
     (aeq : a = a')
     (beq1 : b a = b' a)
     (beq2 : b a' = b' a') :

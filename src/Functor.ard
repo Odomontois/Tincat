@@ -15,7 +15,7 @@
 \record Functor \extends  FunctorIdLaw, FunctorCompLaw
                 \where {
 
-        \coerce struct (F : Functor) : FunctorStruct => F
+        \coerce struct (F : Functor): FunctorStruct F.C F.D F.ob F.map => \new FunctorStruct F.C F.D F.ob F.map
 
         \func Id {C : Cat} : Functor \cowith
             | C => C
@@ -34,7 +34,16 @@
          | id => \lam {a} => pmap F.map G.id *> F.id
          | comp => \lam {a} {b} {c} f g => F.comp (G.map f) (G.map g) *> pmap F.map (G.comp f g)
 
-        \func equiv {C D : Cat} (F G : Functor C D) (eq : struct F = struct G) : F = G => {?}
+        \func equiv {C D : Cat} (ob : C.Ob -> D.Ob )
+                     (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))  (F G : Functor C D ob map) : F = G =>
+            \let  | idEq {a : C.Ob} =>
+                        D.homSet (map (C.id {a})) (D.id {ob a}) F.id G.id
+                  | compEq {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) =>
+                        D.homSet (D.comp (map f) (map g)) (map (C.comp f g)) (F.comp f g) (G.comp f g)
+            \in path ( \lam i => \new Functor C D ob map {
+                  | id {a : C.Ob} => idEq @ i
+                  | comp {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => compEq f g @ i
+            })
 
        -- лолкот гарантирует
         \func l_unit {C D : Cat} (F : Functor C D) : Comp {C} {D} {D} Id F = F => {?}
