@@ -23,3 +23,10 @@
       | false => 1
       | true => true
     }
+
+\record X (A : \Type) (B : A -> A)
+
+\func lol (A : \Type) (x : X A) : X A (x.B) => \new  x
+\func lol' (A : \Type) (x : X A) : \Sigma (x' : X A (x.B)) (x = x') =>
+    \let x' => \new X x.A x.B
+    \in (x', idp)

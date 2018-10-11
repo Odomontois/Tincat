@@ -35,7 +35,7 @@
          | comp => \lam {a} {b} {c} f g => F.comp (G.map f) (G.map g) *> pmap F.map (G.comp f g)
 
         \func equiv {C D : Cat} (ob : C.Ob -> D.Ob )
-                     (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))  (F G : Functor C D ob map) : F = G =>
+                     (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))  (F G : Functor C D ob map) : F = {Functor C D} G =>
             \let  | idEq {a : C.Ob} =>
                         D.homSet (map (C.id {a})) (D.id {ob a}) F.id G.id
                   | compEq {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) =>
@@ -46,5 +46,24 @@
             })
 
        -- лолкот гарантирует
-        \func l_unit {C D : Cat} (F : Functor C D) : Comp {C} {D} {D} Id F = F => {?}
+        \func l_unit {C D : Cat} (F : Functor C D) : Comp {C} {D} {D} Id F = F =>
+            \let | fcomp => Comp {C} {D} {D} Id F
+                  | F' => \new Functor C D F.ob F.map F.id F.comp
+                  | eq : fcomp = F' => equiv F.ob F.map fcomp F'
+                  | eq2 : F' = F => idp
+            \in eq *> eq2
+
+        \func r_unit {C D : Cat} (F : Functor C D) : Comp {C} {C} {D} F Id = F =>
+            \let | fcomp => Comp {C} {C} {D} F Id
+                  | F' => \new Functor C D F.ob F.map F.id F.comp
+                  | eq : fcomp = F' => equiv F.ob F.map fcomp F'
+                  | eq2 : F' = F => idp
+            \in eq *> eq2
+
+        \func assoc {A B C D : Cat} (F : Functor C D) (G : Functor B C) (H : Functor A B) :
+            Comp (Comp {B} {C} {D} F G) H = {Functor A D} Comp F (Comp {A} {B} {C} G H)  =>
+             \let | left => Comp {A} {B} {D} (Comp {B} {C} {D} F G) H
+                   | right => Comp {A} {C} {D} F (Comp {A} {B} {C} G H)
+             \in equiv {A} {D} (Functor.ob {left}) (Functor.map {left}) left right
     }
+
