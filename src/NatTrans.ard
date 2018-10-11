@@ -1,0 +1,33 @@
+\import Cat
+\import Functor
+\import lib.Paths
+
+
+
+\record NatTrans {C D : Cat} (F G : Functor C D)
+                  (trans : \Pi {a : C.Ob} -> F.ob a ->> {D} G.ob a)
+                  (naturality : \Pi {a b : C.Ob} (f : a ->> {C} b) -> trans cmp {D} F.map f = G.map f cmp {D} trans )
+                  \where  {
+                     \func id {C D : Cat} (F : Functor C D) : F ~> F =>
+                         \new NatTrans F F  {
+                           | trans {a} => D.id
+                           | naturality f => \let ff => F.map f \in  D.l_unit ff *> inv (D.r_unit ff)
+                           }
+
+                     \func comp {C D : Cat} (F G H : Functor C D) (alpha : G ~> H) (beta : F ~> G) : F ~> H =>
+                        \new NatTrans F H {
+                          | trans {a} => alpha.trans cmp {D} beta.trans
+                          | naturality f =>
+                               D.assoc alpha.trans beta.trans (F.map f) *>
+                               pmap (D.comp alpha.trans) (beta.naturality f) *>
+                               inv (D.assoc alpha.trans (G.map f) beta.trans) *>
+                               pmap (\lam h => D.comp h beta.trans) (alpha.naturality f) *>
+                               D.assoc (H.map f) alpha.trans beta.trans
+
+                        }
+
+
+                  }
+
+
+\func \infix 7 ~> {C D : Cat} (F G : Functor C D) => NatTrans F G
