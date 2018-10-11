@@ -14,7 +14,7 @@
                            | naturality f => \let ff => F.map f \in  D.l_unit ff *> inv (D.r_unit ff)
                            }
 
-                     \func comp {C D : Cat} (F G H : Functor C D) (alpha : G ~> H) (beta : F ~> G) : F ~> H =>
+                     \func comp {C D : Cat} {F G H : Functor C D} (alpha : G ~> H) (beta : F ~> G) : F ~> H =>
                         \new NatTrans F H {
                           | trans {a} => alpha.trans cmp {D} beta.trans
                           | naturality f =>
@@ -23,8 +23,33 @@
                                inv (D.assoc alpha.trans (G.map f) beta.trans) *>
                                pmap (\lam h => D.comp h beta.trans) (alpha.naturality f) *>
                                D.assoc (H.map f) alpha.trans beta.trans
-
                         }
+
+                     \func equiv {C D : Cat} (F G : Functor C D)
+                                  (trans : \Pi (a : C.Ob) -> (F.ob a ->> {D} G.ob a) )
+                                  (alpha beta : NatTrans F G (\lam {a} => trans a)) : alpha = {NatTrans F G} beta =>
+                         \let natEq {a b : C.Ob} (f : a ->> {C }b) =>
+                             D.homSet (trans b cmp {D} F.map f) (G.map f cmp {D} trans a)
+                             (alpha.naturality f) (beta.naturality f)
+                         \in path (\lam i =>
+                           \new NatTrans F G {
+                             | trans {a} => trans a
+                             | naturality f => natEq f @ i
+                           })
+
+                     \func l_unit {C D : Cat} (F G : Functor C D) (alpha : F ~> G) : comp (id G) alpha = alpha =>
+                        \let | cig : NatTrans => comp (id G) alpha
+                              | alpha' => \new NatTrans {C} {D} F G {
+                               | trans => alpha.trans
+                               | naturality => alpha.naturality
+                              }
+                              | aeq : alpha = {NatTrans F G} alpha' => idp
+                             | natEq => funExt (\lam (a : C.Ob) => F.ob a ->> {D} G.ob a) (\lam a => cig.trans {a}) (\lam a => alpha.trans {a})
+                                        (\lam a => D.l_unit (alpha.trans {a}))
+                             | eqq (i : I) => \Pi (a : NatTrans F G (\lam {a} => (inv natEq @ i) a)) (b : NatTrans F G alpha.trans) -> a = {NatTrans F G} b
+                        \in coe eqq (equiv F G (\lam a => alpha.trans {a})) right cig alpha' *> inv aeq
+
+
 
 
                   }

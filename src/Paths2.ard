@@ -1,0 +1,2 @@
+\func funExtImp {A : \Type} (B : A -> \Type) (f g : \Pi {x : A} -> (B x)) (h : \Pi (x : A) -> (f {x} = g {x})) : f = g
+  => path (\lam i {a : A} => h a @ i)
