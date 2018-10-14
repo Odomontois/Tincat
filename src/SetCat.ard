@@ -19,10 +19,7 @@
   \lam (x : X) => f (g (x))
 
 \func func_is_set (X Y : Set) : isSet (X.S -> Y.S) =>
-  \lam (f g : X.S -> Y.S) =>
-  \lam (e1 e2 : f = g) =>
-  \let z : e1 = e2 => {?}
-  \in z
+  piSet Y.is_set
 
 \func func_id_right {X Y : \Type}
                     (f : X -> Y) : func_comp f (id X) = f =>
@@ -67,10 +64,7 @@
   }
 
 \func product_isSet (X : Set)(Y : Set) : isSet (\Sigma X.S Y.S) =>
-  \lam (p1 p2 : \Sigma X.S Y.S) =>
-  \lam (e1 e2 : p1 = p2) =>
-  \let z : e1 = e2 => {?}
-  \in z
+  pairSet X.is_set Y.is_set
 
 \func set_product (A : Set) (B : Set) : Product2 {SetC} =>
   \let p : Set => \new Set {
