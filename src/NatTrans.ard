@@ -15,14 +15,28 @@
 
                      \func comp {C D : Cat} {F G H : Functor C D} (alpha : G ~> H) (beta : F ~> G) : F ~> H =>
                         \new NatTrans F H {
-                          | trans {a} => alpha.trans cmp {D} beta.trans
-                          | naturality f =>
+                            | trans {a} => alpha.trans cmp {D} beta.trans
+                            | naturality f =>
                                D.assoc alpha.trans beta.trans (F.map f) *>
                                pmap (D.comp alpha.trans) (beta.naturality f) *>
                                inv (D.assoc alpha.trans (G.map f) beta.trans) *>
                                pmap (\lam h => D.comp h beta.trans) (alpha.naturality f) *>
                                D.assoc (H.map f) alpha.trans beta.trans
                         }
+
+                     \func hcomp {C D E : Cat} {F G : Functor D E} {H K : Functor C D}
+                                 (alpha : F ~> G) (beta : H ~> K) :
+                                 (Functor.Comp F H) ~> {C} {E} (Functor.Comp G K) =>
+                        \new NatTrans {C} {E} (Functor.Comp F H) (Functor.Comp G K) {
+                           | trans {a} => alpha.trans cmp {E} F.map beta.trans
+                           | naturality f => E.assoc alpha.trans (F.map beta.trans) (F.map (H.map f)) *>
+                                             pmap (E.comp alpha.trans) (F.comp beta.trans (H.map f)) *>
+                                             pmap (E.comp alpha.trans) (pmap F.map (beta.naturality f)) *>
+                                             pmap (E.comp alpha.trans) (inv (F.comp (K.map f) beta.trans)) *>
+                                             (inv (E.assoc alpha.trans (F.map (K.map f)) (F.map beta.trans))) *>
+                                             pmap (\lam h => E.comp h (F.map beta.trans)) (alpha.naturality (K.map f)) *>
+                                             E.assoc (G.map (K.map f)) alpha.trans (F.map beta.trans)
+                           }
 
                      \func equiv {C D : Cat} (F G : Functor C D)
                                   (trans : \Pi (a : C.Ob) -> (F.ob a ->> {D} G.ob a) )
