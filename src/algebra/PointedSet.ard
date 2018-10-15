@@ -1,0 +1,41 @@
+\import Cat
+\import Set
+\import SetCat
+\import lib.Equiv
+\import lib.HLevel
+\import lib.Paths
+
+\record Pointed (base : S) \extends Set
+  \where {
+    \record homo {p1 p2 : Pointed}
+                 (f : p1.S -> p2.S)
+                 (struct : f p1.base = p2.base)
+  }
+
+\func homo_isSet (p1 p2 : Pointed) : isSet (Pointed.homo {p1} {p2}) =>
+  \let homoSigma => \Sigma (f : p1.S -> p2.S) (f p1.base = p2.base) \in
+  \let sig : isSet homoSigma =>
+    sigmaSet {p1.S -> p2.S} {\lam f => f p1.base = p2.base} (func_is_set p1 p2)
+      (\lam f => isProp=>isSet (f p1.base = p2.base) (p2.is_set (f p1.base) p2.base)) \in
+  \let sect : Section {Pointed.homo {p1} {p2}} {homoSigma} => \new Section {
+  | A => Pointed.homo {p1} {p2}
+  | B => homoSigma
+  | f => \lam (x : Pointed.homo {p1} {p2}) => (x.f, x.struct)
+  | ret => \lam b => \new Pointed.homo {p1} {p2} {
+    | f => b.1
+    | struct => b.2
+    }
+  | ret_f => qed
+  }
+  \in HLevel_-2+1=>HLevel_-1 (Pointed.homo {p1} {p2}) 1
+        (HLevel-retracts sect {2} ((HLevel_-1=>HLevel_-2+1 homoSigma 1 sig)))
+
+\func PointedCat : Cat {Pointed} \cowith {
+  | Hom => \lam p1 p2 => Pointed.homo {p1} {p2}
+  | homSet => \lam {p1} {p2} => homo_isSet p1 p2
+  | id => {?}
+  | comp => {?}
+  | l_unit => {?}
+  | r_unit => {?}
+  | assoc => {?}
+  }
