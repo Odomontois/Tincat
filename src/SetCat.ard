@@ -56,13 +56,19 @@
 
 \func empty : Set => \new Set Empty empty_isSet
 
-\func one_is_terminal : Terminal => \new Terminal {
-  | C => SetC
-  | one => one
+\func one_is_terminal : Terminal {SetC} one \cowith {
   | terminal => \lam (X : Set) => \new Singleton {
     | T => X ->> {SetC} one
     | t => \lam (x : X.S) => unit
     | prop => \lam m1 m2 => functExt (\lam x => unit_isProp (m1 x) (m2 x))
+    }
+  }
+
+\func empty_is_initial : Initial {SetC} empty \cowith {
+  | initial => \lam X => \new Singleton {
+    | T => empty ->> {SetC} X
+    | t => \lam a => absurd a
+    | prop => \lam m1 m2 => functExt (\lam x => absurd x)
     }
   }
 
