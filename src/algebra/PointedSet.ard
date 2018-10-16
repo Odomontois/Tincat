@@ -22,9 +22,19 @@
       | struct => pmap f.h g.struct *> f.struct
       }
 
-    \func l_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {B} {B} id f = f => {?}
+    \func l_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {B} {B} id f = f =>
+      \let composed : Homo {A} {B} => comp {A} {B} {B} id f \in
+      path (\lam i =>
+        \new Homo ((Set.l_unit f.h) @ i)
+                  ((B.is_set (f.h A.base) B.base) composed.struct f.struct @ i)
+      )
 
-    \func r_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {A} {B} f id = f => {?}
+    \func r_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {A} {B} f id = f =>
+      \let composed : Homo {A} {B} => comp {A} {A} {B} f id \in
+      path (\lam i =>
+        \new Homo ((Set.l_unit f.h) @ i)
+                  ((B.is_set (f.h A.base) B.base) composed.struct f.struct @ i)
+      )
 
 --    \func assoc {A B C D : Pointed}
 --                (e : Homo {C} {D})
