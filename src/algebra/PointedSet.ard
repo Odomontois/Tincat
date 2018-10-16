@@ -22,6 +22,11 @@
       | struct => pmap f.h g.struct *> f.struct
       }
 
+    \func homo_eq {A B : Pointed}(h : A.S -> B.S)(f g : Homo {A} {B} h) : f = g =>
+      path (\lam i =>
+        \new Homo h (((B.is_set (h A.base) B.base) f.struct g.struct) @ i)
+      )
+
     \func l_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {B} {B} id f = f =>
       \let composed : Homo {A} {B} => comp {A} {B} {B} id f \in
       path (\lam i =>
@@ -36,11 +41,12 @@
                   ((B.is_set (f.h A.base) B.base) composed.struct f.struct @ i)
       )
 
---    \func assoc {A B C D : Pointed}
---                (e : Homo {C} {D})
---                (f : Homo {B} {C})
---                (g : Homo {A} {B}) : comp {A} {B} {D} (comp {B} {C} {D} e f) g = comp {A} {C} {D} e (comp {A} {B} {C} f g) => {?}
+    \func assoc {A B C D : Pointed}
+                (e : Homo {C} {D})
+                (f : Homo {B} {C})
+                (g : Homo {A} {B}) : comp (comp {B} {C} {D} e f) g = {Homo {A} {D}} comp e (comp {A} {B} {C} f g) => {?}
   }
+
 
 \func homo_isSet (p1 p2 : Pointed) : isSet (Pointed.Homo {p1} {p2}) =>
   \let | homoSigma => \Sigma (f : p1.S -> p2.S) (f p1.base = p2.base)
@@ -66,5 +72,5 @@
   | comp => \lam f g => Pointed.comp f g
   | l_unit => \lam f => Pointed.l_unit f
   | r_unit => \lam f => Pointed.r_unit f
-  | assoc => {?}
+  | assoc => \lam {A} {B} {C} {D} f g h => Pointed.assoc {A} {B} {C} {D} f g h
   }
