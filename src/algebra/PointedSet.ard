@@ -10,35 +10,38 @@
   \where {
     \record Homo {A B : Pointed}
                  (h : A.S -> B.S)
-                 (struct : h A.base = B.base)
+                 (equ : h A.base = B.base)
 
     \func id {A : Pointed} : Homo {A} {A} \cowith {
       | h => Set.id A.S
-      | struct => idp
+      | equ => idp
       }
 
     \func comp {A B C : Pointed} (f : Homo {B} {C}) (g : Homo {A} {B}) : Homo {A} {C} \cowith {
       | h => Set.comp f.h g.h
-      | struct => pmap f.h g.struct *> f.struct
+      | equ => pmap f.h g.equ *> f.equ
       }
 
-    \func homo_eq {A B : Pointed}(h : A.S -> B.S)(f g : Homo {A} {B} h) : f = g =>
-      path (\lam i =>
-        \new Homo h (((B.is_set (h A.base) B.base) f.struct g.struct) @ i)
-      )
+    \func equiv {A B : Pointed}(f g : Homo {A} {B})(e : f.h = g.h) : f = g =>
+      \let | f' : Homo {A} {B} f.h => \new Homo f.h f.equ
+           | g' : Homo {A} {B} g.h => \new Homo g.h g.equ
+           | eqq (i : I) => \Pi (x : Homo {A} {B} f.h) (y : Homo {A} {B} (e @ i)) -> x = {Homo {A} {B}} y \in
+      coe eqq (\lam (x y : Homo {A} {B} f.h) => path (\lam i => \new Homo f.h (((B.is_set (f.h A.base) B.base) x.equ y.equ) @ i))) right f' g'
+
+    \func equiv' {A B : Pointed}(h : A.S -> B.S)(f g : Homo {A} {B} h) : f = g => equiv f g idp
 
     \func l_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {B} {B} id f = f =>
       \let composed : Homo {A} {B} => comp {A} {B} {B} id f \in
       path (\lam i =>
         \new Homo ((Set.l_unit f.h) @ i)
-                  ((B.is_set (f.h A.base) B.base) composed.struct f.struct @ i)
+                  ((B.is_set (f.h A.base) B.base) composed.equ f.equ @ i)
       )
 
     \func r_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {A} {B} f id = f =>
       \let composed : Homo {A} {B} => comp {A} {A} {B} f id \in
       path (\lam i =>
         \new Homo ((Set.l_unit f.h) @ i)
-                  ((B.is_set (f.h A.base) B.base) composed.struct f.struct @ i)
+                  ((B.is_set (f.h A.base) B.base) composed.equ f.equ @ i)
       )
 
     \func assoc {A B C D : Pointed}
@@ -55,10 +58,10 @@
        | sect => \new Section {
          | A => Pointed.Homo {p1} {p2}
          | B => homoSigma
-         | f => \lam (x : Pointed.Homo {p1} {p2}) => (x.h, x.struct)
-         | ret => \lam b => \new Pointed.Homo {p1} {p2} {
+         | f (x : Pointed.Homo {p1} {p2}) => (x.h, x.equ)
+         | ret b => \new Pointed.Homo {p1} {p2} {
            | h => b.1
-           | struct => b.2
+           | equ => b.2
            }
          | ret_f => qed
        }
@@ -66,11 +69,11 @@
         (HLevel-retracts sect {2} ((HLevel_-1=>HLevel_-2+1 homoSigma 1 homoSigma_isSet)))
 
 \func PointedCat : Cat {Pointed} \cowith {
-  | Hom => \lam p1 p2 => Pointed.Homo {p1} {p2}
-  | homSet => \lam {p1} {p2} => homo_isSet p1 p2
+  | Hom p1 p2 => Pointed.Homo {p1} {p2}
+  | homSet {p1} {p2} => homo_isSet p1 p2
   | id => Pointed.id
-  | comp => \lam f g => Pointed.comp f g
-  | l_unit => \lam f => Pointed.l_unit f
-  | r_unit => \lam f => Pointed.r_unit f
-  | assoc => \lam {A} {B} {C} {D} f g h => Pointed.assoc {A} {B} {C} {D} f g h
+  | comp f g => Pointed.comp f g
+  | l_unit f => Pointed.l_unit f
+  | r_unit f => Pointed.r_unit f
+  | assoc {A} {B} {C} {D} f g h => Pointed.assoc {A} {B} {C} {D} f g h
   }
