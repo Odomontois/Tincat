@@ -1,4 +1,5 @@
 \import Cat
+\import Product (Product2)
 \import Set
 \import SetCat
 \import Terminal
@@ -31,6 +32,9 @@
            | eqq (i : I) => \Pi (x : Homo {A} {B} f.h) (y : Homo {A} {B} (e @ i)) -> x = {Homo {A} {B}} y \in
       coe eqq (\lam (x y : Homo {A} {B} f.h) => path (\lam i => \new Homo f.h (((B.is_set (f.h A.base) B.base) x.equ y.equ) @ i))) right f' g'
 
+    \func equivElim {A B : Pointed}{f g : Homo {A} {B}}(e : f = g) : f.h = g.h =>
+      pmap {Homo {A} {B}} {A.S -> B.S} (\lam (x : Homo {A} {B}) => x.h) e
+
     \func l_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {B} {B} id f = f =>
       \let | composed : Homo {A} {B} => comp {A} {B} {B} id f
            | left : composed.h = f.h => Set.l_unit f.h \in
@@ -49,57 +53,100 @@
            | right : Homo {A} {D} => comp e (comp {A} {B} {C} f g)
            | ass : left.h = right.h => Set.assoc e.h f.h g.h \in
       equiv left right ass
-  }
 
-\func homo_isSet (p1 p2 : Pointed) : isSet (Pointed.Homo {p1} {p2}) =>
-  \let | homoSigma => \Sigma (f : p1.S -> p2.S) (f p1.base = p2.base)
-       | homoSigma_isSet => sigmaSet {p1.S -> p2.S} {\lam f => f p1.base = p2.base} (Set.hom_set p1 p2)
-                                     (\lam f => isProp=>isSet (f p1.base = p2.base) (p2.is_set (f p1.base) p2.base))
-       | sect => \new Section {
-         | A => Pointed.Homo {p1} {p2}
-         | B => homoSigma
-         | f (x : Pointed.Homo {p1} {p2}) => (x.h, x.equ)
-         | ret b => \new Pointed.Homo {p1} {p2} {
-           | h => b.1
-           | equ => b.2
+    \func zero => \new Pointed (Unit) (unit_isSet) (unit)
+
+    \func homo_isSet (p1 p2 : Pointed) : isSet (Homo {p1} {p2}) =>
+      \let | homoSigma => \Sigma (f : p1.S -> p2.S) (f p1.base = p2.base)
+           | homoSigma_isSet => sigmaSet {p1.S -> p2.S} {\lam f => f p1.base = p2.base} (Set.hom_set p1 p2)
+                                         (\lam f => isProp=>isSet (f p1.base = p2.base) (p2.is_set (f p1.base) p2.base))
+           | sect => \new Section {
+             | A => Homo {p1} {p2}
+             | B => homoSigma
+             | f (x : Homo {p1} {p2}) => (x.h, x.equ)
+             | ret b => \new Homo {p1} {p2} {
+               | h => b.1
+               | equ => b.2
+               }
+             | ret_f => qed
            }
-         | ret_f => qed
-       }
-  \in HLevel_-2+1=>HLevel_-1 (Pointed.Homo {p1} {p2}) 1
-        (HLevel-retracts sect {2} ((HLevel_-1=>HLevel_-2+1 homoSigma 1 homoSigma_isSet)))
+      \in HLevel_-2+1=>HLevel_-1 (Homo {p1} {p2}) 1
+            (HLevel-retracts sect {2} ((HLevel_-1=>HLevel_-2+1 homoSigma 1 homoSigma_isSet)))
 
-\func PointedCat : Cat {Pointed} \cowith {
-  | Hom p1 p2 => Pointed.Homo {p1} {p2}
-  | homSet {p1} {p2} => homo_isSet p1 p2
-  | id => Pointed.id
-  | comp f g => Pointed.comp f g
-  | l_unit f => Pointed.l_unit f
-  | r_unit f => Pointed.r_unit f
-  | assoc {A} {B} {C} {D} f g h => Pointed.assoc {A} {B} {C} {D} f g h
-  }
-
-\func zero => \new Pointed (Unit) (unit_isSet) (unit)
-
-\func terminal : Terminal {PointedCat} zero \cowith {
-  | terminal P => \new Singleton {
-    | T => P ->> {PointedCat} zero
-    | t => \new Pointed.Homo {P} {zero} {
-      | h x => unit
-      | equ => idp
-      }
-    | prop (m1 m2 : Pointed.Homo {P} {zero}) =>
-      Pointed.equiv m1 m2 (functExt (\lam x => unit_isProp (m1.h x) (m2.h x)))
+    \func product (A B : Pointed) : Pointed \cowith {
+      | S => \Sigma (x : A.S) (y : B.S)
+      | is_set => product_isSet A B
+      | base => (A.base, B.base)
     }
   }
 
-\func initial : Initial {PointedCat} zero \cowith {
-  | initial (P : Pointed) => \new Singleton {
-    | T => zero ->> {PointedCat} P
-    | t => \new Pointed.Homo {zero} {P} {
-      | h x => P.base
-      | equ => idp
-      }
-    | prop (m1 m2 : Pointed.Homo {zero} {P}) =>
-       Pointed.equiv m1 m2 (functExt (\lam (x : Unit) => m1.equ *> (inv m2.equ)))
+\module PointedSetCategory \where {
+  \open Pointed
+
+  \func PSet : Cat {Pointed} \cowith {
+    | Hom p1 p2 => Homo {p1} {p2}
+    | homSet {p1} {p2} => homo_isSet p1 p2
+    | id => id
+    | comp f g => comp f g
+    | l_unit f => l_unit f
+    | r_unit f => r_unit f
+    | assoc {A} {B} {C} {D} f g h => assoc {A} {B} {C} {D} f g h
     }
+
+  \func terminal : Terminal {PSet} zero \cowith {
+    | terminal P => \new Singleton {
+      | T => P ->> {PSet} zero
+      | t => \new Homo {P} {zero} {
+        | h x => unit
+        | equ => idp
+        }
+      | prop (m1 m2 : Homo {P} {zero}) =>
+        equiv m1 m2 (functExt (\lam x => unit_isProp (m1.h x) (m2.h x)))
+      }
+    }
+
+  \func initial : Initial {PSet} zero \cowith {
+    | initial (P : Pointed) => \new Singleton {
+      | T => zero ->> {PSet} P
+      | t => \new Homo {zero} {P} {
+        | h x => P.base
+        | equ => idp
+        }
+      | prop (m1 m2 : Homo {zero} {P}) =>
+         equiv m1 m2 (functExt (\lam (x : Unit) => m1.equ *> (inv m2.equ)))
+      }
+    }
+
+  \func caretsian_product (A B : Pointed) : Product2 {PSet} A B =>
+    \let | A*B : Pointed => product A B
+         | p1 : Homo {A*B} {A} => \new Homo {A*B} {A} {
+           | h x => x.1
+           | equ => idp
+         }
+         | p2 : Homo {A*B} {B} => \new Homo {A*B} {B} {
+           | h x => x.2
+           | equ => idp
+         } \in
+    \new Product2 {PSet} A B A*B p1 p2 {
+      | prod (C : Pointed) (q1 : Homo {C} {A}) (q2 : Homo {C} {B}) =>
+        \let m : Homo {C} {A*B}  => \new Homo {C} {A*B} {
+          | h => (\lam x => (q1.h x, q2.h x))
+          | equ => SigmaExt {A.S} (\lam _ => B.S) (q1.h C.base, q2.h C.base) (A.base, B.base) q1.equ q2.equ
+        } \in
+        \new Unique (C ->> {PSet} A*B) (\lam m => \Sigma (p1 cmp {PSet} m = q1) (p2 cmp {PSet} m = q2)) {
+          | elem => m
+          | prop =>
+            \let | p1_m => p1 cmp {PSet} m
+                 | p2_m => p2 cmp {PSet} m \in
+            (equiv p1_m q1 (functExt (\lam x => qed (q1.h x))),
+             equiv p2_m q2 (functExt (\lam x => qed (q2.h x))))
+          | unique (f : Homo {C} {A*B}) s =>
+            equiv m f (functExt (\lam x =>
+              \let | fx => f.h x
+                   | fst : fx.1 = q1.h x => (functExtElim (equivElim s.1)) x
+                   | snd : fx.2 = q2.h x => (functExtElim (equivElim s.2)) x \in
+              inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
+            ))
+          }
+      }
   }

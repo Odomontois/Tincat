@@ -62,7 +62,7 @@
     }
   }
 
-\func product_isSet (X : Set)(Y : Set) : isSet (\Sigma X.S Y.S) =>
+\func product_isSet (X Y : Set) : isSet (\Sigma X.S Y.S) =>
   pairSet X.is_set Y.is_set
 
 \func set_product (A : Set) (B : Set) : Product2 {SetC} =>
