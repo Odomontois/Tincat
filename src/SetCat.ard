@@ -17,7 +17,7 @@
 
     \func comp {X Y Z : \Type} (f : Y -> Z) (g : X -> Y) : X -> Z => \lam (x : X) => f (g (x))
 
-    \func l_right {X Y : \Type} (f : X -> Y) : comp f (id X) = f => functExt (\lam x => qed (f x))
+    \func r_unit {X Y : \Type} (f : X -> Y) : comp f (id X) = f => functExt (\lam x => qed (f x))
 
     \func l_unit {X Y : \Type} (f : X -> Y) : comp (id Y) f  = f => functExt (\lam x => qed (f x))
 
@@ -35,7 +35,7 @@
   | id => \lam {ob : Set} => Set.id ob.S
   | comp => \lam {x y z : Set} => Set.comp {x.S} {y.S} {z.S}
   | l_unit => \lam {x y : Set} => Set.l_unit {x.S} {y.S}
-  | r_unit => \lam {x y : Set} => Set.l_right {x.S} {y.S}
+  | r_unit => \lam {x y : Set} => Set.r_unit {x.S} {y.S}
   | assoc => \lam {a b c d : Set} => Set.assoc {a.S} {b.S} {c.S} {d.S}
   }
 
