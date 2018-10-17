@@ -30,13 +30,13 @@
 
 \func SetC : Cat \cowith {
   | Ob => Set
-  | Hom => \lam (X Y : Set) => X.S -> Y.S
-  | homSet => \lam {X Y : Set} => Set.hom_set X Y
-  | id => \lam {ob : Set} => Set.id ob.S
-  | comp => \lam {x y z : Set} => Set.comp {x.S} {y.S} {z.S}
-  | l_unit => \lam {x y : Set} => Set.l_unit {x.S} {y.S}
-  | r_unit => \lam {x y : Set} => Set.r_unit {x.S} {y.S}
-  | assoc => \lam {a b c d : Set} => Set.assoc {a.S} {b.S} {c.S} {d.S}
+  | Hom (X Y : Set) => X.S -> Y.S
+  | homSet {X Y : Set} => Set.hom_set X Y
+  | id {ob : Set} => Set.id ob.S
+  | comp {x y z : Set} => Set.comp {x.S} {y.S} {z.S}
+  | l_unit {x y : Set} => Set.l_unit {x.S} {y.S}
+  | r_unit {x y : Set} => Set.r_unit {x.S} {y.S}
+  | assoc {a b c d : Set} => Set.assoc {a.S} {b.S} {c.S} {d.S}
   }
 
 \func one : Set => \new Set Unit unit_isSet
@@ -47,18 +47,18 @@
 \func empty : Set => \new Set Empty empty_isSet
 
 \func one_is_terminal : Terminal {SetC} one \cowith {
-  | terminal => \lam (X : Set) => \new Singleton {
+  | terminal (X : Set) => \new Singleton {
     | T => X ->> {SetC} one
-    | t => \lam (x : X.S) => unit
-    | prop => \lam m1 m2 => functExt (\lam x => unit_isProp (m1 x) (m2 x))
+    | t (x : X.S) => unit
+    | prop m1 m2 => functExt (\lam x => unit_isProp (m1 x) (m2 x))
     }
   }
 
 \func empty_is_initial : Initial {SetC} empty \cowith {
-  | initial => \lam X => \new Singleton {
+  | initial X => \new Singleton {
     | T => empty ->> {SetC} X
-    | t => \lam a => absurd a
-    | prop => \lam m1 m2 => functExt (\lam x => absurd x)
+    | t a => absurd a
+    | prop m1 m2 => functExt (\lam x => absurd x)
     }
   }
 
@@ -73,19 +73,19 @@
        | p1 : p.S -> A.S => \lam s => s.1
        | p2 : p.S -> B.S => \lam s => s.2 \in
   \new Product2 {SetC} A B p p1 p2 {
-    | prod => \lam (X : Set) (q1 : X.S -> A.S) (q2 : X.S -> B.S) =>
+    | prod (X : Set) (q1 : X.S -> A.S) (q2 : X.S -> B.S) =>
       \let m : X.S -> p.S => \lam x => (q1 x, q2 x) \in
       \new Unique {
         | A => X.S -> p.S
-        | B => \lam pr => \Sigma (Set.comp p1 pr = q1) (Set.comp p2 pr = q2)
+        | B pr => \Sigma (Set.comp p1 pr = q1) (Set.comp p2 pr = q2)
         | elem => m
         | prop => (functExt (\lam x => qed (q1 x)), functExt (\lam x => qed (q2 x)))
-        | unique => \lam f => \lam s =>
+        | unique f s =>
           functExt (\lam x =>
             \let | fx => f x
                  | fst : fx.1 = q1 x => (functExtElim s.1) x
                  | snd : fx.2 = q2 x => (functExtElim s.2) x \in
-              inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
+              inv (pmap2 (\lam u w => (u, w)) fst snd)
           )
         }
     }
