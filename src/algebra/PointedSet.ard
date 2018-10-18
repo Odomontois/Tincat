@@ -17,7 +17,7 @@
                  (equ : h A.base = B.base)
 
     \func id {A : Pointed} : Homo {A} {A} \cowith {
-      | h => Set.id A.S
+      | h => Set.id
       | equ => idp
       }
 

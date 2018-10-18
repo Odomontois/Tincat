@@ -3,8 +3,6 @@
 \import lib.HLevel
 \import lib.Paths
 
-
-
 \record Semigroup (op : S -> S -> S)
                   (assoc : \Pi (x y z : S) -> op (op x y) z = op x (op y z)) \extends Set
   \where {
@@ -31,24 +29,33 @@
                        (homo : \Pi {A B : Ob} -> Hom A B -> (Set.S {set A} -> Set.S {set B}))
                        (hom_isSet : \Pi {a b : Ob} -> isSet (Hom a b))
                        (id : \Pi {A : Ob} -> Hom A A)
-                       (id_e : \Pi {A : Ob} -> homo (id {A}) = Set.id (Set.S {set A}))
+                       (id_e : \Pi {A : Ob} -> homo (id {A}) = Set.id)
                        (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c )
                        (comp_e : \Pi {a b c : Ob} (f : Hom b c) (g : Hom a b) -> homo (comp f g) = Set.comp (homo f) (homo g))
                        (equiv : \Pi {A B : Ob} (f g : Hom A B) (e : homo f = homo g) -> f = g) : Cat {Ob} Hom hom_isSet id comp
   \cowith {
     | l_unit {A} {B} f =>
-      \let | composed : Hom A B => comp {A} {B} {B} id f
+      \let | composed : Hom A B => comp id f
            | left : homo composed = homo f =>
              (comp_e id f) *>
              pmap (\lam x => Set.comp x (homo f)) id_e *>
              (Set.l_unit (homo f)) \in
       equiv composed f left
     | r_unit {A} {B} f =>
-      \let | composed : Hom A B => comp {A} {A} {B} f id
+      \let | composed : Hom A B => comp f id
            | right : homo composed = homo f =>
              (comp_e f id) *>
              pmap (\lam x => Set.comp (homo f) x) id_e *>
              (Set.r_unit (homo f)) \in
       equiv composed f right
-    | assoc => {?}
+    | assoc {A} {B} {C} {D} e f g =>
+      \let | left : Hom A D => comp (comp e f) g
+           | right : Hom A D => comp e (comp f g)
+           | ass : homo left = homo right =>
+             comp_e (comp e f) g *>
+             pmap (\lam x => Set.comp x (homo g)) (comp_e e f) *>
+             Set.assoc (homo e) (homo f) (homo g) *>
+             (inv (comp_e e (comp f g) *> pmap (\lam x => Set.comp (homo e) x) (comp_e f g)))
+           \in
+      equiv left right ass
     }
