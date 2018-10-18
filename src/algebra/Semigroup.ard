@@ -1,0 +1,28 @@
+\import Cat
+\import SetCat
+
+\record Semigroup (op : S -> S -> S)
+                  (assoc : \Pi (x y z : S) -> op (op x y) z = op x (op y z)) \extends Set
+  \where {
+    \func \infixr 5 |+| {A : Semigroup} (x y : A.S) => A.op x y
+
+    \record Homo {A B : Semigroup}
+                 (h : A.S -> B.S)
+                 (equ : \Pi (x y : A.S) -> h (x |+| {A} y) = h x |+| {B} h y)
+
+    \func equiv {A B : Semigroup} (f g : Homo {A} {B})(e : f.h = g.h) : f = g =>
+      \let | f' : Homo {A} {B} f.h => \new Homo f.h f.equ
+           | g' : Homo {A} {B} g.h => \new Homo g.h g.equ
+           | eqq (i : I) => \Pi (x : Homo {A} {B} f.h) (y : Homo {A} {B} (e @ i)) -> x = {Homo {A} {B}} y \in
+      coe eqq (\lam (h1 h2 : Homo {A} {B} f.h) =>
+        path (\lam i => \new Homo f.h (\lam x y =>
+          ((B.is_set (f.h (x |+| {A} y)) (f.h x |+| {B} f.h y)) (h1.equ x y) (h2.equ x y)) @ i)
+        )
+      ) right f' g'
+  }
+
+\func setBasedCategory (Obj : \Type)
+                       (set : \Pi Obj -> Set)
+                       (Hom : Obj -> Obj -> \Set)
+                       (homo : \Pi {A B : Obj} -> Hom A B -> (Set.S {set A} -> Set.S {set B}))
+                       (equiv : \Pi {A B : Obj} (f g : Hom A B) (e : homo f = homo g) -> f = g) : Cat {Obj} Hom = {?}
