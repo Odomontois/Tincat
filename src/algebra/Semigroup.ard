@@ -1,6 +1,10 @@
 \import Cat
 \import Set
 \import SetCat
+\import Terminal
+\import Unique
+\import lib.Data.Empty
+\import lib.Data.Unit
 \import lib.Equiv
 \import lib.HLevel
 \import lib.Paths
@@ -40,7 +44,8 @@
            | structT => \lam (f : A.S -> B.S) => \Pi (x y : A.S) -> struct f x y
            | homoSigma => \Sigma (h : A.S -> B.S) (structT h)
            | structSet : \Pi (f : A.S -> B.S) -> \Pi (x y : A.S) -> isSet (struct f x y) =>
-             \lam f => (\lam x y => isProp=>isSet (f (x |+| {A} y) = f x |+| {B} f y) (B.is_set (f (x |+| {A} y)) (f x |+| {B} f y)))
+             \lam f => \lam x y =>
+               isProp=>isSet (struct f x y) (B.is_set (f (x |+| {A} y)) (f x |+| {B} f y))
            | structTSet : \Pi (f : A.S -> B.S) -> isSet (structT f) =>
              \lam f => piSet {A.S} (\lam x => \Pi (y : A.S) -> struct f x y) (\lam x =>
                piSet {A.S} (\lam y => struct f x y) (\lam y => structSet f x y)
@@ -54,6 +59,27 @@
              | ret_f => qed
              }
       \in retractsSet sect homoSigma_isSet
+
+    \func zero : Semigroup \cowith {
+      | S => Empty
+      | is_set => empty_isSet
+      | op => absurd
+      | assoc => \lam x => absurd x
+      }
+
+    \func one : Semigroup \cowith {
+      | S => Unit
+      | is_set => unit_isSet
+      | op => \lam u1 => \lam u2 => unit
+      | assoc => \lam _ _ _ => idp
+    }
+
+    \func product (A B : Semigroup) : Semigroup \cowith {
+      | S => \Sigma A.S B.S
+      | is_set => product_isSet A B
+      | op => \lam s1 s2 => (s1.1 |+| {A} s2.1, s1.2 |+| {B} s2.2)
+      | assoc => {?}
+      }
   }
 
 \module SemigroupCategory \where {
@@ -70,4 +96,22 @@
                        (\lam f g => comp f g)
                        (\lam _ _ => idp)
                        (\lam f g eq => equiv f g eq)
+
+  \func initial : Initial {SemigroupCat} zero \cowith {
+    | initial P => \new Singleton {
+      | T => zero ->> P
+      | t => \new Homo {zero} {P} absurd (\lam x => absurd x)
+        | prop (m1 m2 : Homo {zero} {P}) =>
+          equiv m1 m2 (functExt (\lam x => absurd x))
+      }
+    }
+
+  \func terminal : Terminal {SemigroupCat} one \cowith {
+    | terminal P => \new Singleton {
+      | T => P ->> one
+      | t => \new Homo {P} {one} (\lam _ => unit) (\lam _ _ => idp)
+      | prop (m1 m2 : Homo {P} {one}) =>
+        equiv m1 m2 (functExt (\lam x => unit_isProp (m1.h x) (m2.h x)))
+      }
+    }
 }
