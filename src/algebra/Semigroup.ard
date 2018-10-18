@@ -1,4 +1,5 @@
 \import Cat
+\import Set
 \import SetCat
 \import lib.HLevel
 \import lib.Paths
@@ -34,6 +35,13 @@
       }
 
     \func homo_isSet (A B : Semigroup) : isSet (Homo {A} {B}) => {?}
+--      \let struct => \lam f => \lam x y => f (x |+| {A} y) = f x |+| {B} f y \in
+--      \let | homoSigma => \Sigma (h : A.S -> B.S) (struct h)
+--           | homoSigma_isSet => sigmaSet {A.S -> B.S}
+--                                         {\lam f => \Pi (x y : A.S) -> struct f x y}
+--                                         (Set.hom_set A B)
+--                                         (\lam f => piSet {\Sigma A.S A.S} (\lam s => struct f s.1 s.2) (\lam x y => isProp=>isSet
+--                                           (f (x |+| {A} y) = f x |+| {B} f y) (B.is_set (f (x |+| {A} y)) (f x |+| {B} f y)))) \in {?}
   }
 
 \module SemigroupCategory \where {

@@ -10,11 +10,11 @@
                (p1 : isSet A)
                (p2 : \Pi (a : A) -> isSet (B a)) : isSet (\Sigma (a : A) (B a)) =>
   HLevel_-2+1=>HLevel_-1 (\Sigma (a : A) (B a)) 1
-    (HLevels-sigma {A} (\lam a => B a) {2} (HLevel_-1=>HLevel_-2+1 A 1 p1) (\lam a => HLevel_-1=>HLevel_-2+1 (B a) 1 (p2 a)))
+    (HLevels-sigma {A} B {2} (HLevel_-1=>HLevel_-2+1 A 1 p1) (\lam a => HLevel_-1=>HLevel_-2+1 (B a) 1 (p2 a)))
 
-\func piSet {X Y : \Type} (ys : isSet Y) : isSet (X -> Y) =>
-  HLevel_-2+1=>HLevel_-1 (X -> Y) 1
-    (HLevels-pi {X} (\lam _ => Y) {2} (\lam _ => HLevel_-1=>HLevel_-2+1 Y 1 ys))
+\func piSet {A : \Type} (B : A -> \Type) (p : \Pi (a : A) -> isSet (B a)) : isSet (\Pi (a : A) -> B a) =>
+  HLevel_-2+1=>HLevel_-1 (\Pi (a : A) -> B a) 1
+    (HLevels-pi {A} B {2} (\lam x => HLevel_-1=>HLevel_-2+1 (B x) 1 (p x)))
 
 \func propPath {A B : \Type } (p : A = B) : \Type =>
     \Pi (a : A) (b : B) -> Path (\lam i => p @ i) a b

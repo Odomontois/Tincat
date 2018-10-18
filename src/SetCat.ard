@@ -13,7 +13,7 @@
   \where {
     \func id {X : \Type} => \lam (x : X) => x
 
-    \func hom_set (X Y : Set) : isSet (X.S -> Y.S) => piSet Y.is_set
+    \func hom_set (X Y : Set) : isSet (X.S -> Y.S) => piSet {X.S} (\lam _ => Y.S) (\lam _ => Y.is_set)
 
     \func comp {X Y Z : \Type} (f : Y -> Z) (g : X -> Y) : X -> Z => \lam (x : X) => f (g (x))
 
