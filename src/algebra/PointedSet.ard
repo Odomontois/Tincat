@@ -35,25 +35,6 @@
     \func equivElim {A B : Pointed}{f g : Homo {A} {B}}(e : f = g) : f.h = g.h =>
       pmap {Homo {A} {B}} {A.S -> B.S} (\lam (x : Homo {A} {B}) => x.h) e
 
-    \func l_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {B} {B} id f = f =>
-      \let | composed : Homo {A} {B} => comp {A} {B} {B} id f
-           | left : composed.h = f.h => Set.l_unit f.h \in
-      equiv composed f left
-
-    \func r_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {A} {B} f id = f =>
-      \let | composed : Homo {A} {B} => comp {A} {A} {B} f id
-           | right : composed.h = f.h => Set.r_unit f.h \in
-      equiv composed f right
-
-    \func assoc {A B C D : Pointed}
-                (e : Homo {C} {D})
-                (f : Homo {B} {C})
-                (g : Homo {A} {B}) : comp (comp {B} {C} {D} e f) g = {Homo {A} {D}} comp e (comp {A} {B} {C} f g) =>
-      \let | left : Homo {A} {D} => comp (comp {B} {C} {D} e f) g
-           | right : Homo {A} {D} => comp e (comp {A} {B} {C} f g)
-           | ass : left.h = right.h => Set.assoc e.h f.h g.h \in
-      equiv left right ass
-
     \func zero => \new Pointed (Unit) (unit_isSet) (unit)
 
     \func homo_isSet (p1 p2 : Pointed) : isSet (Homo {p1} {p2}) =>
@@ -83,15 +64,17 @@
 \module PointedSetCategory \where {
   \open Pointed
 
-  \func PSet : Cat {Pointed} \cowith {
-    | Hom p1 p2 => Homo {p1} {p2}
-    | homSet {p1} {p2} => homo_isSet p1 p2
-    | id => id
-    | comp f g => comp f g
-    | l_unit f => l_unit f
-    | r_unit f => r_unit f
-    | assoc {A} {B} {C} {D} f g h => assoc {A} {B} {C} {D} f g h
-    }
+  \func PSet : Cat {Pointed} =>
+    setBasedCategory Pointed
+                     (\lam x => x)
+                     (\lam A B => Homo {A} {B})
+                     (\lam {A} {B} (f : Homo {A} {B}) => f.h)
+                     (\lam {A} {B} => homo_isSet A B)
+                     id
+                     (\lam {A} => idp)
+                     (\lam f g => comp f g)
+                     (\lam f g => idp)
+                     (\lam f g eq => equiv f g eq)
 
   \func terminal : Terminal {PSet} zero \cowith {
     | terminal P => \new Singleton {
