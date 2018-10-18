@@ -1,6 +1,7 @@
 \import Cat
 \import Set
 \import SetCat
+\import lib.Equiv
 \import lib.HLevel
 \import lib.Paths
 
@@ -34,14 +35,25 @@
         pmap (\lam k => f.h k) (g.equ x y) *> f.equ (g.h x) (g.h y)
       }
 
-    \func homo_isSet (A B : Semigroup) : isSet (Homo {A} {B}) => {?}
---      \let struct => \lam f => \lam x y => f (x |+| {A} y) = f x |+| {B} f y \in
---      \let | homoSigma => \Sigma (h : A.S -> B.S) (struct h)
---           | homoSigma_isSet => sigmaSet {A.S -> B.S}
---                                         {\lam f => \Pi (x y : A.S) -> struct f x y}
---                                         (Set.hom_set A B)
---                                         (\lam f => piSet {\Sigma A.S A.S} (\lam s => struct f s.1 s.2) (\lam x y => isProp=>isSet
---                                           (f (x |+| {A} y) = f x |+| {B} f y) (B.is_set (f (x |+| {A} y)) (f x |+| {B} f y)))) \in {?}
+    \func homo_isSet (A B : Semigroup) : isSet (Homo {A} {B}) =>
+      \let | struct => \lam (f : A.S -> B.S) => \lam (x y : A.S) => f (x |+| {A} y) = f x |+| {B} f y
+           | structT => \lam (f : A.S -> B.S) => \Pi (x y : A.S) -> struct f x y
+           | homoSigma => \Sigma (h : A.S -> B.S) (structT h)
+           | structSet : \Pi (f : A.S -> B.S) -> \Pi (x y : A.S) -> isSet (struct f x y) =>
+             \lam f => (\lam x y => isProp=>isSet (f (x |+| {A} y) = f x |+| {B} f y) (B.is_set (f (x |+| {A} y)) (f x |+| {B} f y)))
+           | structTSet : \Pi (f : A.S -> B.S) -> isSet (structT f) =>
+             \lam f => piSet {A.S} (\lam x => \Pi (y : A.S) -> struct f x y) (\lam x =>
+               piSet {A.S} (\lam y => struct f x y) (\lam y => structSet f x y)
+             )
+           | homoSigma_isSet => sigmaSet {A.S -> B.S} {structT} (Set.hom_set A B) (structTSet)
+           | sect => \new Section {
+             | A => Homo {A} {B}
+             | B => homoSigma
+             | f (x : Homo {A} {B}) => (x.h, x.equ)
+             | ret b => \new Homo {A} {B} b.1 b.2
+             | ret_f => qed
+             }
+      \in retractsSet sect homoSigma_isSet
   }
 
 \module SemigroupCategory \where {

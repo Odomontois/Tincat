@@ -45,14 +45,10 @@
              | A => Homo {p1} {p2}
              | B => homoSigma
              | f (x : Homo {p1} {p2}) => (x.h, x.equ)
-             | ret b => \new Homo {p1} {p2} {
-               | h => b.1
-               | equ => b.2
-               }
+             | ret b => \new Homo {p1} {p2} b.1 b.2
              | ret_f => qed
            }
-      \in HLevel_-2+1=>HLevel_-1 (Homo {p1} {p2}) 1
-            (HLevel-retracts sect {2} ((HLevel_-1=>HLevel_-2+1 homoSigma 1 homoSigma_isSet)))
+      \in retractsSet sect homoSigma_isSet
 
     \func product (A B : Pointed) : Pointed \cowith {
       | S => \Sigma (x : A.S) (y : B.S)
