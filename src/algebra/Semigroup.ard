@@ -21,4 +21,33 @@
           ((B.is_set (f.h (x |+| {A} y)) (f.h x |+| {B} f.h y)) (h1.equ x y) (h2.equ x y)) @ i)
         )
       ) right f' g'
+
+    \func id {A : Semigroup} : Homo {A} {A} \cowith {
+      | h => Set.id
+      | equ => \lam _ _ => idp
+      }
+
+    \func comp {A B C : Semigroup} (f : Homo {B} {C}) (g : Homo {A} {B}) : Homo {A} {C} \cowith {
+      | h => Set.comp f.h g.h
+      | equ => \lam x y =>
+        pmap (\lam k => f.h k) (g.equ x y) *> f.equ (g.h x) (g.h y)
+      }
+
+    \func homo_isSet (A B : Semigroup) : isSet (Homo {A} {B}) => {?}
   }
+
+\module SemigroupCategory \where {
+  \open Semigroup
+
+  \func SemigroupCat : Cat {Semigroup} =>
+      setBasedCategory Semigroup
+                       (\lam x => x)
+                       (\lam A B => Homo {A} {B})
+                       (\lam {A} {B} (f : Homo {A} {B}) => f.h)
+                       (\lam {A} {B} => homo_isSet A B)
+                       id
+                       (\lam {_} => idp)
+                       (\lam f g => comp f g)
+                       (\lam _ _ => idp)
+                       (\lam f g eq => equiv f g eq)
+}

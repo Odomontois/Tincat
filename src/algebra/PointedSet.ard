@@ -71,9 +71,9 @@
                      (\lam {A} {B} (f : Homo {A} {B}) => f.h)
                      (\lam {A} {B} => homo_isSet A B)
                      id
-                     (\lam {A} => idp)
+                     (\lam {_} => idp)
                      (\lam f g => comp f g)
-                     (\lam f g => idp)
+                     (\lam _ _ => idp)
                      (\lam f g eq => equiv f g eq)
 
   \func terminal : Terminal {PSet} zero \cowith {
