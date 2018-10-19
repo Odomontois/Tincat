@@ -50,7 +50,7 @@
            }
       \in retractsSet sect homoSigma_isSet
 
-    \func product (A B : Pointed) : Pointed \cowith {
+    \func \infix 5 * (A B : Pointed) : Pointed \cowith {
       | S => \Sigma (x : A.S) (y : B.S)
       | is_set => product_isSet A B
       | base => (A.base, B.base)
@@ -60,7 +60,7 @@
 \module PointedSetCategory \where {
   \open Pointed
 
-  \func PSetStruct : SetBasedCat {Pointed} =>
+  \func pSetStruct : SetBasedCat {Pointed} =>
     \new SetBasedCat (\lam A B => Homo {A} {B})
                      (\lam {A} {B} => homo_isSet A B)
                      id
@@ -72,7 +72,7 @@
                      (\lam f g eq => equiv f g eq)
 
   \func PSet : Cat {Pointed} =>
-    SetBasedCat.category PSetStruct
+    SetBasedCat.category pSetStruct
 
   \func terminal : Terminal {PSet} zero \cowith {
     | terminal P => \new Singleton {
@@ -92,36 +92,21 @@
       }
     }
 
-  \func cartesian_product (A B : Pointed) : Product2 {PSet} A B =>
-    \let | A*B : Pointed => product A B
-         | p1 : Homo {A*B} {A} => \new Homo {A*B} {A} {
-           | h x => x.1
-           | equ => idp
-         }
-         | p2 : Homo {A*B} {B} => \new Homo {A*B} {B} {
-           | h x => x.2
-           | equ => idp
-         } \in
-    \new Product2 {PSet} A B A*B p1 p2 {
-      | prod (C : Pointed) (q1 : Homo {C} {A}) (q2 : Homo {C} {B}) =>
-        \let m : Homo {C} {A*B}  => \new Homo {C} {A*B} {
+  \func sbProduct (A B : Pointed) : SetBasedCat.SetBasedProduct {pSetStruct} A B =>
+    \new SetBasedCat.SetBasedProduct {pSetStruct} A B (A * B) {
+      | u => idp
+      | p1 => \new Homo {A * B} {A} (\lam x => x.1) idp
+      | p1_e => idp
+      | p2 => \new Homo {A * B} {B} (\lam x => x.2) idp
+      | p2_e => idp
+      | ump (C : Pointed) (q1 : Homo {C} {A}) (q2 : Homo {C} {B}) =>
+        \let m => \new Homo {C} {A * B} {
           | h => (\lam x => (q1.h x, q2.h x))
           | equ => SigmaExt {A.S} (\lam _ => B.S) (q1.h C.base, q2.h C.base) (A.base, B.base) q1.equ q2.equ
-        } \in
-        \new Unique (C ->> {PSet} A*B) (\lam m => \Sigma (p1 cmp {PSet} m = q1) (p2 cmp {PSet} m = q2)) {
-          | elem => m
-          | prop =>
-            \let | p1_m => p1 cmp {PSet} m
-                 | p2_m => p2 cmp {PSet} m \in
-            (equiv p1_m q1 (functExt (\lam x => qed (q1.h x))),
-             equiv p2_m q2 (functExt (\lam x => qed (q2.h x))))
-          | unique (f : Homo {C} {A*B}) s =>
-            equiv m f (functExt (\lam x =>
-              \let | fx => f.h x
-                   | fst : fx.1 = q1.h x => (functExtElim (equivElim s.1)) x
-                   | snd : fx.2 = q2.h x => (functExtElim (equivElim s.2)) x \in
-              inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
-            ))
-          }
+        } \in (m, idp)
       }
+
+  \func cartesian_product (A B : Pointed) : Product2 {SetBasedCat.category pSetStruct} A B =>
+    SetBasedCat.product (sbProduct A B)
+
   }

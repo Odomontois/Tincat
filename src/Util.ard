@@ -1,3 +1,7 @@
 \import lib.Paths
 
 \func transportTerm {X Y : \Type} (e : X = Y) (x : X) : Y => coe (@ e) x right
+
+\func transportTermEq {X Y : \Type} (e : X = Y) (x : X) : transportTerm (inv e) (transportTerm e x) = x => {?}
+
+\func transportTermEq' {X Y : \Type} (e : X = Y) (y : Y) : transportTerm e (transportTerm (inv e) y) = y => {?}

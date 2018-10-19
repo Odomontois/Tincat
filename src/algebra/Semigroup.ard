@@ -78,7 +78,7 @@
       | assoc => \lam _ _ _ => idp
     }
 
-    \func product (A B : Semigroup) : Semigroup \cowith {
+    \func \infix 5 * (A B : Semigroup) : Semigroup \cowith {
       | S => \Sigma A.S B.S
       | is_set => product_isSet A B
       | op => \lam s1 s2 => (s1.1 |+| {A} s2.1, s1.2 |+| {B} s2.2)
@@ -125,35 +125,23 @@
       }
     }
 
-  -- FIXME: copypaste from PointedSet! implement via setBasedProduct
-  \func cartesian_product (A B : Semigroup) : Product2 {Semi} A B =>
-      \let | A*B : Semigroup => product A B
-           | p1 : Homo {A*B} {A} => \new Homo {A*B} {A} (\lam x => x.1) (\lam _ _ => idp)
-           | p2 : Homo {A*B} {B} => \new Homo {A*B} {B} (\lam x => x.2) (\lam _ _ => idp) \in
-      \new Product2 {Semi} A B A*B p1 p2 {
-        | prod (C : Semigroup) (q1 : Homo {C} {A}) (q2 : Homo {C} {B}) =>
-          \let m : Homo {C} {A*B}  => \new Homo {C} {A*B} {
-            | h => (\lam x => (q1.h x, q2.h x))
-            | equ x y =>
-              SigmaExt {A.S} (\lam _ => B.S)
-                       (q1.h (x |+| {C} y), q2.h (x |+| {C} y))
-                       (q1.h x |+| {A} q1.h y, (q2.h x) |+| {B} q2.h y)
-                       (q1.equ x y) (q2.equ x y)
-          } \in
-          \new Unique (C ->> {Semi} A*B) (\lam m => \Sigma (p1 cmp {Semi} m = q1) (p2 cmp {Semi} m = q2)) {
-            | elem => m
-            | prop =>
-              \let | p1_m => p1 cmp {Semi} m
-                   | p2_m => p2 cmp {Semi} m \in
-              (equiv p1_m q1 (functExt (\lam x => qed (q1.h x))),
-               equiv p2_m q2 (functExt (\lam x => qed (q2.h x))))
-            | unique (f : Homo {C} {A*B}) s =>
-              equiv m f (functExt (\lam x =>
-                \let | fx => f.h x
-                     | fst : fx.1 = q1.h x => (functExtElim (equivElim s.1)) x
-                     | snd : fx.2 = q2.h x => (functExtElim (equivElim s.2)) x \in
-                inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
-              ))
-            }
-        }
+  \func sbProduct (A B : Semigroup) : SetBasedCat.SetBasedProduct {semiStruct} A B =>
+    \new SetBasedCat.SetBasedProduct {semiStruct} A B (A * B) {
+      | u => idp
+      | p1 => \new Homo {A * B} {A} (\lam x => x.1) (\lam _ _ => idp)
+      | p1_e => idp
+      | p2 => \new Homo {A * B} {B} (\lam x => x.2) (\lam _ _ => idp)
+      | p2_e => idp
+      | ump C (q1 : Homo {C} {A}) (q2 : Homo {C} {B}) =>
+        \let m => \new Homo {C} {A * B} {
+          | h => (\lam x => (q1.h x, q2.h x))
+          | equ x y => SigmaExt {A.S} (\lam _ => B.S)
+            (q1.h (x |+| {C} y), q2.h (x |+| {C} y))
+            (q1.h x |+| {A} q1.h y, (q2.h x) |+| {B} q2.h y)
+            (q1.equ x y) (q2.equ x y)
+          } \in (m, idp)
+      }
+
+  \func cartesian_product (A B : Semigroup) : Product2 {SetBasedCat.category semiStruct} A B =>
+    SetBasedCat.product (sbProduct A B)
 }
