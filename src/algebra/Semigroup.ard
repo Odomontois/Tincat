@@ -93,17 +93,19 @@
 \module SemigroupCategory \where {
   \open Semigroup
 
-  \func Semi : Cat {Semigroup} =>
-      setBasedCategory Semigroup
-                       (\lam x => x)
-                       (\lam A B => Homo {A} {B})
-                       (\lam {A} {B} (f : Homo {A} {B}) => f.h)
+  \func semiStruct : SetBasedCat {Semigroup} =>
+      \new SetBasedCat (\lam A B => Homo {A} {B})
                        (\lam {A} {B} => homo_isSet A B)
                        id
-                       (\lam {_} => idp)
                        (\lam f g => comp f g)
+                       (\lam x => x)
+                       (\lam {A} {B} (f : Homo {A} {B}) => f.h)
+                       (\lam {_} => idp)
                        (\lam _ _ => idp)
                        (\lam f g eq => equiv f g eq)
+
+  \func Semi : Cat {Semigroup} =>
+    SetBasedCat.category semiStruct
 
   \func initial : Initial {Semi} zero \cowith {
     | initial P => \new Singleton {
@@ -123,7 +125,7 @@
       }
     }
 
-  -- FIXME: copypaste from PointedSet!
+  -- FIXME: copypaste from PointedSet! implement via setBasedProduct
   \func cartesian_product (A B : Semigroup) : Product2 {Semi} A B =>
       \let | A*B : Semigroup => product A B
            | p1 : Homo {A*B} {A} => \new Homo {A*B} {A} (\lam x => x.1) (\lam _ _ => idp)

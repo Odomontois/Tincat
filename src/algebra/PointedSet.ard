@@ -60,17 +60,19 @@
 \module PointedSetCategory \where {
   \open Pointed
 
-  \func PSet : Cat {Pointed} =>
-    setBasedCategory Pointed
-                     (\lam x => x)
-                     (\lam A B => Homo {A} {B})
-                     (\lam {A} {B} (f : Homo {A} {B}) => f.h)
+  \func PSetStruct : SetBasedCat {Pointed} =>
+    \new SetBasedCat (\lam A B => Homo {A} {B})
                      (\lam {A} {B} => homo_isSet A B)
                      id
-                     (\lam {_} => idp)
                      (\lam f g => comp f g)
+                     (\lam x => x)
+                     (\lam {A} {B} (f : Homo {A} {B}) => f.h)
+                     (\lam {_} => idp)
                      (\lam _ _ => idp)
                      (\lam f g eq => equiv f g eq)
+
+  \func PSet : Cat {Pointed} =>
+    SetBasedCat.category PSetStruct
 
   \func terminal : Terminal {PSet} zero \cowith {
     | terminal P => \new Singleton {

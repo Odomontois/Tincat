@@ -2,6 +2,7 @@
 \import Product
 \import Set
 \import Unique
+\import Util
 \import lib.Data.Empty
 \import lib.Data.Unit
 \import lib.HLevel
@@ -90,39 +91,72 @@
         }
     }
 
-\func setBasedCategory (Ob : \Type)
-                       (set : \Pi Ob -> Set)
-                       (Hom : Ob -> Ob -> \Set)
-                       (homo : \Pi {A B : Ob} -> Hom A B -> (Set.S {set A} -> Set.S {set B}))
-                       (hom_isSet : \Pi {a b : Ob} -> isSet (Hom a b))
-                       (id : \Pi {A : Ob} -> Hom A A)
-                       (id_e : \Pi {A : Ob} -> homo (id {A}) = Set.id)
-                       (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c )
-                       (comp_e : \Pi {a b c : Ob} (f : Hom b c) (g : Hom a b) -> homo (comp f g) = Set.comp (homo f) (homo g))
-                       (equiv : \Pi {A B : Ob} (f g : Hom A B) (e : homo f = homo g) -> f = g) : Cat {Ob} Hom hom_isSet id comp
-  \cowith {
-    | l_unit {A} {B} f =>
-      \let | composed : Hom A B => comp id f
-           | left : homo composed = homo f =>
-             (comp_e id f) *>
-             pmap (\lam x => Set.comp x (homo f)) id_e *>
-             (Set.l_unit (homo f)) \in
-      equiv composed f left
-    | r_unit {A} {B} f =>
-      \let | composed : Hom A B => comp f id
-           | right : homo composed = homo f =>
-             (comp_e f id) *>
-             pmap (\lam x => Set.comp (homo f) x) id_e *>
-             (Set.r_unit (homo f)) \in
-      equiv composed f right
-    | assoc {A} {B} {C} {D} e f g =>
-      \let | left : Hom A D => comp (comp e f) g
-           | right : Hom A D => comp e (comp f g)
-           | ass : homo left = homo right =>
-             comp_e (comp e f) g *>
-             pmap (\lam x => Set.comp x (homo g)) (comp_e e f) *>
-             Set.assoc (homo e) (homo f) (homo g) *>
-             (inv (comp_e e (comp f g) *> pmap (\lam x => Set.comp (homo e) x) (comp_e f g)))
-           \in
-      equiv left right ass
+\class SetBasedCat  (set : \Pi Ob -> Set)
+                    (homo : \Pi {A B : Ob} -> Hom A B -> (Set.S {set A} -> Set.S {set B}))
+                    (id_e : \Pi {A : Ob} -> homo (id {A}) = Set.id)
+                    (comp_e : \Pi {a b c : Ob} (f : Hom b c) (g : Hom a b) -> homo (comp f g) = Set.comp (homo f) (homo g))
+                    (equiv : \Pi {A B : Ob} (f g : Hom A B) (e : homo f = homo g) -> f = g) \extends CatStruct
+  \where {
+    \func category (s : SetBasedCat) : Cat {s.Ob} s.Hom s.homSet s.id s.comp \cowith {
+      | l_unit {A} {B} f =>
+        \let | composed : Hom A B => s.comp s.id f
+             | left : s.homo composed = s.homo f =>
+               (s.comp_e s.id f) *>
+               pmap (\lam x => Set.comp x (s.homo f)) s.id_e *>
+               (Set.l_unit (s.homo f)) \in
+               s.equiv composed f left
+      | r_unit {A} {B} f =>
+        \let | composed : Hom A B => s.comp f s.id
+             | right : s.homo composed = s.homo f =>
+               (s.comp_e f s.id) *>
+               pmap (\lam x => Set.comp (s.homo f) x) s.id_e *>
+               (Set.r_unit (s.homo f)) \in
+               s.equiv composed f right
+      | assoc {A} {B} {C} {D} e f g =>
+        \let | left : Hom A D => s.comp (s.comp e f) g
+             | right : Hom A D => s.comp e (s.comp f g)
+             | ass : s.homo left = s.homo right =>
+               s.comp_e (s.comp e f) g *>
+               pmap (\lam x => Set.comp x (s.homo g)) (s.comp_e e f) *>
+               Set.assoc (s.homo e) (s.homo f) (s.homo g) *>
+               (inv (s.comp_e e (s.comp f g) *> pmap (\lam x => Set.comp (s.homo e) x) (s.comp_e f g)))
+        \in s.equiv left right ass
     }
+
+--    \func setBasedProduct (T : \Type)
+--                          (cat : SetBasedCat {T})
+--                          (prod : \Pi (A B : T) ->
+--                            \Sigma (A*B : T) (u : Set.S {set A*B} = (\Sigma (x : Set.S {set A}) (y : Set.S {set B})))
+--                                   (p1 : cat.Hom A*B A) (cat.homo p1 = (\lam (x : Set.S {set A*B}) => (transportTerm u x).1))
+--                                   (p2 : cat.Hom A*B B) (cat.homo p2 = (\lam (x : Set.S {set A*B}) => (transportTerm u x).2))
+--                                   (\Pi (C : T) (q1 : cat.Hom C A) (q2 : cat.Hom C B) ->
+--                                     \Sigma (m : cat.Hom C A*B) (cat.homo m = (\lam x => transportTerm (inv u) ((cat.homo q1) x, (cat.homo q2) x))))
+--                          ) : \Pi (A B : T) -> Product2 A B => \lam A B =>
+--        \let | A*B : T => (prod A B).1
+--             | p1 : cat.Hom A*B A => (prod A B).3
+--             | p2 : cat.Hom A*B B => (prod A B).5
+--             | full_cat => category cat
+--             | equivElim {A B : T}{f g : cat.Hom A B}(e : f = g) : cat.homo f = cat.homo g =>
+--                          pmap {cat.Hom A B} {Set.S {set A} -> Set.S {set B}} (\lam (x : cat.Hom A B) => cat.homo x) e
+--             \in
+--          \new Product2 {full_cat} A B A*B p1 p2 {
+--            | prod (C : T) (q1 : cat.Hom C A) (q2 : cat.Hom C B) =>
+--              \let m : cat.Hom C A*B => ((prod A B).7 C q1 q2).1
+--              \in
+--              \new Unique (C ->> {full_cat} A*B) (\lam m => \Sigma (p1 cmp {full_cat} m = q1) (p2 cmp {full_cat} m = q2)) {
+--                | elem => m
+--                | prop =>
+--                  \let | p1_m => p1 cmp {full_cat} m
+--                       | p2_m => p2 cmp {full_cat} m \in
+--                  (cat.equiv p1_m q1 (functExt (\lam x => qed ((cat.homo q1) x))),
+--                   cat.equiv p2_m q2 (functExt (\lam x => qed ((cat.homo q2) x))))
+--                | unique (f : cat.Hom {C} {A*B}) s =>
+--                  equiv m f (functExt (\lam x =>
+--                    \let | fx => (homo f) x
+--                         | fst : fx.1 = (homo q1) x => (functExtElim (equivElim s.1)) x
+--                         | snd : fx.2 = (homo q2) x => (functExtElim (equivElim s.2)) x \in
+--                    inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
+--                  ))
+--                }
+--            }
+  }
