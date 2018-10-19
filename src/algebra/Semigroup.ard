@@ -1,4 +1,5 @@
 \import Cat
+\import Product
 \import Set
 \import SetCat
 \import Terminal
@@ -28,9 +29,12 @@
         )
       ) right f' g'
 
+    \func equivElim {A B : Semigroup}{f g : Homo {A} {B}}(e : f = g) : f.h = g.h =>
+      pmap {Homo {A} {B}} {A.S -> B.S} (\lam (x : Homo {A} {B}) => x.h) e
+
     \func id {A : Semigroup} : Homo {A} {A} \cowith {
       | h => Set.id
-      | equ => \lam _ _ => idp
+      | equ _ _ => idp
       }
 
     \func comp {A B C : Semigroup} (f : Homo {B} {C}) (g : Homo {A} {B}) : Homo {A} {C} \cowith {
@@ -78,14 +82,18 @@
       | S => \Sigma A.S B.S
       | is_set => product_isSet A B
       | op => \lam s1 s2 => (s1.1 |+| {A} s2.1, s1.2 |+| {B} s2.2)
-      | assoc => {?}
+      | assoc x y z =>
+        SigmaExt {A.S} (\lam _ => B.S)
+                 ((x.1 |+| {A} y.1) |+| {A} z.1, (x.2 |+| {B} y.2) |+| {B} z.2)
+                 (x.1 |+| {A} (y.1 |+| {A} z.1), x.2 |+| {B} (y.2 |+| {B} z.2))
+                 (A.assoc x.1 y.1 z.1) (B.assoc x.2 y.2 z.2)
       }
   }
 
 \module SemigroupCategory \where {
   \open Semigroup
 
-  \func SemigroupCat : Cat {Semigroup} =>
+  \func Semi : Cat {Semigroup} =>
       setBasedCategory Semigroup
                        (\lam x => x)
                        (\lam A B => Homo {A} {B})
@@ -97,7 +105,7 @@
                        (\lam _ _ => idp)
                        (\lam f g eq => equiv f g eq)
 
-  \func initial : Initial {SemigroupCat} zero \cowith {
+  \func initial : Initial {Semi} zero \cowith {
     | initial P => \new Singleton {
       | T => zero ->> P
       | t => \new Homo {zero} {P} absurd (\lam x => absurd x)
@@ -106,7 +114,7 @@
       }
     }
 
-  \func terminal : Terminal {SemigroupCat} one \cowith {
+  \func terminal : Terminal {Semi} one \cowith {
     | terminal P => \new Singleton {
       | T => P ->> one
       | t => \new Homo {P} {one} (\lam _ => unit) (\lam _ _ => idp)
@@ -114,4 +122,36 @@
         equiv m1 m2 (functExt (\lam x => unit_isProp (m1.h x) (m2.h x)))
       }
     }
+
+  -- FIXME: copypaste from PointedSet!
+  \func cartesian_product (A B : Semigroup) : Product2 {Semi} A B =>
+      \let | A*B : Semigroup => product A B
+           | p1 : Homo {A*B} {A} => \new Homo {A*B} {A} (\lam x => x.1) (\lam _ _ => idp)
+           | p2 : Homo {A*B} {B} => \new Homo {A*B} {B} (\lam x => x.2) (\lam _ _ => idp) \in
+      \new Product2 {Semi} A B A*B p1 p2 {
+        | prod (C : Semigroup) (q1 : Homo {C} {A}) (q2 : Homo {C} {B}) =>
+          \let m : Homo {C} {A*B}  => \new Homo {C} {A*B} {
+            | h => (\lam x => (q1.h x, q2.h x))
+            | equ x y =>
+              SigmaExt {A.S} (\lam _ => B.S)
+                       (q1.h (x |+| {C} y), q2.h (x |+| {C} y))
+                       (q1.h x |+| {A} q1.h y, (q2.h x) |+| {B} q2.h y)
+                       (q1.equ x y) (q2.equ x y)
+          } \in
+          \new Unique (C ->> {Semi} A*B) (\lam m => \Sigma (p1 cmp {Semi} m = q1) (p2 cmp {Semi} m = q2)) {
+            | elem => m
+            | prop =>
+              \let | p1_m => p1 cmp {Semi} m
+                   | p2_m => p2 cmp {Semi} m \in
+              (equiv p1_m q1 (functExt (\lam x => qed (q1.h x))),
+               equiv p2_m q2 (functExt (\lam x => qed (q2.h x))))
+            | unique (f : Homo {C} {A*B}) s =>
+              equiv m f (functExt (\lam x =>
+                \let | fx => f.h x
+                     | fst : fx.1 = q1.h x => (functExtElim (equivElim s.1)) x
+                     | snd : fx.2 = q2.h x => (functExtElim (equivElim s.2)) x \in
+                inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
+              ))
+            }
+        }
 }

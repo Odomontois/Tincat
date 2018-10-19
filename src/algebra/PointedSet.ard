@@ -90,7 +90,7 @@
       }
     }
 
-  \func caretsian_product (A B : Pointed) : Product2 {PSet} A B =>
+  \func cartesian_product (A B : Pointed) : Product2 {PSet} A B =>
     \let | A*B : Pointed => product A B
          | p1 : Homo {A*B} {A} => \new Homo {A*B} {A} {
            | h x => x.1
