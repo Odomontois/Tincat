@@ -2,6 +2,7 @@
 
 \func transportTerm {X Y : \Type} (e : X = Y) (x : X) : Y => coe (@ e) x right
 
-\func transportTermEq {X Y : \Type} (e : X = Y) (x : X) : transportTerm (inv e) (transportTerm e x) = x => {?}
+\func transportTermEq {X Y : \Type} (e : X = Y) (x : X) : transportTerm (inv e) (transportTerm e x) = x =>
+  (Jl (\lam _ p => \Pi (x : X) -> transportTerm (inv p) (transportTerm p x) = x) (\lam _ => idp) e) x
 
 \func transportTermEq' {X Y : \Type} (e : X = Y) (y : Y) : transportTerm e (transportTerm (inv e) y) = y => {?}
