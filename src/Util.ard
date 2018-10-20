@@ -5,4 +5,5 @@
 \func transportTermEq {X Y : \Type} (e : X = Y) (x : X) : transportTerm (inv e) (transportTerm e x) = x =>
   (Jl (\lam _ p => \Pi (x : X) -> transportTerm (inv p) (transportTerm p x) = x) (\lam _ => idp) e) x
 
-\func transportTermEq' {X Y : \Type} (e : X = Y) (y : Y) : transportTerm e (transportTerm (inv e) y) = y => {?}
+\func transportTermEq' {X Y : \Type} (e : X = Y) (y : Y) : transportTerm e (transportTerm (inv e) y) = y =>
+  pmap (\lam x => transportTerm x (transportTerm (inv e) y)) (inv (inv_inv e)) *> transportTermEq (inv e) y
