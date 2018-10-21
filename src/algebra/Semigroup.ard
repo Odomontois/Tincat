@@ -29,9 +29,6 @@
         )
       ) right f' g'
 
-    \func equivElim {A B : Semigroup}{f g : Homo {A} {B}}(e : f = g) : f.h = g.h =>
-      pmap {Homo {A} {B}} {A.S -> B.S} (\lam (x : Homo {A} {B}) => x.h) e
-
     \func id {A : Semigroup} : Homo {A} {A} \cowith {
       | h => Set.id
       | equ _ _ => idp

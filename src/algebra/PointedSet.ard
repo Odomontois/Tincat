@@ -32,9 +32,6 @@
            | eqq (i : I) => \Pi (x : Homo {A} {B} f.h) (y : Homo {A} {B} (e @ i)) -> x = {Homo {A} {B}} y \in
       coe eqq (\lam (x y : Homo {A} {B} f.h) => path (\lam i => \new Homo f.h (((B.is_set (f.h A.base) B.base) x.equ y.equ) @ i))) right f' g'
 
-    \func equivElim {A B : Pointed}{f g : Homo {A} {B}}(e : f = g) : f.h = g.h =>
-      pmap {Homo {A} {B}} {A.S -> B.S} (\lam (x : Homo {A} {B}) => x.h) e
-
     \func zero => \new Pointed (Unit) (unit_isSet) (unit)
 
     \func homo_isSet (p1 p2 : Pointed) : isSet (Homo {p1} {p2}) =>
