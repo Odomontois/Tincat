@@ -17,7 +17,7 @@
                  (equ : h A.base = B.base)
 
     \func id {A : Pointed} : Homo {A} {A} \cowith {
-      | h => Set.id A.S
+      | h => Set.id
       | equ => idp
       }
 
@@ -32,28 +32,6 @@
            | eqq (i : I) => \Pi (x : Homo {A} {B} f.h) (y : Homo {A} {B} (e @ i)) -> x = {Homo {A} {B}} y \in
       coe eqq (\lam (x y : Homo {A} {B} f.h) => path (\lam i => \new Homo f.h (((B.is_set (f.h A.base) B.base) x.equ y.equ) @ i))) right f' g'
 
-    \func equivElim {A B : Pointed}{f g : Homo {A} {B}}(e : f = g) : f.h = g.h =>
-      pmap {Homo {A} {B}} {A.S -> B.S} (\lam (x : Homo {A} {B}) => x.h) e
-
-    \func l_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {B} {B} id f = f =>
-      \let | composed : Homo {A} {B} => comp {A} {B} {B} id f
-           | left : composed.h = f.h => Set.l_unit f.h \in
-      equiv composed f left
-
-    \func r_unit {A B : Pointed} (f : Homo {A} {B}) : comp {A} {A} {B} f id = f =>
-      \let | composed : Homo {A} {B} => comp {A} {A} {B} f id
-           | right : composed.h = f.h => Set.r_unit f.h \in
-      equiv composed f right
-
-    \func assoc {A B C D : Pointed}
-                (e : Homo {C} {D})
-                (f : Homo {B} {C})
-                (g : Homo {A} {B}) : comp (comp {B} {C} {D} e f) g = {Homo {A} {D}} comp e (comp {A} {B} {C} f g) =>
-      \let | left : Homo {A} {D} => comp (comp {B} {C} {D} e f) g
-           | right : Homo {A} {D} => comp e (comp {A} {B} {C} f g)
-           | ass : left.h = right.h => Set.assoc e.h f.h g.h \in
-      equiv left right ass
-
     \func zero => \new Pointed (Unit) (unit_isSet) (unit)
 
     \func homo_isSet (p1 p2 : Pointed) : isSet (Homo {p1} {p2}) =>
@@ -64,16 +42,12 @@
              | A => Homo {p1} {p2}
              | B => homoSigma
              | f (x : Homo {p1} {p2}) => (x.h, x.equ)
-             | ret b => \new Homo {p1} {p2} {
-               | h => b.1
-               | equ => b.2
-               }
+             | ret b => \new Homo {p1} {p2} b.1 b.2
              | ret_f => qed
            }
-      \in HLevel_-2+1=>HLevel_-1 (Homo {p1} {p2}) 1
-            (HLevel-retracts sect {2} ((HLevel_-1=>HLevel_-2+1 homoSigma 1 homoSigma_isSet)))
+      \in retractsSet sect homoSigma_isSet
 
-    \func product (A B : Pointed) : Pointed \cowith {
+    \func \infix 5 * (A B : Pointed) : Pointed \cowith {
       | S => \Sigma (x : A.S) (y : B.S)
       | is_set => product_isSet A B
       | base => (A.base, B.base)
@@ -83,23 +57,24 @@
 \module PointedSetCategory \where {
   \open Pointed
 
-  \func PSet : Cat {Pointed} \cowith {
-    | Hom p1 p2 => Homo {p1} {p2}
-    | homSet {p1} {p2} => homo_isSet p1 p2
-    | id => id
-    | comp f g => comp f g
-    | l_unit f => l_unit f
-    | r_unit f => r_unit f
-    | assoc {A} {B} {C} {D} f g h => assoc {A} {B} {C} {D} f g h
-    }
+  \func pSetStruct : SetBasedCat {Pointed} =>
+    \new SetBasedCat (\lam A B => Homo {A} {B})
+                     (\lam {A} {B} => homo_isSet A B)
+                     id
+                     (\lam f g => comp f g)
+                     (\lam x => x)
+                     (\lam {A} {B} (f : Homo {A} {B}) => f.h)
+                     (\lam {_} => idp)
+                     (\lam _ _ => idp)
+                     (\lam f g eq => equiv f g eq)
+
+  \func PSet : Cat {Pointed} =>
+    SetBasedCat.category pSetStruct
 
   \func terminal : Terminal {PSet} zero \cowith {
     | terminal P => \new Singleton {
       | T => P ->> {PSet} zero
-      | t => \new Homo {P} {zero} {
-        | h x => unit
-        | equ => idp
-        }
+      | t => \new Homo {P} {zero} (\lam _ => unit) idp
       | prop (m1 m2 : Homo {P} {zero}) =>
         equiv m1 m2 (functExt (\lam x => unit_isProp (m1.h x) (m2.h x)))
       }
@@ -108,45 +83,27 @@
   \func initial : Initial {PSet} zero \cowith {
     | initial (P : Pointed) => \new Singleton {
       | T => zero ->> {PSet} P
-      | t => \new Homo {zero} {P} {
-        | h x => P.base
-        | equ => idp
-        }
+      | t => \new Homo {zero} {P} (\lam _ => P.base) idp
       | prop (m1 m2 : Homo {zero} {P}) =>
          equiv m1 m2 (functExt (\lam (x : Unit) => m1.equ *> (inv m2.equ)))
       }
     }
 
-  \func caretsian_product (A B : Pointed) : Product2 {PSet} A B =>
-    \let | A*B : Pointed => product A B
-         | p1 : Homo {A*B} {A} => \new Homo {A*B} {A} {
-           | h x => x.1
-           | equ => idp
-         }
-         | p2 : Homo {A*B} {B} => \new Homo {A*B} {B} {
-           | h x => x.2
-           | equ => idp
-         } \in
-    \new Product2 {PSet} A B A*B p1 p2 {
-      | prod (C : Pointed) (q1 : Homo {C} {A}) (q2 : Homo {C} {B}) =>
-        \let m : Homo {C} {A*B}  => \new Homo {C} {A*B} {
+  \func sbProduct (A B : Pointed) : SetBasedCat.SetBasedProduct {pSetStruct} A B =>
+    \new SetBasedCat.SetBasedProduct {pSetStruct} A B (A * B) {
+      | u => idp
+      | p1 => \new Homo {A * B} {A} (\lam x => x.1) idp
+      | p1_e => idp
+      | p2 => \new Homo {A * B} {B} (\lam x => x.2) idp
+      | p2_e => idp
+      | ump (C : Pointed) (q1 : Homo {C} {A}) (q2 : Homo {C} {B}) =>
+        \let m => \new Homo {C} {A * B} {
           | h => (\lam x => (q1.h x, q2.h x))
           | equ => SigmaExt {A.S} (\lam _ => B.S) (q1.h C.base, q2.h C.base) (A.base, B.base) q1.equ q2.equ
-        } \in
-        \new Unique (C ->> {PSet} A*B) (\lam m => \Sigma (p1 cmp {PSet} m = q1) (p2 cmp {PSet} m = q2)) {
-          | elem => m
-          | prop =>
-            \let | p1_m => p1 cmp {PSet} m
-                 | p2_m => p2 cmp {PSet} m \in
-            (equiv p1_m q1 (functExt (\lam x => qed (q1.h x))),
-             equiv p2_m q2 (functExt (\lam x => qed (q2.h x))))
-          | unique (f : Homo {C} {A*B}) s =>
-            equiv m f (functExt (\lam x =>
-              \let | fx => f.h x
-                   | fst : fx.1 = q1.h x => (functExtElim (equivElim s.1)) x
-                   | snd : fx.2 = q2.h x => (functExtElim (equivElim s.2)) x \in
-              inv (pmap2 (\lam u => \lam w => (u, w)) fst snd)
-            ))
-          }
+        } \in (m, idp)
       }
+
+  \func cartesian_product (A B : Pointed) : Product2 {SetBasedCat.category pSetStruct} A B =>
+    SetBasedCat.product (sbProduct A B)
+
   }
