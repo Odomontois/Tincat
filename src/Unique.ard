@@ -31,3 +31,5 @@
 
 \func uniqueT_to_unique (u : Singleton) =>
     \new Unique u.T (\lam _ => Unit) u.t unit (\lam a' _ => u.prop u.t a')
+
+
