@@ -1,0 +1,15 @@
+\import Cat
+\import Functor
+\import Unique
+
+\record UnInit
+{C D : Cat} (x : D.Ob) (F : Functor C D)
+(y : C.Ob)
+(m : D.Hom x (F.ob y))
+(divide : \Pi (z : C.Ob) (n : D.Hom x (F.ob z)) -> Unique (C.Hom y z) (\lam f => D.comp (F.map f) m = n ))
+
+\record UnTerm
+{C D : Cat} (x : D.Ob) (F : Functor C D)
+(y : C.Ob)
+(m : D.Hom (F.ob y) x)
+(divide : \Pi (z : C.Ob) (n : D.Hom (F.ob z) x) -> Unique (C.Hom z y) (\lam f => D.comp m (F.map f) = n ))
