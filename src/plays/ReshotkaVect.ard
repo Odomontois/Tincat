@@ -1,0 +1,60 @@
+\import lib.Data.Empty
+\import lib.Paths
+
+\record OfType (A : \Type)
+
+\record Semigroup
+ (comb : A -> A -> A)
+ (assoc : \Pi (a b c : A) -> comb (comb a b) c = comb a (comb b c)) \extends OfType \where {
+    \func \infix 5 & {S : Semigroup} (a b : S.A) => S.comb a b
+ }
+
+ \record CommSemigroup
+  (comm : \Pi (a b : A) -> comb a b = comb b a)
+  \extends Semigroup
+
+\record Monoid
+ (unit : A)
+ (left_unit : \Pi (a : A) -> comb unit a = a)
+ (right_unit : \Pi (a : A) -> comb a unit = a)
+ \extends Semigroup
+
+ \record CommMonoid \extends Monoid, CommSemigroup
+
+\record Group
+ (neg : A -> A)
+ (left_neg : \Pi (a : A) -> comb (neg a) a = unit )
+ (right_neg : \Pi (a : A) -> comb a (neg a) = unit)
+ \extends Monoid {
+   \func asMonoid {A : \Type } (G : Group A) : Monoid A => G
+ }
+
+ \record AbelianGroup \extends Group, CommMonoid
+
+\record Ring
+  (Add : Group A)
+  (Mul : Monoid A)
+  (distr : \Pi (a b c : A) -> Mul.comb a (Add.comb b c) = Add.comb (Mul.comb a b) (Mul.comb a c))
+  \extends OfType \where {
+    \func \infix 5 + {R : Ring} (a b : R.A) => R.Add.comb a b
+    \func \infix 7 * {R : Ring} (a b : R.A) => R.Mul.comb a b
+    \func _zero {R : Ring} => R.Add.unit
+    \func _one {R : Ring}  => R.Mul.unit
+
+}
+
+\record WithCommutativeMul (MulG : Group A) \extends OfType
+
+\record CommRing \extends Ring, WithCommutativeMul {| Mul => MulG }
+
+\func NonZero {R : Monoid} => \Sigma (a : R.A) (Not (a = R.unit))
+
+\open Ring
+
+\record Field
+ (inv : NonZero {Add} -> A )
+ (inv_unit : \Pi (a : NonZero {Add}) -> Mul.comb a.1 (inv a) = a.1  )
+ \extends Ring
+
+
+

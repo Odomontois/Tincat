@@ -50,11 +50,13 @@
                              | naturality f => natEq f @ i
                            })
 
-                     \func equiv1 {C D : Cat} (F G G1 : Functor C D) (ge : G = G1)
+                     \func equiv1 {C D : Cat} (F G G' : Functor C D) (ge : G = G')
                                   (trans : \Pi (a : C.Ob) -> (F.ob a ->> {D} G.ob a))
                                   (alpha : NatTrans F G (\lam {a} => trans a))
-                                  (beta : NatTrans F G1 (\lam {a} => transport (\lam (GG : Functor C D) => (F.ob a ->> {D} GG.ob a)) ge (trans a))):
-                                  alpha = {NatTrans} beta  => {?}
+                                  (beta : NatTrans F G' (\lam {a} => transport (\lam (GG : Functor C D) => (F.ob a ->> {D} GG.ob a)) ge (trans a))):
+                                  alpha = {NatTrans} beta  =>
+                                    \let eqq (i : I) (t : NatTrans F G' ) => {?}
+                                    \in {?}
 
 
                      \func l_unit {C D : Cat} (F G : Functor C D) (alpha : NatTrans F G) : comp (id G) alpha = alpha =>
