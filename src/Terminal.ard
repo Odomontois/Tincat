@@ -20,3 +20,13 @@
     \let f => uniqueT2.t \in
     \let f_op => uniqueT1.t \in
     \new Iso {C} {t1.one} {t2.one} f f_op (terminal_only_id t1 (f_op cmp {C} f)) (terminal_only_id t2 (f cmp {C} f_op))
+
+\record Initial {C : Cat}
+                (zero : C.Ob)
+                (initial : \Pi (x : C.Ob) -> Singleton {zero ->> {C} x})
+
+\func terminal_duality {C : Cat}
+                       (zero : C.Ob)
+                       (i : Initial {C} zero) : Terminal {op C} zero \cowith {
+  | terminal => i.initial
+  }

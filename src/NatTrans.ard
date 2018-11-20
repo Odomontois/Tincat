@@ -106,3 +106,8 @@
 
 
 \func \infix 7 ~> {C D : Cat} (F G : Functor C D) => NatTrans F G
+
+\open Functor (Const)
+\func constTrans2 {C D : Cat} {a b : D.Ob} (f : a ->> {D} b): NatTrans {C} {D} (Const a) (Const b) \cowith
+  | trans {_} => f
+  | naturality _ => D.r_unit f *> inv (D.l_unit f)

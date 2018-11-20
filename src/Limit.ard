@@ -1,0 +1,11 @@
+\import Cat
+\import Functor
+\import NatTrans
+\import Unique
+
+\open Functor (Const)
+\record Limit {C : Cat} {I : Cat}
+         (F : Functor I C)
+         (object : C.Ob)
+         (cone : Const object ~> F)
+         (universal : \Pi (o : C.Ob) (c : Const o ~> F) -> Unique (o ->> {C} object) (\lam arr => NatTrans.comp cone (constTrans2 arr) = c ))

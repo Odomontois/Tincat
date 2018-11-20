@@ -5,14 +5,15 @@
 \import lib.Data.Unit
 \import Prelude
 
-\record Cat {Ob : \Type}
-            (Hom : Ob -> Ob -> \Set)
-            (homSet : \Pi {a b : Ob} -> isSet (Hom a b))
-            (id : \Pi {a : Ob} -> Hom a a)
-            (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c )
-            (l_unit : \Pi {a b : Ob} (f : Hom a b) -> comp id f = f )
+\record CatStruct {Ob : \Type}
+                  (Hom : Ob -> Ob -> \Set)
+                  (homSet : \Pi {a b : Ob} -> isSet (Hom a b))
+                  (id : \Pi {a : Ob} -> Hom a a)
+                  (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c)
+
+\record Cat (l_unit : \Pi {a b : Ob} (f : Hom a b) -> comp id f = f )
             (r_unit : \Pi {a b : Ob} (f : Hom a b) -> comp f id = f )
-            (assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> comp (comp f g) h = comp f (comp g h)  )
+            (assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> comp (comp f g) h = comp f (comp g h)  ) \extends CatStruct
 
 \func \infix 6 ->> {C : Cat} (a b : C.Ob) => C.Hom a b
 

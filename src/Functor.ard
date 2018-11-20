@@ -34,6 +34,13 @@
          | id => \lam {a} => pmap F.map G.id *> F.id
          | comp => \lam {a} {b} {c} f g => F.comp (G.map f) (G.map g) *> pmap F.map (G.comp f g)
 
+        \func Const {C D : Cat} (o : D.Ob) : Functor C D \cowith
+          | ob _ => o
+          | map _ => D.id
+          | id {_} => idp
+          | comp f g => D.l_unit D.id
+
+
         \func equiv {C D : Cat} (ob : C.Ob -> D.Ob )
                      (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))  (F G : Functor C D ob map) : F = {Functor C D} G =>
             \let  | idEq {a : C.Ob} =>
