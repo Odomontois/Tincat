@@ -1,5 +1,5 @@
 \import Cat
-\import Set
+\import SetCat (SetC, Set)
 \import lib.Paths
 
 \record FunctorStruct (C D : Cat)
@@ -82,3 +82,10 @@
 
     }
 
+\func homFunctor {C : Cat} (o : C.Ob) : Functor C SetC \cowith {
+  | ob x => \new Set (C.Hom o x) (C.homSet {o} {x})
+  | map f g => C.comp f g
+  | id {a} => funExt (\lam _ => C.Hom o a) (_) (_) (\lam f => C.l_unit f)
+  | comp {a} {b} {c} f g => funExt (\lam _ => C.Hom o c) (_) (_) (\lam h => inv (C.assoc f g h))
+
+}

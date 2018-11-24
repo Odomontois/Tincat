@@ -5,11 +5,12 @@
 \import lib.Data.Unit
 \import Prelude
 
-\record CatStruct {Ob : \Type}
-                  (Hom : Ob -> Ob -> \Set)
-                  (homSet : \Pi {a b : Ob} -> isSet (Hom a b))
-                  (id : \Pi {a : Ob} -> Hom a a)
-                  (comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c)
+\class CatStruct (Ob : \Type){
+| Hom : Ob -> Ob -> \Set
+| homSet : \Pi {a b : Ob} -> isSet (Hom a b)
+| id : \Pi {a : Ob} -> Hom a a
+| comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c
+}
 
 \record Cat (l_unit : \Pi {a b : Ob} (f : Hom a b) -> comp id f = f )
             (r_unit : \Pi {a b : Ob} (f : Hom a b) -> comp f id = f )

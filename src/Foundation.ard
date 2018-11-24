@@ -1,0 +1,10 @@
+\import Cat
+\import Functor
+\import SetCat
+
+
+
+\func Yoneda
+    {C : Cat}
+    (F : Functor C SetC)
+    (a : C.Ob)
