@@ -45,7 +45,7 @@
 
 \record WithCommutativeMul (MulG : Group A) \extends OfType
 
-\record CommRing \extends Ring, WithCommutativeMul {| Mul => MulG }
+\record CommRing \extends WithCommutativeMul, Ring {| Mul => MulG }
 
 \func NonZero {R : Monoid} => \Sigma (a : R.A) (Not (a = R.unit))
 

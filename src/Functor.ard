@@ -17,6 +17,13 @@
 
         \coerce struct (F : Functor): FunctorStruct F.C F.D F.ob F.map => \new FunctorStruct F.C F.D F.ob F.map
 
+        \func fop {C D : Cat} (F : Functor C D) : Functor (op C) (op D) \cowith {
+         | ob => F.ob
+         | map {a} {b} => F.map {b} {a}
+         | id => F.id
+         | comp f g => F.comp g f
+        }
+
         \func Id {C : Cat} : Functor \cowith
             | C => C
             | D => C
@@ -72,5 +79,6 @@
              \let | left => Comp {A} {B} {D} (Comp {B} {C} {D} F G) H
                    | right => Comp {A} {C} {D} F (Comp {A} {B} {C} G H)
              \in equiv {A} {D} (Functor.ob {left}) (Functor.map {left}) left right
+
     }
 

@@ -3,7 +3,7 @@
 \import lib.Paths
 
 
-\record NatTrans {C D : Cat} (F G : Functor C D)
+\record NatTrans  {C D : Cat} (F G : Functor C D)
                   (trans : \Pi {a : C.Ob} -> F.ob a ->> {D} G.ob a)
                   (naturality : \Pi {a b : C.Ob} (f : a ->> {C} b) -> trans cmp {D} F.map f = G.map f cmp {D} trans )
                   \where  {
@@ -37,6 +37,8 @@
                                              pmap (\lam h => E.comp h (F.map beta.trans)) (alpha.naturality (K.map f)) *>
                                              E.assoc (G.map (K.map f)) alpha.trans (F.map beta.trans)
                            }
+
+--                     \func nop {C D : Cat} {F G : Functor (op C) (op D)}
 
                      \func equiv {C D : Cat} (F G : Functor C D)
                                   (trans : \Pi (a : C.Ob) -> (F.ob a ->> {D} G.ob a) )
