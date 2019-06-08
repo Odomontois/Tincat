@@ -1,0 +1,14 @@
+\import lib.Data.Empty
+\import lib.Equiv
+
+\record Injection (A B : \Type) {
+  | f : A -> B
+  | f' : B -> A
+  | ret : \Pi (x : A) -> f' (f x) = x
+}
+\record Russel (A : \Type) {
+  | subsets : Injection (A -> \Type) A
+}
+
+\func paradox (A : \Type) (russel : Russel A) : Empty = {?paradox}
+

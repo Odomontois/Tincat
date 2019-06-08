@@ -5,78 +5,56 @@
 \import lib.Data.Unit
 \import Prelude
 
-\class CatStruct (Ob : \Type){
-| Hom : Ob -> Ob -> \Set
-| homSet : \Pi {a b : Ob} -> isSet (Hom a b)
-| id : \Pi {a : Ob} -> Hom a a
-| comp : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c
+\class Cat (Ob : \Type){
+  | Hom : Ob -> Ob -> \Set
+  | id : \Pi {a : Ob} -> Hom a a
+  | \infixr 5 o : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c
+  \property l_unit : \Pi {a b : Ob} (f : Hom a b) -> id o f = f
+  \property r_unit : \Pi {a b : Ob} (f : Hom a b) -> f o id = f
+  \property assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> (f o g) o h =  f o (g o h)
 }
 
-\record Cat (l_unit : \Pi {a b : Ob} (f : Hom a b) -> comp id f = f )
-            (r_unit : \Pi {a b : Ob} (f : Hom a b) -> comp f id = f )
-            (assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> comp (comp f g) h = comp f (comp g h)  ) \extends CatStruct
-
-\func \infix 6 ->> {C : Cat} (a b : C.Ob) => C.Hom a b
+\func \infix 6 ->> {Ob : \Type} {C : Cat Ob} (a b : Ob) => C.Hom a b
 
 \func op (C : Cat) : Cat \cowith
-      | Ob => C.Ob
-      | Hom a b => C.Hom b a
-      | homSet => \lam {a} {b} => C.homSet
-      | id => C.id
-      | comp => \lam {a} {b} {c} f g => C.comp g f
-      | l_unit => \lam {a} {b} f => C.r_unit f
-      | r_unit => \lam {a} {b} f => C.l_unit f
-      | assoc => \lam {a} {b} {c} {d} f g h => inv (C.assoc h g f)
-
-\func op_is_revertible (C : Cat) : op (op C) = C =>
-    path ( \lam i => \new Cat {
-      | Ob => C.Ob
-      | Hom => C.Hom
-      | homSet => C.homSet
-      | id => C.id
-      | comp => C.comp
-      | l_unit => C.l_unit
-      | r_unit => C.r_unit
-      | assoc => \lam {a} {b} {c} {d} f g h => (inv_inv (C.assoc f g h) @ i)
-    }
-)
-
-\func \infix 5 <x> (C : Cat) (D : Cat) : Cat =>
-    \let | Ob => \Sigma C.Ob D.Ob
-         | Hom  (a : Ob) (b : Ob) => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
-         | id {a : Ob} : Hom a a => (C.id, D.id)
-         | comp {a b c : Ob} (f : Hom b c) (g : Hom a b) => (C.comp f.1 g.1, D.comp f.2 g.2)
-         | constDHom {a b : Ob} (chom : C.Hom a.1 b.1) => D.Hom a.2 b.2
-    \in \new Cat {
-        | Ob => Ob | Hom => Hom  | id => id | comp => comp
-        | homSet => \lam {a} {b} => pairSet C.homSet D.homSet
-        | l_unit => \lam {a} {b} f => SigmaExt constDHom (comp id f) f (C.l_unit f.1) (D.l_unit f.2)
-        | r_unit => \lam {a} {b} f => SigmaExt constDHom (comp f id) f (C.r_unit f.1) (D.r_unit f.2)
-        | assoc => \lam {a} {b} {c} {d} f g h =>
-            SigmaExt constDHom (comp (comp f g) h) (comp f (comp g h)) (ass {C}) (D.assoc f.2 g.2 h.2)
-    }
+  | Ob => C.Ob
+  | Hom a b => C.Hom b a
+  | id => C.id
+  | o => \lam {a} {b} {c} f g => C.o g f
+  | l_unit => \lam {a} {b} f => C.r_unit f
+  | r_unit => \lam {a} {b} f => C.l_unit f
+  | assoc => \lam {a} {b} {c} {d} f g h => inv (C.assoc h g f)
 
 
 
-\func cat1 : Cat \cowith
-  | Ob => Unit
+\instance \infix 5 <x> (C : Cat) (D : Cat) : Cat (\Sigma C.Ob D.Ob) \cowith
+  | Hom a b => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
+  | id {a } => (C.id {a.1} , D.id {a.2} )
+  | o f g => ( f.1 o g.1, f.2 o g.2)
+  | l_unit => \lam {a} {b} f => path (\lam i => (C.l_unit f.1 @ i, D.l_unit f.2 @ i))
+  | r_unit => \lam {a} {b} f => path(\lam i =>  (C.r_unit f.1 @ i, D.r_unit f.2 @ i))
+  | assoc => \lam {a} {b} {c} {d} f g h => path (\lam i => (C.assoc f.1 g.1 h.1 @ i, D.assoc f.2 g.2 h.2 @ i))
+
+
+\instance cat1 : Cat Unit \cowith
   | Hom a b => Unit
-  | homSet => \lam {a} {b} => unit_isSet
   | id => \lam {a} => unit
-  | comp f g => unit
+  | o f g => unit
   | l_unit f => idp
   | r_unit f => idp
   | assoc f g h => idp
 
-\func \infix 6 cmp {C : Cat} {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => C.comp f g
-
-
-
-
-\func ass {C : Cat} {a b c d : C.Ob} {f : C.Hom c d} {g : C.Hom b c} {h : C.Hom a b} : (f cmp {C} g) cmp {C} h = f cmp {C} (g cmp {C} h)  =>  C.assoc f g h
-
-
-
+\func op_is_revertible (C : Cat) : op (op C) = C =>
+  path ( \lam i => \new Cat {
+    | Ob => C.Ob
+    | Hom => C.Hom
+    | id => C.id
+    | o => C.o
+    | l_unit => C.l_unit
+    | r_unit => C.r_unit
+    | assoc => \lam {a} {b} {c} {d} f g h => (inv_inv (C.assoc f g h) @ i)
+  }
+  )
 
 
 

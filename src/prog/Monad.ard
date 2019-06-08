@@ -5,11 +5,15 @@
 \import prog.funs
 
 
-\class Scala[_] (T : \Type ) (F : \Type -> \Type )
+\class Scala[_] (T : \Type ) {
+  | F : \Type -> \Type
+}
 
-\class Functor  (map : \Pi {A B : \Type} -> F A -> (A -> B)  -> F B)
-                     (identity : \Pi { A : \Type } (fa : F A) -> map fa (\lam x => x) = fa)
-                     (composition : \Pi { A B C : \Type } (fa : F A) (f : A -> B) (g : B -> C) -> map fa (g ~ f) = map (map fa f) g) \extends Scala[_]
+\class Functor   \extends Scala[_]{
+  | map : \Pi {A B : \Type} -> F A -> (A -> B)  -> F B
+  | identity : \Pi { A : \Type } (fa : F A) -> map fa (\lam x => x) = fa
+  | composition : \Pi { A B C : \Type } (fa : F A) (f : A -> B) (g : B -> C) -> map fa (g ~ f) = map (map fa f) g
+}
 
 
 \class Monad' (pure : \Pi {A : \Type } -> A -> F A)
