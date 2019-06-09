@@ -44,7 +44,7 @@
   | r_unit f => idp
   | assoc f g h => idp
 
-\func op_is_revertible (C : Cat) : op (op C) = C =>
+\lemma op_is_revertible (C : Cat) : op (op C) = C =>
   path ( \lam i => \new Cat {
     | Ob => C.Ob
     | Hom => C.Hom
@@ -54,7 +54,7 @@
     | r_unit => C.r_unit
     | assoc => \lam {a} {b} {c} {d} f g h => (inv_inv (C.assoc f g h) @ i)
   }
-  )
+)
 
 
 

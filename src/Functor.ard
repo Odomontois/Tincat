@@ -2,90 +2,76 @@
 \import SetCat (SetC, Set)
 \import lib.Paths
 
-\record FunctorStruct (C D : Cat)
-                      (ob : C.Ob -> D.Ob)
-                      (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))
+\record Functor (C D : \Type) {cc : Cat C} {dc : Cat D} {
+  | ob : C -> D
+  | map : \Pi {a b : C} (a ->> b) -> (ob a) ->> (ob b)
+  \property functor_id : \Pi {a : C} -> map (cc.id {a}) = dc.id {ob a}
+  \property func_comp : \Pi {a b c : C} (f : b ->> c) (g : a ->> b) ->  (map f) o (map g) = map (f o g)
+}  \where {
+  \func fop {C D : \Type} {cc : Cat C} {dd : Cat D}  (F : Functor C D) : Functor C D {op cc} {op dd} \cowith {
+    | ob => F.ob
+    | map {a} {b} => F.map {b} {a}
+    | functor_id => F.functor_id
+    | func_comp f g => F.func_comp g f
+  }
 
-\record FunctorIdLaw (id : \Pi {a : C.Ob} -> map (C.id {a}) = D.id {ob a}) \extends FunctorStruct
+  \func Id {C : \Type}{cc : Cat C} : Functor C C  \cowith
+    | ob x => x
+    | map f => f
+    | functor_id {a} => idp
+    | func_comp f g => idp
 
-\record FunctorCompLaw (
-   comp : \Pi {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) -> D.comp (map f) (map g) = map (C.comp f g)
-  ) \extends FunctorStruct
+  \func Comp {C D E : \Type } {cc : Cat C} { dc : Cat D} { ec : Cat E} (F : Functor D E) (G : Functor C D) : Functor C E \cowith
+    | ob x => F.ob (G.ob x)
+    | map {a} {b} f => F.map (G.map f)
+    | functor_id {a} => pmap F.map G.functor_id *> F.functor_id
+    | func_comp {a} {b} {c} f g => F.func_comp (G.map f) (G.map g) *> pmap F.map (G.func_comp f g)
 
-\record Functor \extends  FunctorIdLaw, FunctorCompLaw
-                \where {
+  \func Const {C D : \Type } {cc : Cat C} {dc : Cat D} (o : D) : Functor C D \cowith
+    | ob _ => o
+    | map _ => dc.id
+    | functor_id {_} => idp
+    | func_comp f g => dc.l_unit dc.id
 
-        \coerce struct (F : Functor): FunctorStruct F.C F.D F.ob F.map => \new FunctorStruct F.C F.D F.ob F.map
-
-        \func fop {C D : Cat} (F : Functor C D) : Functor (op C) (op D) \cowith {
-         | ob => F.ob
-         | map {a} {b} => F.map {b} {a}
-         | id => F.id
-         | comp f g => F.comp g f
-        }
-
-        \func Id {C : Cat} : Functor \cowith
-            | C => C
-            | D => C
-            | ob x => x
-            | map f => f
-            | id => \lam {a} => idp
-            | comp => \lam {a} {b} {c} f g => idp
-
-
-        \func Comp {C D E : Cat } (F : Functor D E) (G : Functor C D) : Functor \cowith
-         | C => C
-         | D => E
-         | ob x => F.ob (G.ob x)
-         | map => \lam {a} {b} f => F.map (G.map f)
-         | id => \lam {a} => pmap F.map G.id *> F.id
-         | comp => \lam {a} {b} {c} f g => F.comp (G.map f) (G.map g) *> pmap F.map (G.comp f g)
-
-        \func Const {C D : Cat} (o : D.Ob) : Functor C D \cowith
-          | ob _ => o
-          | map _ => D.id
-          | id {_} => idp
-          | comp f g => D.l_unit D.id
-
-
-        \func equiv {C D : Cat} (ob : C.Ob -> D.Ob )
-                     (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))  (F G : Functor C D ob map) : F = {Functor C D} G =>
-            \let  | idEq {a : C.Ob} =>
-                        D.homSet (map (C.id {a})) (D.id {ob a}) F.id G.id
-                  | compEq {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) =>
-                        D.homSet (D.comp (map f) (map g)) (map (C.comp f g)) (F.comp f g) (G.comp f g)
-            \in path ( \lam i => \new Functor C D ob map {
-                  | id {a : C.Ob} => idEq @ i
-                  | comp {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => compEq f g @ i
-            })
-
-       -- лолкот гарантирует
-        \func l_unit {C D : Cat} (F : Functor C D) : Comp {C} {D} {D} Id F = F =>
-            \let | fcomp => Comp {C} {D} {D} Id F
-                  | F' => \new Functor C D F.ob F.map F.id F.comp
-                  | eq : fcomp = F' => equiv F.ob F.map fcomp F'
-                  | eq2 : F' = F => idp
-            \in eq *> eq2
-
-        \func r_unit {C D : Cat} (F : Functor C D) : Comp {C} {C} {D} F Id = F =>
-            \let | fcomp => Comp {C} {C} {D} F Id
-                  | F' => \new Functor C D F.ob F.map F.id F.comp
-                  | eq : fcomp = F' => equiv F.ob F.map fcomp F'
-                  | eq2 : F' = F => idp
-            \in eq *> eq2
-
-        \func assoc {A B C D : Cat} (F : Functor C D) (G : Functor B C) (H : Functor A B) :
-            Comp (Comp {B} {C} {D} F G) H = {Functor A D} Comp F (Comp {A} {B} {C} G H)  =>
-             \let | left => Comp {A} {B} {D} (Comp {B} {C} {D} F G) H
-                   | right => Comp {A} {C} {D} F (Comp {A} {B} {C} G H)
-             \in equiv {A} {D} (Functor.ob {left}) (Functor.map {left}) left right
-
-    }
-
-\func homFunctor {C : Cat} (o : C.Ob) : Functor C SetC \cowith {
-  | ob x => \new Set (C.Hom o x) (C.homSet {o} {x})
-  | map f g => C.comp f g
-  | id {a} => funExt (\lam _ => C.Hom o a) (_) (_) (\lam f => C.l_unit f)
-  | comp {a} {b} {c} f g => funExt (\lam _ => C.Hom o c) (_) (_) (\lam h => inv (C.assoc f g h))
+  --
+--  \func equiv {C D : Cat} (ob : C.Ob -> D.Ob )
+  --              (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))  (F G : Functor C D ob map) : F = {Functor C D} G =>
+  --    \let  | idEq {a : C.Ob} =>
+  --      D.homSet (map (C.id {a})) (D.id {ob a}) F.id G.id
+  --          | compEq {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) =>
+  --            D.homSet (D.comp (map f) (map g)) (map (C.comp f g)) (F.comp f g) (G.comp f g)
+  --    \in path ( \lam i => \new Functor C D ob map {
+  --      | id {a : C.Ob} => idEq @ i
+  --      | comp {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => compEq f g @ i
+  --    })
+  --
+--  -- лолкот гарантирует
+  --
+--  \func l_unit {C D : Cat} (F : Functor C D) : Comp {C} {D} {D} Id F = F =>
+  --    \let | fcomp => Comp {C} {D} {D} Id F
+  --         | F' => \new Functor C D F.ob F.map F.id F.comp
+  --         | eq : fcomp = F' => equiv F.ob F.map fcomp F'
+  --         | eq2 : F' = F => idp
+  --    \in eq *> eq2
+  --
+--  \func r_unit {C D : Cat} (F : Functor C D) : Comp {C} {C} {D} F Id = F =>
+  --    \let | fcomp => Comp {C} {C} {D} F Id
+  --         | F' => \new Functor C D F.ob F.map F.id F.comp
+  --         | eq : fcomp = F' => equiv F.ob F.map fcomp F'
+  --         | eq2 : F' = F => idp
+  --    \in eq *> eq2
+  --
+--  \func assoc {A B C D : Cat} (F : Functor C D) (G : Functor B C) (H : Functor A B) :
+  --    Comp (Comp {B} {C} {D} F G) H = {Functor A D} Comp F (Comp {A} {B} {C} G H) =>
+  --    \let | left => Comp {A} {B} {D} (Comp {B} {C} {D} F G) H
+  --         | right => Comp {A} {C} {D} F (Comp {A} {B} {C} G H)
+  --    \in equiv {A} {D} (Functor.ob {left}) (Functor.map {left}) left right
+  --}
+  --
+--\func homFunctor {C : Cat} (o : C.Ob) : Functor C SetC \cowith {
+  --  | ob x => \new Set (C.Hom o x) (C.homSet {o} {x})
+  --  | map f g => C.comp f g
+  --  | id {a} => funExt (\lam _ => C.Hom o a) (_) (_) (\lam f => C.l_unit f)
+  --  | comp {a} {b} {c} f g => funExt (\lam _ => C.Hom o c) (_) (_) (\lam h => inv (C.assoc f g h))
 
 }
