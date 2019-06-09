@@ -1,11 +1,11 @@
 \import Cat
 \import SetCat (SetC, Set)
-\import lib.Paths
+\import Paths
 
-\record Functor (C D : \Type) {cc : Cat C} {dc : Cat D} {
+\record Functor (C D : \Type) {dom : Cat C} {cod : Cat D} {
   | ob : C -> D
   | map : \Pi {a b : C} (a ->> b) -> (ob a) ->> (ob b)
-  \property functor_id : \Pi {a : C} -> map (cc.id {a}) = dc.id {ob a}
+  \property functor_id : \Pi {a : C} -> map (dom.id {a}) = cod.id {ob a}
   \property func_comp : \Pi {a b c : C} (f : b ->> c) (g : a ->> b) ->  (map f) o (map g) = map (f o g)
 }  \where {
   \func fop {C D : \Type} {cc : Cat C} {dd : Cat D}  (F : Functor C D) : Functor C D {op cc} {op dd} \cowith {
@@ -15,7 +15,7 @@
     | func_comp f g => F.func_comp g f
   }
 
-  \func Id {C : \Type}{cc : Cat C} : Functor C C  \cowith
+  \func Id {C : \Type} {cc : Cat C} : Functor C C  \cowith
     | ob x => x
     | map f => f
     | functor_id {a} => idp
@@ -33,23 +33,24 @@
     | functor_id {_} => idp
     | func_comp f g => dc.l_unit dc.id
 
+  --  -- лолкот гарантирует
   --
---  \func equiv {C D : Cat} (ob : C.Ob -> D.Ob )
-  --              (map : \Pi {a b : C.Ob} (C.Hom a b) -> D.Hom (ob a) (ob b))  (F G : Functor C D ob map) : F = {Functor C D} G =>
-  --    \let  | idEq {a : C.Ob} =>
-  --      D.homSet (map (C.id {a})) (D.id {ob a}) F.id G.id
-  --          | compEq {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) =>
-  --            D.homSet (D.comp (map f) (map g)) (map (C.comp f g)) (F.comp f g) (G.comp f g)
-  --    \in path ( \lam i => \new Functor C D ob map {
-  --      | id {a : C.Ob} => idEq @ i
-  --      | comp {a b c : C.Ob} (f : C.Hom b c) (g : C.Hom a b) => compEq f g @ i
-  --    })
-  --
---  -- лолкот гарантирует
-  --
---  \func l_unit {C D : Cat} (F : Functor C D) : Comp {C} {D} {D} Id F = F =>
+
+
+  \func l_unit {C D : \Type} {cc : Cat C} {dc : Cat D} (F : Functor C D) : Comp {C} {D} {D} (Id {D}) F = F =>
+    \let | compf : Functor C D => Comp {C} {D} {D} (Id {D}) F
+         | eq_map {a b : C} : compf.map {a} {b} = F.map => idp
+         | eq_fid {a : C} : compf.functor_id {a} = F.functor_id {a} => idp
+         | eq_fcomp {a b c : C} (f : b ->> c) (g : a ->> b) : compf.func_comp  f g = F.func_comp f g => Path.inProp _ _
+    \in path (\lam i => \new Functor C D {cc} {dc} {
+      | ob a => F.ob a
+      | map {a} {b} => eq_map  @ i
+      | functor_id {a} => eq_fid @ i
+      | func_comp  f g => eq_fcomp  f g @ i
+    })
+
   --    \let | fcomp => Comp {C} {D} {D} Id F
-  --         | F' => \new Functor C D F.ob F.map F.id F.comp
+  --         | F' => \new Functor C D F.ob F.map F.functor_id F.func_comp
   --         | eq : fcomp = F' => equiv F.ob F.map fcomp F'
   --         | eq2 : F' = F => idp
   --    \in eq *> eq2

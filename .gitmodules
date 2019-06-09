@@ -1,0 +1,3 @@
+[submodule "arend-lib"]
+	path = arend-lib
+	url = https://github.com/JetBrains/arend-lib

@@ -1,8 +1,8 @@
 \import Set
-\import lib.Equiv
-\import lib.HLevel
-\import lib.Paths
-\import lib.Data.Unit
+\import Equiv
+\import HLevel
+\import Paths
+\import Data.Unit
 \import Prelude
 
 \class Cat (Ob : \Type){
@@ -12,52 +12,47 @@
   \property l_unit : \Pi {a b : Ob} (f : Hom a b) -> id o f = f
   \property r_unit : \Pi {a b : Ob} (f : Hom a b) -> f o id = f
   \property assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> (f o g) o h =  f o (g o h)
+} \where {
+  \func op (C : Cat) : Cat \cowith
+    | Ob => C.Ob
+    | Hom a b => C.Hom b a
+    | id => C.id
+    | o => \lam {a} {b} {c} f g => C.o g f
+    | l_unit => \lam {a} {b} f => C.r_unit f
+    | r_unit => \lam {a} {b} f => C.l_unit f
+    | assoc => \lam {a} {b} {c} {d} f g h => inv (C.assoc h g f)
+
+  \instance \infix 5 <x> (C : Cat) (D : Cat) : Cat (\Sigma C.Ob D.Ob) \cowith
+    | Hom a b => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
+    | id {a } => (C.id {a.1} , D.id {a.2} )
+    | o f g => ( f.1 o g.1, f.2 o g.2)
+    | l_unit => \lam {a} {b} f => path (\lam i => (C.l_unit f.1 @ i, D.l_unit f.2 @ i))
+    | r_unit => \lam {a} {b} f => path(\lam i =>  (C.r_unit f.1 @ i, D.r_unit f.2 @ i))
+    | assoc => \lam {a} {b} {c} {d} f g h => path (\lam i => (C.assoc f.1 g.1 h.1 @ i, D.assoc f.2 g.2 h.2 @ i))
+
+  \instance cat1 : Cat Unit \cowith
+    | Hom a b => Unit
+    | id => \lam {a} => unit
+    | o f g => unit
+    | l_unit f => idp
+    | r_unit f => idp
+    | assoc f g h => idp
+
+  \lemma op_is_revertible (C : Cat) : op (op C) = C =>
+    path ( \lam i => \new Cat {
+      | Ob => C.Ob
+      | Hom => C.Hom
+      | id => C.id
+      | o => C.o
+      | l_unit => C.l_unit
+      | r_unit => C.r_unit
+      | assoc => \lam {a} {b} {c} {d} f g h => (inv_inv (C.assoc f g h) @ i)
+    }
+    )
+
+  \func hom_is_set {C : \Type} {cc : Cat C} (a b : C) : isSet (cc.Hom a b) =>
+    \lam f g => Path.inProp {f = g}
 }
 
 \func \infix 6 ->> {Ob : \Type} {C : Cat Ob} (a b : Ob) => C.Hom a b
-
-\func op (C : Cat) : Cat \cowith
-  | Ob => C.Ob
-  | Hom a b => C.Hom b a
-  | id => C.id
-  | o => \lam {a} {b} {c} f g => C.o g f
-  | l_unit => \lam {a} {b} f => C.r_unit f
-  | r_unit => \lam {a} {b} f => C.l_unit f
-  | assoc => \lam {a} {b} {c} {d} f g h => inv (C.assoc h g f)
-
-
-
-\instance \infix 5 <x> (C : Cat) (D : Cat) : Cat (\Sigma C.Ob D.Ob) \cowith
-  | Hom a b => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
-  | id {a } => (C.id {a.1} , D.id {a.2} )
-  | o f g => ( f.1 o g.1, f.2 o g.2)
-  | l_unit => \lam {a} {b} f => path (\lam i => (C.l_unit f.1 @ i, D.l_unit f.2 @ i))
-  | r_unit => \lam {a} {b} f => path(\lam i =>  (C.r_unit f.1 @ i, D.r_unit f.2 @ i))
-  | assoc => \lam {a} {b} {c} {d} f g h => path (\lam i => (C.assoc f.1 g.1 h.1 @ i, D.assoc f.2 g.2 h.2 @ i))
-
-
-\instance cat1 : Cat Unit \cowith
-  | Hom a b => Unit
-  | id => \lam {a} => unit
-  | o f g => unit
-  | l_unit f => idp
-  | r_unit f => idp
-  | assoc f g h => idp
-
-\lemma op_is_revertible (C : Cat) : op (op C) = C =>
-  path ( \lam i => \new Cat {
-    | Ob => C.Ob
-    | Hom => C.Hom
-    | id => C.id
-    | o => C.o
-    | l_unit => C.l_unit
-    | r_unit => C.r_unit
-    | assoc => \lam {a} {b} {c} {d} f g h => (inv_inv (C.assoc f g h) @ i)
-  }
-)
-
-
-
-
-
 
