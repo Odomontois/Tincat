@@ -2,7 +2,7 @@
 \import Util
 \import lib.Paths
 
-\record Iso {C : Cat}
+\record Iso {C : PreCat}
             {a : C.Ob}
             {b : C.Ob}
             (f : a ->> {C} b)
@@ -10,24 +10,24 @@
             (l_comp : f_op cmp {C} f = C.id)
             (r_comp : f cmp {C} f_op = C.id)
 
-\func \infix 1 ~= {C : Cat}
+\func \infix 1 ~= {C : PreCat}
                   (a b : C.Ob) => Iso {C} {a} {b}
 
-\func eq_iso {C : Cat}
+\func eq_iso {C : PreCat}
              (a b : C.Ob)
              {e : a = b} : a ~= {C} b =>
   transportTerm (pmap (~= {C} a) e) (iso_refl {C} {a})
 
-\func iso_refl {C : Cat}
+\func iso_refl {C : PreCat}
                {a : C.Ob} : a ~= a =>
   \new Iso {C} {a} {a} C.id C.id (C.l_unit C.id) (C.r_unit C.id)
 
-\func iso_sym {C : Cat}
+\func iso_sym {C : PreCat}
               {a b : C.Ob}
               (i : a ~= {C} b) : b ~= a =>
   \new Iso {C} {b} {a} i.f_op i.f i.r_comp i.l_comp
 
-\func iso_trans {C : Cat}
+\func iso_trans {C : PreCat}
                 {a b c : C.Ob}
                 (i : a ~= {C} b)
                 (j : b ~= {C} c) : a ~= c =>
@@ -44,7 +44,7 @@
      pmap (C.comp i.f_op) (C.l_unit i.f) *> i.l_comp \in
    \new Iso {C} {a} {c} (C.comp j.f i.f) (C.comp i.f_op j.f_op) l r
 
-\func unique_f_op {C : Cat}
+\func unique_f_op {C : PreCat}
                   {a b : C.Ob}
                   {f : C.Hom a b}
                   (iso1 : Iso {C} {a} {b} f)

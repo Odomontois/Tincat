@@ -3,17 +3,17 @@
 \import lib.Paths
 
 
-\record NatTrans  {C D : Cat} (F G : Functor C D)
+\record NatTrans  {C D : PreCat} (F G : Functor C D)
                   (trans : \Pi {a : C.Ob} -> F.ob a ->> {D} G.ob a)
                   (naturality : \Pi {a b : C.Ob} (f : a ->> {C} b) -> trans cmp {D} F.map f = G.map f cmp {D} trans )
                   \where  {
-                     \func id {C D : Cat} (F : Functor C D) : F ~> F =>
+                     \func id {C D : PreCat} (F : Functor C D) : F ~> F =>
                          \new NatTrans F F  {
                            | trans {a} => D.id
                            | naturality f => \let ff => F.map f \in  D.l_unit ff *> inv (D.r_unit ff)
                            }
 
-                     \func comp {C D : Cat} {F G H : Functor C D} (alpha : G ~> H) (beta : F ~> G) : F ~> H =>
+                     \func comp {C D : PreCat} {F G H : Functor C D} (alpha : G ~> H) (beta : F ~> G) : F ~> H =>
                         \new NatTrans F H {
                             | trans {a} => alpha.trans cmp {D} beta.trans
                             | naturality f =>
@@ -24,7 +24,7 @@
                                D.assoc (H.map f) alpha.trans beta.trans
                         }
 
-                     \func hcomp {C D E : Cat} {F G : Functor D E} {H K : Functor C D}
+                     \func hcomp {C D E : PreCat} {F G : Functor D E} {H K : Functor C D}
                                  (alpha : F ~> G) (beta : H ~> K) :
                                  (Functor.Comp F H) ~> {C} {E} (Functor.Comp G K) =>
                         \new NatTrans {C} {E} (Functor.Comp F H) (Functor.Comp G K) {
@@ -40,7 +40,7 @@
 
 --                     \func nop {C D : Cat} {F G : Functor (op C) (op D)}
 
-                     \func equiv {C D : Cat} (F G : Functor C D)
+                     \func equiv {C D : PreCat} (F G : Functor C D)
                                   (trans : \Pi (a : C.Ob) -> (F.ob a ->> {D} G.ob a) )
                                   (alpha beta : NatTrans F G (\lam {a} => trans a)) : alpha = {NatTrans F G} beta =>
                          \let natEq {a b : C.Ob} (f : a ->> {C }b) =>
@@ -52,7 +52,7 @@
                              | naturality f => natEq f @ i
                            })
 
-                     \func equiv1 {C D : Cat} (F G G' : Functor C D) (ge : G = G')
+                     \func equiv1 {C D : PreCat} (F G G' : Functor C D) (ge : G = G')
                                   (trans : \Pi (a : C.Ob) -> (F.ob a ->> {D} G.ob a))
                                   (alpha : NatTrans F G (\lam {a} => trans a))
                                   (beta : NatTrans F G' (\lam {a} => transport (\lam (GG : Functor C D) => (F.ob a ->> {D} GG.ob a)) ge (trans a))):
@@ -61,7 +61,7 @@
                                     \in {?}
 
 
-                     \func l_unit {C D : Cat} (F G : Functor C D) (alpha : NatTrans F G) : comp (id G) alpha = alpha =>
+                     \func l_unit {C D : PreCat} (F G : Functor C D) (alpha : NatTrans F G) : comp (id G) alpha = alpha =>
                         \let | cig : NatTrans => comp (id G) alpha
                              | alpha' => \new NatTrans {C} {D} F G alpha.trans alpha.naturality
                              | natEq => funExt (\lam (a : C.Ob) => F.ob a ->> {D} G.ob a) (\lam a => cig.trans {a}) (\lam a => alpha.trans {a})
@@ -69,7 +69,7 @@
                              | eqq (i : I) => \Pi (a : NatTrans F G (\lam {a} => (inv natEq @ i) a)) (b : NatTrans F G alpha.trans) -> a = {NatTrans F G} b
                         \in coe eqq (equiv F G (\lam a => alpha.trans {a})) right cig alpha'
 
-                     \func r_unit {C D : Cat} (F G : Functor C D) (alpha : NatTrans F G) : comp alpha (id F) = alpha =>
+                     \func r_unit {C D : PreCat} (F G : Functor C D) (alpha : NatTrans F G) : comp alpha (id F) = alpha =>
                        \let | cif : NatTrans => comp alpha (id F)
                             | alpha' => \new NatTrans {C} {D} F G alpha.trans alpha.naturality
                             | natEq => funExt (\lam (a : C.Ob) => F.ob a ->> {D} G.ob a) (\lam a => cif.trans {a}) (\lam a => alpha.trans {a})
@@ -77,7 +77,7 @@
                             | eqq (i : I) => \Pi (a : NatTrans F G (\lam {a} => (inv natEq @ i) a)) (b : NatTrans F G alpha.trans) -> a = {NatTrans F G} b
                        \in coe eqq (equiv F G (\lam a => alpha.trans {a})) right cif alpha'
 
-                     \func assoc {C D : Cat} (F G H K : Functor C D)
+                     \func assoc {C D : PreCat} (F G H K : Functor C D)
                          (alpha : NatTrans H K)
                          (beta : NatTrans G H)
                          (gamma : NatTrans F G) :
@@ -90,7 +90,7 @@
                        \in coe eqq (equiv F K (\lam a => rc.trans {a})) right lc rc
 
 -- TODO: fix
-                     \func hl_unit {C D : Cat} (F G : Functor C D) (alpha : NatTrans F G) : hcomp (id Functor.Id) alpha = alpha =>
+                     \func hl_unit {C D : PreCat} (F G : Functor C D) (alpha : NatTrans F G) : hcomp (id Functor.Id) alpha = alpha =>
                         \let | ciid : NatTrans => hcomp (id (Functor.Id)) alpha
                              | alpha' => \new NatTrans {C} {D} F G alpha.trans alpha.naturality
                              | natEq => funExt (\lam (a : C.Ob) => F.ob a ->> {D} G.ob a) (\lam a => ciid.trans {a}) (\lam a => alpha.trans {a})
@@ -107,9 +107,9 @@
                   }
 
 
-\func \infix 7 ~> {C D : Cat} (F G : Functor C D) => NatTrans F G
+\func \infix 7 ~> {C D : PreCat} (F G : Functor C D) => NatTrans F G
 
 \open Functor (Const)
-\func constTrans2 {C D : Cat} {a b : D.Ob} (f : a ->> {D} b): NatTrans {C} {D} (Const a) (Const b) \cowith
+\func constTrans2 {C D : PreCat} {a b : D.Ob} (f : a ->> {D} b): NatTrans {C} {D} (Const a) (Const b) \cowith
   | trans {_} => f
   | naturality _ => D.r_unit f *> inv (D.l_unit f)

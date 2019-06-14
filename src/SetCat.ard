@@ -29,7 +29,7 @@
       functExt (\lam x => qed (f (g (h (x)))))
   }
 
-\func SetC : Cat \cowith {
+\func SetC : PreCat \cowith {
   | Ob => Set
   | Hom (X Y : Set) => X.S -> Y.S
   | homSet {X Y : Set} => Set.hom_set X Y
@@ -97,7 +97,7 @@
                     (comp_e : \Pi {a b c : Ob} (f : Hom b c) (g : Hom a b) -> homo (comp f g) = Set.comp (homo f) (homo g))
                     (equiv : \Pi {A B : Ob} (f g : Hom A B) (e : homo f = homo g) -> f = g) \extends CatStruct
   \where {
-    \func category (s : SetBasedCat) : Cat {s.Ob} s.Hom s.homSet s.id s.comp \cowith {
+    \func category (s : SetBasedCat) : PreCat {s.Ob} s.Hom s.homSet s.id s.comp \cowith {
       | l_unit {A} {B} f =>
         \let | composed : Hom A B => s.comp s.id f
              | left : s.homo composed = s.homo f =>
@@ -124,7 +124,7 @@
     }
 
     \record SetBasedProduct {s : SetBasedCat}
-                            (A B A*B : Cat.Ob {s})
+                            (A B A*B : PreCat.Ob {s})
                             (u : Set.S {s.set A*B} = (\Sigma (x : Set.S {s.set A}) (y : Set.S {s.set B})))
                             (p1 : s.Hom A*B A) (p1_e : s.homo p1 = (\lam (x : Set.S {s.set A*B}) => (transportTerm u x).1))
                             (p2 : s.Hom A*B B) (p2_e : s.homo p2 = (\lam (x : Set.S {s.set A*B}) => (transportTerm u x).2))
@@ -133,7 +133,7 @@
 
     \func product {s : SetBasedCat} {A B A*B : s.Ob} (sp : SetBasedProduct {s} A B A*B) : Product2 A B A*B =>
       \let | cat => category s
-           | equivElim {X Y : Cat.Ob {s}} {f g : s.Hom X Y} (e : f = g) : s.homo f = s.homo g =>
+           | equivElim {X Y : PreCat.Ob {s}} {f g : s.Hom X Y} (e : f = g) : s.homo f = s.homo g =>
              pmap (\lam (x : s.Hom X Y) => s.homo x) e
       \in
       \new Product2 {cat} A B A*B sp.p1 sp.p2 {

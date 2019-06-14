@@ -8,15 +8,15 @@
 
 
 \record Product
- {C : Cat} (I : \Set)
+ {C : PreCat} (I : \Set)
  (a : I -> C.Ob)
  (p : C.Ob)
  (pi : \Pi (i : I) -> p ->> {C} a i)
  (prod : \Pi (x : C.Ob) (f : \Pi (i : I) -> x ->> {C} a i) -> Unique (x ->> {C} p) (\lam pr => \Pi (j : I) -> pi j cmp {C} pr = f j) )
 
 
---product object is unique up to isomorphism
-\func product_ob_unique {C : Cat} {I : \Set} {a : I -> C.Ob} (pr pr' : Product {C} I a) : pr.p ~= {C} pr'.p =>
+-- product object is unique up to isomorphism
+\func product_ob_unique {C : PreCat} {I : \Set} {a : I -> C.Ob} (pr pr' : Product {C} I a) : pr.p ~= {C} pr'.p =>
       \new Iso {C} {pr.p} {pr'.p} {
        | f => elem {pr'.prod pr.p pr.pi}
        | f_op => elem {pr.prod pr'.p pr'.pi}
@@ -24,7 +24,7 @@
        | r_comp => iso_one_side pr pr'
     } \where {
       \open Unique (elem)
-      \func iso_one_side {C : Cat} {I : \Set } {a : I -> C.Ob } (pr pr' : Product {C} I a) :
+      \func iso_one_side {C : PreCat} {I : \Set } {a : I -> C.Ob } (pr pr' : Product {C} I a) :
         elem {pr'.prod pr.p pr.pi} cmp {C} elem {pr.prod pr'.p pr'.pi} = C.id =>
          \let | f : Unique => pr'.prod pr.p pr.pi
               | f-1 : Unique => pr.prod pr'.p pr'.pi
@@ -35,7 +35,7 @@
                                                     (inv (f.prop i)) (f-1.prop i))
          \in product_eq_id pr' res eqs
 
-      \func product_eq_id {C : Cat}(P : Product {C}) (f : C.Hom P.p P.p ) (eqs : \Pi (i : P.I) -> P.pi i cmp {C} f = P.pi i) : f = C.id =>
+      \func product_eq_id {C : PreCat}(P : Product {C}) (f : C.Hom P.p P.p ) (eqs : \Pi (i : P.I) -> P.pi i cmp {C} f = P.pi i) : f = C.id =>
           \let | u : Unique => P.prod P.p (P.pi)
                | u_eq_id => u.unique C.id (\lam i => C.r_unit (P.pi i))
                | u_eq_f => u.unique f eqs
@@ -60,8 +60,8 @@
 --  }
 
 \record Product2
-   {C : Cat}
-   (a b : Cat.Ob {C})
+   {C : PreCat}
+   (a b : PreCat.Ob {C})
    (p : C.Ob)
    (pi1 : p ->> {C} a)
    (pi2 : p ->> {C} b)
@@ -71,7 +71,7 @@
    ))
 
 
-\func product_inv {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
+\func product_inv {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
     | pi1 => pab.pi2
     | pi2 => pab.pi1
     | prod x f1 f2 =>
@@ -83,11 +83,11 @@
           | unique f' prod' => orig.unique f' (prod'.2, prod'.1)
           }
 
-\func product_symmetry {C : Cat} (a b : Cat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab => idp
+\func product_symmetry {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab => idp
 
 
 
-\func product_associativity {C : Cat} (a b c : Cat.Ob {C})
+\func product_associativity {C : PreCat} (a b c : PreCat.Ob {C})
          (pab : Product2 {C} a b)
          (pab_c : Product2 {C} pab.p c )
          (pbc : Product2 {C} b c)
@@ -98,7 +98,7 @@
           \where{
 
 
-    \func prod_of_prod_ass_l {C : Cat} (a b c : C.Ob)
+    \func prod_of_prod_ass_l {C : PreCat} (a b c : C.Ob)
                              (pab : Product2 {C} a b) (pab_c : Product2 {C} pab.p c)
                              : Product {C} three (make3X a b c) pab_c.p  =>
        \let
@@ -134,7 +134,7 @@
 
 
 
-    \func prod_of_prod_ass_r {C : Cat} (a b c : C.Ob)
+    \func prod_of_prod_ass_r {C : PreCat} (a b c : C.Ob)
                              (pbc : Product2 {C} b c) (pa_bc : Product2 {C} a pbc.p)
                              : Product {C} three (make3X a b c) pa_bc.p  =>
        \let

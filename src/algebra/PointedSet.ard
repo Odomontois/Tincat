@@ -68,7 +68,7 @@
                      (\lam _ _ => idp)
                      (\lam f g eq => equiv f g eq)
 
-  \func PSet : Cat {Pointed} =>
+  \func PSet : PreCat {Pointed} =>
     SetBasedCat.category pSetStruct
 
   \func terminal : Terminal {PSet} zero \cowith {

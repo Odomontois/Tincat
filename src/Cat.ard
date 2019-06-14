@@ -5,7 +5,7 @@
 \import Data.Unit
 \import Prelude
 
-\class Cat (Ob : \Type){
+\class PreCat (Ob : \Type){
   | Hom : Ob -> Ob -> \Set
   | id : \Pi {a : Ob} -> Hom a a
   | \infixr 5 o : \Pi {a b c : Ob} -> Hom b c -> Hom a b -> Hom a c
@@ -13,7 +13,7 @@
   \property r_unit : \Pi {a b : Ob} (f : Hom a b) -> f o id = f
   \property assoc : \Pi {a b c d : Ob} (f : Hom c d) (g : Hom b c) (h : Hom a b) -> (f o g) o h =  f o (g o h)
 } \where {
-  \func op (C : Cat) : Cat \cowith
+  \func op (C : PreCat) : PreCat \cowith
     | Ob => C.Ob
     | Hom a b => C.Hom b a
     | id => C.id
@@ -22,7 +22,7 @@
     | r_unit => \lam {a} {b} f => C.l_unit f
     | assoc => \lam {a} {b} {c} {d} f g h => inv (C.assoc h g f)
 
-  \instance \infix 5 <x> (C : Cat) (D : Cat) : Cat (\Sigma C.Ob D.Ob) \cowith
+  \instance \infix 5 <x> (C : PreCat) (D : PreCat) : PreCat (\Sigma C.Ob D.Ob) \cowith
     | Hom a b => \Sigma (C.Hom a.1 b.1) (D.Hom a.2 b.2)
     | id {a } => (C.id {a.1} , D.id {a.2} )
     | o f g => ( f.1 o g.1, f.2 o g.2)
@@ -30,7 +30,7 @@
     | r_unit => \lam {a} {b} f => path(\lam i =>  (C.r_unit f.1 @ i, D.r_unit f.2 @ i))
     | assoc => \lam {a} {b} {c} {d} f g h => path (\lam i => (C.assoc f.1 g.1 h.1 @ i, D.assoc f.2 g.2 h.2 @ i))
 
-  \instance cat1 : Cat Unit \cowith
+  \instance cat1 : PreCat Unit \cowith
     | Hom a b => Unit
     | id => \lam {a} => unit
     | o f g => unit
@@ -38,8 +38,8 @@
     | r_unit f => idp
     | assoc f g h => idp
 
-  \lemma op_is_revertible (C : Cat) : op (op C) = C =>
-    path ( \lam i => \new Cat {
+  \lemma op_is_revertible (C : PreCat) : op (op C) = C =>
+    path ( \lam i => \new PreCat {
       | Ob => C.Ob
       | Hom => C.Hom
       | id => C.id
@@ -50,9 +50,21 @@
     }
     )
 
-  \func hom_is_set {C : \Type} {cc : Cat C} (a b : C) : isSet (cc.Hom a b) =>
+  \func hom_is_set {C : \Type} {cc : PreCat C} (a b : C) : isSet (cc.Hom a b) =>
     \lam f g => Path.inProp {f = g}
+
 }
 
-\func \infix 6 ->> {Ob : \Type} {C : Cat Ob} (a b : Ob) => C.Hom a b
+\func \infix 6 ->> {Ob : \Type} {C : PreCat Ob} (a b : Ob) => C.Hom a b
+
+\record Iso {C : \Type} {ac : PreCat C} (A B : C){
+  | to : A ->> B
+  | from : B ->> A
+  \property toFrom : to o from = id
+  \property fromTo : from o to = id
+}
+
+\class Cat \extends PreCat{
+  | univ (A B : Ob) : QEquiv {Iso A B} {A = B}
+}
 

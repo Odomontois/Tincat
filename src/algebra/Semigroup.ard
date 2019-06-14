@@ -101,7 +101,7 @@
                        (\lam _ _ => idp)
                        (\lam f g eq => equiv f g eq)
 
-  \func Semi : Cat {Semigroup} =>
+  \func Semi : PreCat {Semigroup} =>
     SetBasedCat.category semiStruct
 
   \func initial : Initial {Semi} zero \cowith {

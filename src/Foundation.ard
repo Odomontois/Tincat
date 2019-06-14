@@ -5,6 +5,6 @@
 
 
 \func Yoneda
-    {C : Cat}
+    {C : PreCat}
     (F : Functor C SetC)
     (a : C.Ob)
