@@ -2,7 +2,6 @@
 \import Equiv
 \import HLevel
 \import Paths
-\import Data.Unit
 \import Prelude
 
 \class PreCat (Ob : \Type){
@@ -30,10 +29,10 @@
     | r_unit => \lam {a} {b} f => path(\lam i =>  (C.r_unit f.1 @ i, D.r_unit f.2 @ i))
     | assoc => \lam {a} {b} {c} {d} f g h => path (\lam i => (C.assoc f.1 g.1 h.1 @ i, D.assoc f.2 g.2 h.2 @ i))
 
-  \instance cat1 : PreCat Unit \cowith
-    | Hom a b => Unit
-    | id => \lam {a} => unit
-    | o f g => unit
+  \instance cat1 : PreCat (\Sigma) \cowith
+    | Hom a b => \Sigma
+    | id => \lam {a} => ()
+    | o f g => ()
     | l_unit f => idp
     | r_unit f => idp
     | assoc f g h => idp

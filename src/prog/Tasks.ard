@@ -1,0 +1,26 @@
+\import Data.Bool
+\import Equiv
+\import Equiv.Univalence (=-to-Equiv, QEquiv-to-=)
+\import Logic
+\import Paths
+
+\lemma notNotEq (x : Bool) : not (not x) = x \elim x
+  | true => idp
+  | false => idp
+
+\func negQequiv :  QEquiv not \cowith
+  | ret => not
+  | ret_f => notNotEq
+  | f_sec => notNotEq
+
+\func negEq : Bool = Bool => QEquiv-to-= negQequiv
+
+\func transx (eq : Bool = Bool) : Bool =>
+    \let t : Equiv  => =-to-Equiv eq \in t.f true
+
+\func negNotEq : Not (negEq = idp) =>
+  \lam eqp =>
+      \let | x => transx negEq
+           | eq :  x = false => idp
+      \in {?}
+
