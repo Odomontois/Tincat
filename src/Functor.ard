@@ -2,6 +2,8 @@
 \import SetCat (SetC, Set)
 \import Paths
 
+\open PreCat (op)
+
 \record Functor (C D : \Type) {dom : PreCat C} {cod : PreCat D} {
   | ob : C -> D
   | map : \Pi {a b : C} (a ->> b) -> (ob a) ->> (ob b)
@@ -33,46 +35,34 @@
     | functor_id {_} => idp
     | func_comp f g => dc.l_unit dc.id
 
-  --  -- лолкот гарантирует
-  --
-
-
-  \func l_unit {C D : \Type} {cc : PreCat C} {dc : PreCat D} (F : Functor C D) : Comp {C} {D} {D} (Id {D}) F = F =>
-    \let | compf : Functor C D => Comp {C} {D} {D} (Id {D}) F
-         | eq_map {a b : C} : compf.map {a} {b} = F.map => idp
-         | eq_fid {a : C} : compf.functor_id {a} = F.functor_id {a} => idp
-         | eq_fcomp {a b c : C} (f : b ->> c) (g : a ->> b) : compf.func_comp  f g = F.func_comp f g => Path.inProp _ _
-    \in path (\lam i => \new Functor C D {cc} {dc} {
-      | ob a => F.ob a
-      | map {a} {b} => eq_map  @ i
-      | functor_id {a} => eq_fid @ i
-      | func_comp  f g => eq_fcomp  f g @ i
+  \func equiv {C D : \Type} {cc : PreCat C} {dc : PreCat D}
+              (ob : C -> D)
+              (map : \Pi {A B : C} (A ->> B) -> (ob A ->> ob B))
+              (F G : Functor C D {cc} {dc} ob map) : F = {Functor C D} G =>
+    \let | idEq {A : C} : F.functor_id {A} = G.functor_id {A} => Path.inProp _ _
+         | compEq {A B C : C} (f : B ->> C) (g : A ->> B) : F.func_comp f g = G.func_comp f g => Path.inProp _ _
+    \in path (\lam i => \new Functor C D ob map {
+      | functor_id {a} => idEq {a} @ i
+      | func_comp f g => compEq f g @ i
     })
 
-  --    \let | fcomp => Comp {C} {D} {D} Id F
-  --         | F' => \new Functor C D F.ob F.map F.functor_id F.func_comp
-  --         | eq : fcomp = F' => equiv F.ob F.map fcomp F'
-  --         | eq2 : F' = F => idp
-  --    \in eq *> eq2
-  --
---  \func r_unit {C D : Cat} (F : Functor C D) : Comp {C} {C} {D} F Id = F =>
-  --    \let | fcomp => Comp {C} {C} {D} F Id
-  --         | F' => \new Functor C D F.ob F.map F.id F.comp
-  --         | eq : fcomp = F' => equiv F.ob F.map fcomp F'
-  --         | eq2 : F' = F => idp
-  --    \in eq *> eq2
-  --
---  \func assoc {A B C D : Cat} (F : Functor C D) (G : Functor B C) (H : Functor A B) :
-  --    Comp (Comp {B} {C} {D} F G) H = {Functor A D} Comp F (Comp {A} {B} {C} G H) =>
-  --    \let | left => Comp {A} {B} {D} (Comp {B} {C} {D} F G) H
-  --         | right => Comp {A} {C} {D} F (Comp {A} {B} {C} G H)
-  --    \in equiv {A} {D} (Functor.ob {left}) (Functor.map {left}) left right
-  --}
-  --
+  \func l_unit {C D : \Type} {cc : PreCat C} {dc : PreCat D} (F : Functor C D) : Comp {C} {D} {D} (Id {D}) F = F =>
+     equiv F.ob F.map _ _
+
+
+  \func r_unit {C D : \Type} {cc : PreCat C} {dc : PreCat D} (F : Functor C D) : Comp {C} {C} {D} F (Id {C}) = F =>
+    equiv F.ob F.map _ _
+
+  \func assoc {A B C D : \Type} {ac : PreCat A} {bc : PreCat B} {cc : PreCat C} {dc : PreCat D} (F : Functor C D) (G : Functor B C) (H : Functor A B) :
+      Comp (Comp {B} {C} {D} F G) H = {Functor A D} Comp F (Comp {A} {B} {C} G H) =>
+      \let left : Functor => Comp {A} {B} {D} (Comp {B} {C} {D} F G) H
+      \in equiv {A} {D} left.ob left.map _ _
+
+
 --\func homFunctor {C : Cat} (o : C.Ob) : Functor C SetC \cowith {
-  --  | ob x => \new Set (C.Hom o x) (C.homSet {o} {x})
-  --  | map f g => C.comp f g
-  --  | id {a} => funExt (\lam _ => C.Hom o a) (_) (_) (\lam f => C.l_unit f)
-  --  | comp {a} {b} {c} f g => funExt (\lam _ => C.Hom o c) (_) (_) (\lam h => inv (C.assoc f g h))
+--    | ob x => \new Set (C.Hom o x) (C.homSet {o} {x})
+--    | map f g => C.comp f g
+--    | id {a} => funExt (\lam _ => C.Hom o a) (_) (_) (\lam f => C.l_unit f)
+--    | comp {a} {b} {c} f g => funExt (\lam _ => C.Hom o c) (_) (_) (\lam h => inv (C.assoc f g h))
 
 }

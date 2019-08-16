@@ -3,38 +3,18 @@
 \import Set
 \import Unique
 \import Util
-\import lib.Data.Empty
-\import lib.Data.Unit
-\import lib.HLevel
-\import lib.Paths
+\import Logic
+\import Data.Unit
+\import HLevel
+\import Paths
 \import Terminal
 
-\record Set (S : \Type)
-            (is_set : isSet S)
-  \where {
-    \func id {X : \Type} => \lam (x : X) => x
 
-    \func hom_set (X Y : Set) : isSet (X.S -> Y.S) => piSet {X.S} (\lam _ => Y.S) (\lam _ => Y.is_set)
 
-    \func comp {X Y Z : \Type} (f : Y -> Z) (g : X -> Y) : X -> Z => \lam (x : X) => f (g (x))
-
-    \func r_unit {X Y : \Type} (f : X -> Y) : comp f id = f => functExt (\lam x => qed (f x))
-
-    \func l_unit {X Y : \Type} (f : X -> Y) : comp id f  = f => functExt (\lam x => qed (f x))
-
-    \func assoc {A B C D : \Type}
-                (f : C -> D)
-                (g : B -> C)
-                (h : A -> B) : comp f (comp g h) = comp (comp f g) h =>
-      functExt (\lam x => qed (f (g (h (x)))))
-  }
-
-\func SetC : PreCat \cowith {
-  | Ob => Set
-  | Hom (X Y : Set) => X.S -> Y.S
-  | homSet {X Y : Set} => Set.hom_set X Y
-  | id {ob : Set} => Set.id
-  | comp {x y z : Set} => Set.comp {x.S} {y.S} {z.S}
+\func SetC : PreCat \Set \cowith {
+  | Hom (X Y : \Set) => X -> Y
+  | id {ob : \Set} =>
+  | o {x y z : \Set} => Set.comp {x.S} {y.S} {z.S}
   | l_unit {x y : Set} => Set.l_unit {x.S} {y.S}
   | r_unit {x y : Set} => Set.r_unit {x.S} {y.S}
   | assoc {a b c d : Set} => Set.assoc {a.S} {b.S} {c.S} {d.S}
