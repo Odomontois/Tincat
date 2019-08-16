@@ -17,9 +17,9 @@
 
 -- product object is unique up to isomorphism
 \func product_ob_unique {C : PreCat} {I : \Set} {a : I -> C.Ob} (pr pr' : Product {C} I a) : pr.p ~= {C} pr'.p =>
-      \new Iso {C} {pr.p} {pr'.p} {
+      \new Iso1 {C} {pr.p} {pr'.p} {
        | f => elem {pr'.prod pr.p pr.pi}
-       | f_op => elem {pr.prod pr'.p pr'.pi}
+       | rev => elem {pr.prod pr'.p pr'.pi}
        | l_comp => iso_one_side pr' pr
        | r_comp => iso_one_side pr pr'
     } \where {

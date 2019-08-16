@@ -1,0 +1,14 @@
+\import Functor
+\import NatTrans
+\import Category
+\open NatTrans
+\import Paths
+
+\instance  functorCat {C D : Precat}: Precat (Functor C D)
+  | Hom f g => NatTrans f g
+  | id f => id-trans f
+  | o u v => vcomp u v
+  | id-left u => vr_unit u
+  | id-right u => vl_unit u
+  | o-assoc u v w => inv (vassoc w v u)
+

@@ -19,7 +19,7 @@
     \let uniqueT2 : Singleton {t1.one ->> {C} t2.one} => t2.terminal t1.one \in
     \let f => uniqueT2.t \in
     \let f_op => uniqueT1.t \in
-    \new Iso {C} {t1.one} {t2.one} f f_op (terminal_only_id t1 (f_op cmp {C} f)) (terminal_only_id t2 (f cmp {C} f_op))
+    \new Iso1 {C} {t1.one} {t2.one} f f_op (terminal_only_id t1 (f_op cmp {C} f)) (terminal_only_id t2 (f cmp {C} f_op))
 
 \record Initial {C : PreCat}
                 (zero : C.Ob)
@@ -27,6 +27,6 @@
 
 \func terminal_duality {C : PreCat}
                        (zero : C.Ob)
-                       (i : Initial {C} zero) : Terminal {op C} zero \cowith {
+                       (i : Initial {C} zero) : Terminal {~ C} zero \cowith {
   | terminal => i.initial
   }

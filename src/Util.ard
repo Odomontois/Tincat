@@ -1,4 +1,6 @@
-\import lib.Paths
+\import Paths
+
+\func flip {A B C : \Type} (f : A -> B -> C) (b : B) (a : A) => f a b
 
 \func transportTerm {X Y : \Type} (e : X = Y) (x : X) : Y => coe (@ e) x right
 

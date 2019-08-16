@@ -1,18 +1,10 @@
-\import Set
-\import Equiv
-\import HLevel
+\import Category
 \import Paths
-\import Data.Unit
-\import Prelude
+\open Precat
 
+\func \infix 6 ->> {Ob : Precat}  (a b : Ob) => Hom a b
 
-\func \infix 6 ->> {Ob : \Type} {C : PreCat Ob} (a b : Ob) => C.Hom a b
+\func ~ {A : Precat} (a : A) => \new op A a
 
-\record Iso {C : \Type} {ac : PreCat C} (A B : C){
-  | to : A ->> B
-  | from : B ->> A
-  \property toFrom : to o from = id
-  \property fromTo : from o to = id
-}
 
 

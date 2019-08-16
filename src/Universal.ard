@@ -24,4 +24,4 @@
 
 \func coLimit {C : PreCat} {I : PreCat} (F : Functor I C) (object : C.Ob) (cocone : F ~> Const object) (universal :
     \Pi (o : C.Ob) (c : F ~> Const o) -> Unique (object ->> {C} o) (\lam arr => NatTrans.comp (constTrans2 arr) cocone = c)) =>
-    Limit {op C} {op I} (Functor.fop F) object {?} {?}
+    Limit {~ C} {~ I} (Functor.fop F) object {?} {?}

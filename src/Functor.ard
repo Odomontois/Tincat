@@ -1,68 +1,66 @@
 \import Cat
-\import SetCat (SetC, Set)
 \import Paths
+\import Category
+\open op
+\import  Set.Category
+\import NatTrans
 
-\open PreCat (op)
-
-\record Functor (C D : \Type) {dom : PreCat C} {cod : PreCat D} {
+\record Functor (C D : Precat) {
   | ob : C -> D
-  | map : \Pi {a b : C} (a ->> b) -> (ob a) ->> (ob b)
-  \property functor_id : \Pi {a : C} -> map (dom.id {a}) = cod.id {ob a}
-  \property func_comp : \Pi {a b c : C} (f : b ->> c) (g : a ->> b) ->  (map f) o (map g) = map (f o g)
-}  \where {
-  \func fop {C D : \Type} {cc : PreCat C} {dd : PreCat D}  (F : Functor C D) : Functor C D {op cc} {op dd} \cowith {
-    | ob => F.ob
-    | map {a} {b} => F.map {b} {a}
-    | functor_id => F.functor_id
-    | func_comp f g => F.func_comp g f
-  }
+  | map {a b : C} (f : a ->> b) : (ob a) ->> (ob b)
+  \property functor_id (a : C) : map (id a) = id (ob a)
+  \property func_comp {a b c : C} (f : b ->> c) (g : a ->> b) : (map f) `o` (map g) = map (f `o` g)
 
-  \func Id {C : \Type} {cc : PreCat C} : Functor C C  \cowith
+  \func fop : Functor (op C) (op D)  \cowith
+    | ob c => ob c
+    | map f => map f
+    | functor_id a => functor_id _
+    | func_comp f g => func_comp g f
+
+}  \where {
+  \func id-functor (C : Precat) : Functor C C  \cowith
     | ob x => x
     | map f => f
-    | functor_id {a} => idp
+    | functor_id  f => idp
     | func_comp f g => idp
 
-  \func Comp {C D E : \Type } {cc : PreCat C} { dc : PreCat D} { ec : PreCat E} (F : Functor D E) (G : Functor C D) : Functor C E \cowith
+  \func o-functor {C D E : Precat} (F : Functor D E) (G : Functor C D) : Functor C E \cowith
     | ob x => F.ob (G.ob x)
     | map {a} {b} f => F.map (G.map f)
-    | functor_id {a} => pmap F.map G.functor_id *> F.functor_id
+    | functor_id f => pmap F.map (G.functor_id f) *> F.functor_id _
     | func_comp {a} {b} {c} f g => F.func_comp (G.map f) (G.map g) *> pmap F.map (G.func_comp f g)
 
-  \func Const {C D : \Type } {cc : PreCat C} {dc : PreCat D} (o : D) : Functor C D \cowith
-    | ob _ => o
-    | map _ => dc.id
-    | functor_id {_} => idp
-    | func_comp f g => dc.l_unit dc.id
+  \func const-functor {C D : Precat} (d : D) : Functor C D \cowith
+    | ob c => d
+    | map _ => id d
+    | functor_id c => idp
+    | func_comp f g => id-left _
 
-  \func equiv {C D : \Type} {cc : PreCat C} {dc : PreCat D}
+  \func equiv {C D : Precat}
               (ob : C -> D)
               (map : \Pi {A B : C} (A ->> B) -> (ob A ->> ob B))
-              (F G : Functor C D {cc} {dc} ob map) : F = {Functor C D} G =>
-    \let | idEq {A : C} : F.functor_id {A} = G.functor_id {A} => Path.inProp _ _
-         | compEq {A B C : C} (f : B ->> C) (g : A ->> B) : F.func_comp f g = G.func_comp f g => Path.inProp _ _
+              (F G : Functor C D ob map) : F = {Functor C D} G =>
+    \let | idEq (a : C): F.functor_id a = G.functor_id a => Path.inProp _ _
+         | compEq {a b c : C} (f : b ->> c) (g : a ->> b) : F.func_comp f g = G.func_comp f g => Path.inProp _ _
     \in path (\lam i => \new Functor C D ob map {
-      | functor_id {a} => idEq {a} @ i
+      | functor_id a => idEq a @ i
       | func_comp f g => compEq f g @ i
     })
 
-  \func l_unit {C D : \Type} {cc : PreCat C} {dc : PreCat D} (F : Functor C D) : Comp {C} {D} {D} (Id {D}) F = F =>
-     equiv F.ob F.map _ _
+  \func Id-left {C D : Precat}  (F : Functor C D) : o-functor {C} {D} {D} (id-functor D) F = F => equiv F.ob F.map _ _
 
+  \func Id-right {C D : Precat} (F : Functor C D) : o-functor {C} {C} {D} F (id-functor C) = F => equiv F.ob F.map _ _
 
-  \func r_unit {C D : \Type} {cc : PreCat C} {dc : PreCat D} (F : Functor C D) : Comp {C} {C} {D} F (Id {C}) = F =>
-    equiv F.ob F.map _ _
+  \func assoc {A B C D : Precat} (F : Functor C D) (G : Functor B C) (H : Functor A B) :
+    o-functor (o-functor {B} {C} {D} F G) H = {Functor A D} o-functor F (o-functor {A} {B} {C} G H) =>
+    \let left : Functor => o-functor (o-functor {B} {C} {D} F G) H
+    \in equiv left.ob left.map _ _
 
-  \func assoc {A B C D : \Type} {ac : PreCat A} {bc : PreCat B} {cc : PreCat C} {dc : PreCat D} (F : Functor C D) (G : Functor B C) (H : Functor A B) :
-      Comp (Comp {B} {C} {D} F G) H = {Functor A D} Comp F (Comp {A} {B} {C} G H) =>
-      \let left : Functor => Comp {A} {B} {D} (Comp {B} {C} {D} F G) H
-      \in equiv {A} {D} left.ob left.map _ _
+  \func homFunctor {C : Precat} (u : C.Ob) : Functor C SetCat \cowith
+    | ob a => (Hom u a)
+    | map f g => o f g
+    | functor_id a => path (\lam i f => id-right f @ i)
+    | func_comp f g => path (\lam i h => o-assoc h g f @ i)
 
-
---\func homFunctor {C : Cat} (o : C.Ob) : Functor C SetC \cowith {
---    | ob x => \new Set (C.Hom o x) (C.homSet {o} {x})
---    | map f g => C.comp f g
---    | id {a} => funExt (\lam _ => C.Hom o a) (_) (_) (\lam f => C.l_unit f)
---    | comp {a} {b} {c} f g => funExt (\lam _ => C.Hom o c) (_) (_) (\lam h => inv (C.assoc f g h))
 
 }

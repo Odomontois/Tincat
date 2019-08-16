@@ -1,56 +1,51 @@
 \import Cat
 \import Util
-\import lib.Paths
+\import Paths
+\import Category
+\open Precat
 
-\record Iso {C : PreCat}
-            {a : C.Ob}
-            {b : C.Ob}
-            (f : a ->> {C} b)
-            (f_op : b ->> {C} a)
-            (l_comp : f_op cmp {C} f = C.id)
-            (r_comp : f cmp {C} f_op = C.id)
+\record Iso1 {C : Precat} {a b : C} (f : a ->> b){
+  | rev : b ->> a
+  \property l_comp : rev `o` f = id a
+  \property r_comp : f `o` rev = id b
+} \where {
+  \lemma unique-rev {C : Precat} {a b : C} {f : a ->> b}
+                    (iso1 : Iso1 f)
+                    (iso2 : Iso1 f) : iso1.rev = iso2.rev =>
+    inv ( id-left iso1.rev) *> pmap (o iso1.rev) (inv iso2.r_comp) *> o-assoc _ _ _ *>
+                                                                      pmap (flip o iso2.rev) iso1.l_comp *> id-right _
 
-\func \infix 1 ~= {C : PreCat}
-                  (a b : C.Ob) => Iso {C} {a} {b}
+  \use \level iso-is-prop {C : Precat} {a b : C} {f : a ->> b}
+                          (iso1 : Iso1 f)
+                          (iso2 : Iso1 f) : iso1 = iso2 =>
+    \let | eq => unique-rev iso1 iso2
+         | lp => pathInProp (\lam i => eq @ i `o` f = id _) iso1.l_comp iso2.l_comp
+         | rp => pathInProp (\lam i => f `o` eq @ i = id _) iso1.r_comp iso2.r_comp
+    \in path (\lam i => \new Iso1 f {
+      | rev => eq @ i
+      | l_comp =>  lp @ i
+      | r_comp =>  rp @ i
+    })
 
-\func eq_iso {C : PreCat}
-             (a b : C.Ob)
-             {e : a = b} : a ~= {C} b =>
-  transportTerm (pmap (~= {C} a) e) (iso_refl {C} {a})
+  \lemma refl {C : Precat} (a : C) : Iso1 (id a) =>
+    \new Iso1 (id a) (id a) (id-left (id a)) (id-right (id a))
 
-\func iso_refl {C : PreCat}
-               {a : C.Ob} : a ~= a =>
-  \new Iso {C} {a} {a} C.id C.id (C.l_unit C.id) (C.r_unit C.id)
+  \lemma sym {C : Precat} {a b : C} {f : a ->> b}
+             (i : Iso1 f) : Iso1 i.rev =>
+    \new Iso1 i.rev f i.r_comp i.l_comp
 
-\func iso_sym {C : PreCat}
-              {a b : C.Ob}
-              (i : a ~= {C} b) : b ~= a =>
-  \new Iso {C} {b} {a} i.f_op i.f i.r_comp i.l_comp
+  \lemma trans {C : Precat} {a b c : C} {f : a ->> b} { g : b ->> c} (i : Iso1 f) (j : Iso1 g) : Iso1 (g `o` f) \cowith
+    | rev => i.rev `o` j.rev
+    | l_comp => inv (o-assoc _ _ _) *>
+    pmap (o i.rev) (o-assoc _ _ _ *> pmap (\lam x => x `o` i.f) j.l_comp *> id-right _) *> i.l_comp
+    | r_comp => inv (o-assoc _ _ _ ) *>
+    pmap (o j.f) (o-assoc _ _ _ *> pmap (\lam x => x `o` j.rev) i.r_comp *> id-right _) *> j.r_comp
 
-\func iso_trans {C : PreCat}
-                {a b c : C.Ob}
-                (i : a ~= {C} b)
-                (j : b ~= {C} c) : a ~= c =>
-  \let r : C.comp (C.comp j.f i.f) (C.comp i.f_op j.f_op) = C.id =>
-     C.assoc j.f i.f (C.comp i.f_op j.f_op) *>
-     inv (pmap (C.comp j.f) (C.assoc i.f i.f_op j.f_op)) *>
-     pmap (C.comp j.f) (pmap (\lam x => C.comp x j.f_op) i.r_comp) *>
-     pmap (C.comp j.f) (C.l_unit j.f_op) *>
-     j.r_comp \in
-  \let l : C.comp (C.comp i.f_op j.f_op) (C.comp j.f i.f) = C.id =>
-     C.assoc i.f_op j.f_op (C.comp j.f i.f) *>
-     inv (pmap (C.comp i.f_op) (C.assoc j.f_op j.f i.f)) *>
-     pmap (C.comp i.f_op) (pmap (\lam x => C.comp x i.f) j.l_comp) *>
-     pmap (C.comp i.f_op) (C.l_unit i.f) *> i.l_comp \in
-   \new Iso {C} {a} {c} (C.comp j.f i.f) (C.comp i.f_op j.f_op) l r
+--  \use \coerce toIso {C : Precat} {a b : C} {f : a ->> b} (i : Iso1 f) : Iso f \cowith
+--    | inv => i.rev
+--    | f_inv => i.l_comp
+--    | inv_f => i.r_comp
+}
 
-\func unique_f_op {C : PreCat}
-                  {a b : C.Ob}
-                  {f : C.Hom a b}
-                  (iso1 : Iso {C} {a} {b} f)
-                  (iso2 : Iso {C} {a} {b} f) : iso1.f_op = iso2.f_op =>
-  inv (C.l_unit iso1.f_op) *>
-  pmap (\lam x => C.comp x iso1.f_op) (inv iso2.l_comp) *>
-  C.assoc iso2.f_op f iso1.f_op *>
-  pmap (C.comp iso2.f_op) iso1.r_comp *>
-  C.r_unit iso2.f_op
+\func \infix 4 ~= {C : Precat} (a b : C) => \Sigma (f : a ->> b) (Iso1 f)
+
