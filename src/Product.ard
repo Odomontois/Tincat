@@ -4,7 +4,7 @@
 \import Unique
 \import lib.Equiv
 \import lib.Paths
-\import Three
+\import Data.Three
 
 
 \record Product

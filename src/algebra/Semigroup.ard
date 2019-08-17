@@ -107,7 +107,7 @@
   \func initial : Initial {Semi} zero \cowith {
     | initial P => \new Singleton {
       | T => zero ->> P
-      | t => \new Homo {zero} {P} absurd (\lam x => absurd x)
+      | val => \new Homo {zero} {P} absurd (\lam x => absurd x)
         | prop (m1 m2 : Homo {zero} {P}) =>
           equiv m1 m2 (functExt (\lam x => absurd x))
       }
@@ -116,7 +116,7 @@
   \func terminal : Terminal {Semi} one \cowith {
     | terminal P => \new Singleton {
       | T => P ->> one
-      | t => \new Homo {P} {one} (\lam _ => unit) (\lam _ _ => idp)
+      | val => \new Homo {P} {one} (\lam _ => unit) (\lam _ _ => idp)
       | prop (m1 m2 : Homo {P} {one}) =>
         equiv m1 m2 (functExt (\lam x => unit_isProp (m1.h x) (m2.h x)))
       }

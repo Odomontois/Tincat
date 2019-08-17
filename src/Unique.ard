@@ -1,35 +1,55 @@
-\import lib.Data.Unit
-\import lib.HLevel
-\import lib.Paths
+\import HLevel
+\import Paths
 
 -- unique element of A such that B
-\record Unique
-    (A : \Type)
-    (B : A -> \Type)
-    (elem : A)
-    (prop : B elem)
-    (unique : \Pi (a' : A) -> B a' -> elem = a')
 
-\func uniq {A : \Type} {B : A -> \Type} (elem : A) (prop : B elem) (unique : \Pi (a' : A) -> B a' -> elem = a') =>
-    Unique A B elem prop unique
+\record Unique  (A : \Set) (B : A -> \Prop){
+  \field elem : A
+  \property prop : B elem
+  \property unique (a : A) (b : B a) : elem = a
+} \where {
+  \use \level uniqueIsProp (A : \Set) (B : A -> \Prop) (u u' : Unique A B) : u = u' =>
+    \let u=u' => u.unique u'.elem u'.prop
+    \in path (\lam i => \new Unique A B {
+      | elem =>  u=u' @ i
+      | prop => pathInProp (\lam i => B (u=u' @ i)) u.prop u'.prop @ i
+      | unique (a : A) (b : B a) => pathInProp (\lam i => u=u' @ i = a ) (u.unique a b) (u'.unique a b) @ i
+    })
 
---there is a unique way to create unique things
-\func unique_fun (U : \Type) (A : U -> \Type) (B : \Pi (u : U) -> A u -> \Type)
+  \use \coerce prop->unique {U : \Prop} (u : U) :  Unique U (\lam _ => U) \cowith
+    | elem => u
+    | prop => u
+    | unique u' _ => Path.inProp u u'
+}
+
+-- there is a unique way to create unique things
+
+\func unique_fun (U : \Set) (A : U -> \Set) (B : \Pi (u : U) -> A u -> \Prop)
                  (f : \Pi (u : U) -> Unique (A u) (B u)):
-                 Unique (\Pi (u : U) -> A u) (\lam bf => \Pi (u : U) -> B u (bf u)) =>
-                 \let | a u => Unique.elem {f u}
-                 \in \new Unique (\Pi (u : U) -> A u) (\lam bf => \Pi (u : U) -> B u (bf u)){
-                    | elem => a
-                    | prop u => Unique.prop {f u}
-                    | unique => \lam af' bf' => funExt A a af' (\lam u => Unique.unique {f u} (af' u) (bf' u))
-                    }
+  Unique (\Pi (u : U) -> A u) (\lam bf => \Pi (u : U) -> B u (bf u)) \cowith
+  | elem u => elem {f u}
+  | prop u => prop {f u}
+  | unique af' bf' => path (\lam i u => Unique.unique {f u} (af' u) (bf' u) @ i )
 
 -- unique element of A
-\record Singleton {T : \Type}
-                  (t : T)
-                  (prop : isProp T)
 
-\func uniqueT_to_unique (u : Singleton) =>
-    \new Unique u.T (\lam _ => Unit) u.t unit (\lam a' _ => u.prop u.t a')
+\record Singleton \extends Unique{
+  \property is-prop : isProp A
+  | B _ => \Sigma
+  | prop => ()
+  | unique s' _ => is-prop elem s'
+
+} \where {
+  \use \level singleProp {T : \Set} ( s s' : Singleton T) : s = s' =>
+    path (\lam i => \new Singleton T (s.is-prop s.elem s'.elem @ i) s.is-prop)
+
+  \use \coerce prop->Singleton {U : \Prop} (u : U) : Singleton U \cowith
+    | elem => u
+    | is-prop => Path.inProp
+}
+
+
+
+
 
 

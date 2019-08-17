@@ -1,25 +1,37 @@
 \import Cat
+\import Category
 \import Iso
 \import Unique
-\import lib.HLevel
-\import lib.Paths
+--\import HLevel
+--\import Paths
 
-\record Terminal {C : PreCat}
-                 (one : C.Ob)
-                 (terminal : \Pi (x : C.Ob) -> Singleton {x ->> {C} one})
+\record Terminal (C : Precat){
+  | ob : C
+  \property terminal (x : C) : Singleton (x ->> ob)
+}
+
+
+\record TerminalUni (C : Cat) \extends Terminal \where {
+  \use \level terminal-is-prop {C : Cat} (t t' : TerminalUni C) : t = t' =>
+
+    \let | iso1 :
+         | t->t' : Singleton (Hom t.ob t'.ob) => t'.terminal t.ob
+         | t1<->t2 : issso {C} {t.ob} (t->t'.elem) => {?}
+    \in {?}
+}
 
 \func terminal_only_id {C : PreCat}
                        (t : Terminal {C})
                        (m : t.one ->> {C} t.one) : m = C.id =>
-    \let u : Singleton {t.one ->> {C} t.one} => t.terminal t.one \in u.prop m C.id
+  \let u : Singleton {t.one ->> {C} t.one} => t.terminal t.one \in u.prop m C.id
 
 \func terminal_iso {C : PreCat}
                    (t1 t2 : Terminal {C}) : t1.one ~= {C} t2.one =>
-    \let uniqueT1 : Singleton {t2.one ->> {C} t1.one} => t1.terminal t2.one \in
+  \let uniqueT1 : Singleton {t2.one ->> {C} t1.one} => t1.terminal t2.one \in
     \let uniqueT2 : Singleton {t1.one ->> {C} t2.one} => t2.terminal t1.one \in
-    \let f => uniqueT2.t \in
-    \let f_op => uniqueT1.t \in
-    \new Iso1 {C} {t1.one} {t2.one} f f_op (terminal_only_id t1 (f_op cmp {C} f)) (terminal_only_id t2 (f cmp {C} f_op))
+      \let f => uniqueT2.val \in
+        \let f_op => uniqueT1.val \in
+          \new Iso1 {C} {t1.one} {t2.one} f f_op (terminal_only_id t1 (f_op cmp {C} f)) (terminal_only_id t2 (f cmp {C} f_op))
 
 \record Initial {C : PreCat}
                 (zero : C.Ob)
@@ -29,4 +41,4 @@
                        (zero : C.Ob)
                        (i : Initial {C} zero) : Terminal {~ C} zero \cowith {
   | terminal => i.initial
-  }
+}

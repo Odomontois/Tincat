@@ -74,7 +74,7 @@
   \func terminal : Terminal {PSet} zero \cowith {
     | terminal P => \new Singleton {
       | T => P ->> {PSet} zero
-      | t => \new Homo {P} {zero} (\lam _ => unit) idp
+      | val => \new Homo {P} {zero} (\lam _ => unit) idp
       | prop (m1 m2 : Homo {P} {zero}) =>
         equiv m1 m2 (functExt (\lam x => unit_isProp (m1.h x) (m2.h x)))
       }
@@ -83,7 +83,7 @@
   \func initial : Initial {PSet} zero \cowith {
     | initial (P : Pointed) => \new Singleton {
       | T => zero ->> {PSet} P
-      | t => \new Homo {zero} {P} (\lam _ => P.base) idp
+      | val => \new Homo {zero} {P} (\lam _ => P.base) idp
       | prop (m1 m2 : Homo {zero} {P}) =>
          equiv m1 m2 (functExt (\lam (x : Unit) => m1.equ *> (inv m2.equ)))
       }
