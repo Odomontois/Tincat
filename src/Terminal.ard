@@ -2,43 +2,39 @@
 \import Category
 \import Iso
 \import Unique
---\import HLevel
---\import Paths
+\import Paths
 
-\record Terminal (C : Precat){
+\record Obj (C : Precat){
   | ob : C
+}
+
+\record Terminal \extends Obj{
   \property terminal (x : C) : Singleton (x ->> ob)
+  \func dual => \new Initial (op C) ob terminal
+} \where {
+  \func \infixl 5 term->> {C : Precat } (x : C)  (t : Terminal C) : x ->> ob => elem {t.terminal x}
+
+  \lemma iso {C : Precat} (t t' : Terminal C) : Iso1 (t'.ob term->> t) \cowith
+    | rev => elem {t'.terminal ob}
+    | l_comp => singleton {t'.terminal t'.ob} _ _
+    | r_comp => singleton {terminal ob} _ _
+
+  \lemma terminal->single {C : Cat} (t : Terminal C) : Singleton (Terminal C) \cowith
+    | elem => t
+    | singleton => univ-term-is-prop
+
+  \lemma univ-term-is-prop {C : Cat} (t t' : Terminal C) : t = t' =>
+    \let  | t=t' : t.ob = t'.ob => Iso1.iso-to-= {C} (Terminal.iso {C} t' t)
+          | p= =>  pathInProp (\lam i => \Pi (x : C) -> Singleton (x ->> (t=t' @ i))) t.terminal t'.terminal
+    \in path (\lam i => \new Terminal C{
+      | ob => t=t' @ i
+      | terminal => p= @ i
+    })
 }
 
+\record Initial \extends Obj {
+  \property initial (x : C) : Singleton (ob ->> x)
 
-\record TerminalUni (C : Cat) \extends Terminal \where {
-  \use \level terminal-is-prop {C : Cat} (t t' : TerminalUni C) : t = t' =>
-
-    \let | iso1 :
-         | t->t' : Singleton (Hom t.ob t'.ob) => t'.terminal t.ob
-         | t1<->t2 : issso {C} {t.ob} (t->t'.elem) => {?}
-    \in {?}
+  \func dual => \new Terminal (op C) ob initial
 }
 
-\func terminal_only_id {C : PreCat}
-                       (t : Terminal {C})
-                       (m : t.one ->> {C} t.one) : m = C.id =>
-  \let u : Singleton {t.one ->> {C} t.one} => t.terminal t.one \in u.prop m C.id
-
-\func terminal_iso {C : PreCat}
-                   (t1 t2 : Terminal {C}) : t1.one ~= {C} t2.one =>
-  \let uniqueT1 : Singleton {t2.one ->> {C} t1.one} => t1.terminal t2.one \in
-    \let uniqueT2 : Singleton {t1.one ->> {C} t2.one} => t2.terminal t1.one \in
-      \let f => uniqueT2.val \in
-        \let f_op => uniqueT1.val \in
-          \new Iso1 {C} {t1.one} {t2.one} f f_op (terminal_only_id t1 (f_op cmp {C} f)) (terminal_only_id t2 (f cmp {C} f_op))
-
-\record Initial {C : PreCat}
-                (zero : C.Ob)
-                (initial : \Pi (x : C.Ob) -> Singleton {zero ->> {C} x})
-
-\func terminal_duality {C : PreCat}
-                       (zero : C.Ob)
-                       (i : Initial {C} zero) : Terminal {~ C} zero \cowith {
-  | terminal => i.initial
-}

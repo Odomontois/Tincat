@@ -40,14 +40,9 @@
     pmap (o i.rev) (o-assoc _ _ _ *> pmap (\lam x => x `o` i.f) j.l_comp *> id-right _) *> i.l_comp
     | r_comp => inv (o-assoc _ _ _ ) *>
     pmap (o j.f) (o-assoc _ _ _ *> pmap (\lam x => x `o` j.rev) i.r_comp *> id-right _) *> j.r_comp
---
---  \use \coerce toIso {C : Precat} {a b : C} {f : a ->> b} (i : Iso1 f) : Iso {C} \cowith
---    | inv => i.rev
---    | f_inv => i.l_comp
---    | inv_f => i.r_comp
---    | dom => a
---    | cod => b
---    | f => f
+
+  \use \coerce iso-to-= {C : Cat} {a b : C} (iso : Iso1 {C} {a} {b}) : a = b =>
+    (C.univalence iso.f iso.rev iso.l_comp iso.r_comp).1
 }
 
 \func \infix 4 ~= {C : Precat} (a b : C) => \Sigma (f : a ->> b) (Iso1 f)
