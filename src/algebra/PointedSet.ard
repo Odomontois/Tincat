@@ -2,7 +2,7 @@
 \import Product (Product2)
 \import Set
 \import SetCat
-\import Terminal
+\import Object
 \import Unique
 \import lib.Data.Unit
 \import lib.Equiv

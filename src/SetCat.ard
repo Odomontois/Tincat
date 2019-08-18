@@ -6,7 +6,7 @@
 \import Logic
 \import HLevel
 \import Paths
-\import Terminal
+\import Object
 
 
 

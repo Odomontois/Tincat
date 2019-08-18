@@ -1,47 +1,46 @@
 \import Cat
 \import Iso
-\import Set
+\import Data.Bool
 \import Unique
-\import lib.Equiv
-\import lib.Paths
+
+--\import Equiv
+
+\import Paths
 \import Data.Three
+\import Object
+\import Category
+\open Precat (>>)
 
+\record LargeProduct {C : Precat} {ix : \Set} (pget : ix -> C) {
+  | pob : C
+  | proj (i : ix) : pob ->> pget i
+  | lprod (x : C) (f : \Pi (i : ix) -> x ->> pget i) : Unique (x ->> pob ) (\lam pr => \Pi (j : ix) -> proj j `o` pr = f j)
+} \where {
+  \func product_ob_unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
+    Iso1 (elem {pr'.lprod pr.pob pr.proj}) \cowith
+    | rev => elem {pr.lprod pr'.pob pr'.proj}
+    | l_comp => iso-one-side pr' pr
+    | r_comp => iso-one-side pr pr'
+    \where {
+      \open Unique (elem)
 
-\record Product
- {C : PreCat} (I : \Set)
- (a : I -> C.Ob)
- (p : C.Ob)
- (pi : \Pi (i : I) -> p ->> {C} a i)
- (prod : \Pi (x : C.Ob) (f : \Pi (i : I) -> x ->> {C} a i) -> Unique (x ->> {C} p) (\lam pr => \Pi (j : I) -> pi j cmp {C} pr = f j) )
+      \func iso-one-side {C : Precat} {I : \Set } {a : I -> C} (pr pr' : LargeProduct a) :
+        elem {pr'.lprod pr.pob pr.proj} `o` elem {pr.lprod pr'.pob pr'.proj} = id pr'.pob =>
+        \let | f : Unique => pr'.lprod pr.pob pr.proj
+             | f-1 : Unique => pr.lprod pr'.pob pr'.proj
+             | res : pr'.pob ->> pr'.pob  => f.elem `o` f-1.elem
+             | eqs (i : pr.ix) : pr'.proj i `o` res = pr'.proj i => o-assoc _ _ _ *> pmap (>> f-1.elem) (f.prop i) *> f-1.prop i
+        \in product_eq_id pr' res eqs
 
+      \func product_eq_id {C : Precat} (P : LargeProduct {C}) (f : P.pob ->> P.pob ) (eqs : \Pi (i : P.ix) -> P.proj i `o` f = P.proj i) : f = id _ =>
+        \let | u : Unique => P.lprod P.pob (P.proj)
+             | u_eq_id => u.unique (id _) (\lam i => C.id-left (P.proj i))
+             | u_eq_f => u.unique f eqs
+        \in (inv u_eq_f) *> u_eq_id
+    }
+}
 
 -- product object is unique up to isomorphism
-\func product_ob_unique {C : PreCat} {I : \Set} {a : I -> C.Ob} (pr pr' : Product {C} I a) : pr.p ~= {C} pr'.p =>
-      \new Iso1 {C} {pr.p} {pr'.p} {
-       | f => elem {pr'.prod pr.p pr.pi}
-       | rev => elem {pr.prod pr'.p pr'.pi}
-       | l_comp => iso_one_side pr' pr
-       | r_comp => iso_one_side pr pr'
-    } \where {
-      \open Unique (elem)
-      \func iso_one_side {C : PreCat} {I : \Set } {a : I -> C.Ob } (pr pr' : Product {C} I a) :
-        elem {pr'.prod pr.p pr.pi} cmp {C} elem {pr.prod pr'.p pr'.pi} = C.id =>
-         \let | f : Unique => pr'.prod pr.p pr.pi
-              | f-1 : Unique => pr.prod pr'.p pr'.pi
-              | res => f.elem cmp {C} f-1.elem
-              | eqs (i : pr.I)  => transport (\lam a => a = pr'.pi i) (C.assoc (pr'.pi i) f.elem f-1.elem)
-                                                    (transport {C.Hom pr.p (pr.a i)}
-                                                    (\lam h => h cmp {C} f-1.elem = pr'.pi i)
-                                                    (inv (f.prop i)) (f-1.prop i))
-         \in product_eq_id pr' res eqs
-
-      \func product_eq_id {C : PreCat}(P : Product {C}) (f : C.Hom P.p P.p ) (eqs : \Pi (i : P.I) -> P.pi i cmp {C} f = P.pi i) : f = C.id =>
-          \let | u : Unique => P.prod P.p (P.pi)
-               | u_eq_id => u.unique C.id (\lam i => C.r_unit (P.pi i))
-               | u_eq_f => u.unique f eqs
-          \in (inv u_eq_f) *> u_eq_id
-    }
-
 
 --\func product_shuffle {C : Cat} { I : \Set} {a : I -> C.Ob}  (p : C.Ob)
 --  (shuffle : QEquiv {I} {I}) (pr : Product {C} I a p)
@@ -58,116 +57,118 @@
 --      | unique => {?}
 --    }
 --  }
-
-\record Product2
-   {C : PreCat}
-   (a b : PreCat.Ob {C})
-   (p : C.Ob)
-   (pi1 : p ->> {C} a)
-   (pi2 : p ->> {C} b)
-   (prod : \Pi (x : C.Ob) (f : x ->> {C} a) (g : x ->> {C} b) -> Unique (x ->> {C} p) (\lam pr => \Sigma
-    (pi1 cmp {C} pr = f)
-    (pi2 cmp {C} pr = g)
-   ))
+--
 
 
-\func product_inv {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
-    | pi1 => pab.pi2
-    | pi2 => pab.pi1
-    | prod x f1 f2 =>
-        \let orig : Unique => pab.prod x f2 f1
-        \in \new Unique orig.A {
-          | B pr => \Sigma (pab.pi2 cmp {C} pr = f1) (pab.pi1 cmp {C} pr = f2)
-          | elem => orig.elem
-          | prop => (orig.prop.2, orig.prop.1)
-          | unique f' prod' => orig.unique f' (prod'.2, prod'.1)
-          }
+\record Product2 (a b : C) \extends LargeProduct {
+  | pi1 : pob ->> a
+  | pi2 : pob ->> b
+  | prod2 {x : C.Ob} (f : x ->> a) (g : x ->> b) : Unique (x ->> pob) (\lam pr => \Sigma (pi1 `o`  pr = f) (pi2 `o` pr = g))
 
-\func product_symmetry {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab => idp
+  | ix => Bool
+  | pget i => \case i \with {| true => a | false => b }
+  | proj i => \case i \as k \return pob ->> pget k \with {| true => pi1 | false => pi2 }
+  | lprod x f  =>
+    \let p2 : Unique => prod2 (f true) (f false)
+    \in \new Unique _ _ p2.elem{
+      | prop j => \case j \as k \return (proj k `o` p2.elem = f k) \with {| true => p2.prop.1 | false => p2.prop.2}
+      | unique => {?}
 
+    }
 
+}
 
-\func product_associativity {C : PreCat} (a b c : PreCat.Ob {C})
-         (pab : Product2 {C} a b)
-         (pab_c : Product2 {C} pab.p c )
-         (pbc : Product2 {C} b c)
-         (pa_bc : Product2 {C} a pbc.p) : pab_c.p ~= {C} pa_bc.p =>
-          product_ob_unique
-          (prod_of_prod_ass_l a b c pab pab_c)
-          (prod_of_prod_ass_r a b c pbc pa_bc)
-          \where{
-
-
-    \func prod_of_prod_ass_l {C : PreCat} (a b c : C.Ob)
-                             (pab : Product2 {C} a b) (pab_c : Product2 {C} pab.p c)
-                             : Product {C} three (make3X a b c) pab_c.p  =>
-       \let
-            | ob   => make3X a b c
-            | pi idx => \case idx \as i \return (C.Hom pab_c.p (ob i)) \with {
-                      | el3_1 => pab.pi1 cmp {C} pab_c.pi1
-                      | el3_2 => pab.pi2 cmp {C} pab_c.pi1
-                      | el3_3 => pab_c.pi2
-                     }
-            | prod (x : C.Ob) (f : \Pi (i : three) -> C.Hom x (ob i)) =>
-               \let
-                    | ut m => \Pi (i : three) -> (pi i cmp {C} m = f i)
-                    | pab_x : Unique => pab.prod x (f el3_1) (f el3_2)
-                    | pab_c_x : Unique => pab_c.prod x pab_x.elem (f el3_3)
-                    | pm => pab_c_x.elem
-                    | prop idx => \case idx \as i \return (pi i cmp {C} pm = f i) \with {
-                       | el3_1 => C.assoc (pab.pi1) (pab_c.pi1) pm *> transport (\lam m => pab.pi1 cmp {C} m = f el3_1) (inv pab_c_x.prop.1) pab_x.prop.1
-                       | el3_2 => C.assoc (pab.pi2) (pab_c.pi1) pm *> transport (\lam m => pab.pi2 cmp {C} m = f el3_2) (inv pab_c_x.prop.1) pab_x.prop.2
-                       | el3_3 => pab_c_x.prop.2
-                    }
-                    | uni (am : C.Hom x pab_c.p) (am_eqs : ut am) : pm = am =>
-                        \let | eq1 : pab_x.elem = pab_c.pi1 cmp {C} am => pab_x.unique (pab_c.pi1 cmp {C} am) (
-                             inv (ass {C}) *> (am_eqs el3_1),
-                             inv (ass {C}) *> (am_eqs el3_2)
-                           )
-                        \in pab_c_x.unique am (inv eq1 , am_eqs el3_3)
-
-               \in \new Unique (x ->> {C} pab_c.p) ut pab_c_x.elem prop uni
-       \in \new Product {C} three ob pab_c.p {
-               | pi => pi
-               | prod  => prod
-              }
-
-
-
-    \func prod_of_prod_ass_r {C : PreCat} (a b c : C.Ob)
-                             (pbc : Product2 {C} b c) (pa_bc : Product2 {C} a pbc.p)
-                             : Product {C} three (make3X a b c) pa_bc.p  =>
-       \let
-            | ob   => make3X a b c
-            | pi idx => \case idx \as i \return (C.Hom pa_bc.p (ob i)) \with {
-                      | el3_1 => pa_bc.pi1
-                      | el3_2 => pbc.pi1 cmp {C} pa_bc.pi2
-                      | el3_3 => pbc.pi2 cmp {C} pa_bc.pi2
-                     }
-            | prod (x : C.Ob) (f : \Pi (i : three) -> C.Hom x (ob i)) =>
-               \let
-                    | ut m => \Pi (i : three) -> (pi i cmp {C} m = f i)
-                    | pbc_x : Unique => pbc.prod x (f el3_2) (f el3_3)
-                    | pa_bc_x : Unique => pa_bc.prod x  (f el3_1) pbc_x.elem
-                    | pm => pa_bc_x.elem
-                    | prop idx => \case idx \as i \return (pi i cmp {C} pm = f i) \with {
-                       | el3_1 => pa_bc_x.prop.1
-                       | el3_2 => C.assoc (pbc.pi1) (pa_bc.pi2) pm *> transport (\lam m => pbc.pi1 cmp {C} m = f el3_2) (inv pa_bc_x.prop.2) pbc_x.prop.1
-                       | el3_3 => C.assoc (pbc.pi2) (pa_bc.pi2) pm *> transport (\lam m => pbc.pi2 cmp {C} m = f el3_3) (inv pa_bc_x.prop.2) pbc_x.prop.2
-                    }
-                    | uni (am : C.Hom x pa_bc.p) (am_eqs : ut am) : pm = am =>
-                        \let | eq1 : pbc_x.elem = pa_bc.pi2 cmp {C} am => pbc_x.unique (pa_bc.pi2 cmp {C} am) (
-                             inv (ass {C}) *> (am_eqs el3_2),
-                             inv (ass {C}) *> (am_eqs el3_3)
-                           )
-                        \in pa_bc_x.unique am (am_eqs el3_1, inv eq1)
-
-               \in \new Unique ( x ->> {C} pa_bc.p) ut pa_bc_x.elem prop uni
-      \in \new Product {C} three ob pa_bc.p {
-              | pi => pi
-              | prod  => prod
-             }
-
-
-   }
+--
+--\func product_inv {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
+--  | pi1 => pab.pi2
+--  | pi2 => pab.pi1
+--  | prod x f1 f2 =>
+--    \let orig : Unique => pab.prod x f2 f1
+--    \in \new Unique orig.A {
+--      | B pr => \Sigma (pab.pi2 cmp {C} pr = f1) (pab.pi1 cmp {C} pr = f2)
+--      | elem => orig.elem
+--      | prop => (orig.prop.2, orig.prop.1)
+--      | unique f' prod' => orig.unique f' (prod'.2, prod'.1)
+--    }
+--
+--\func product_symmetry {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab =>
+--  idp
+--
+--\func product_associativity {C : PreCat} (a b c : PreCat.Ob {C})
+--                            (pab : Product2 {C} a b)
+--                            (pab_c : Product2 {C} pab.p c )
+--                            (pbc : Product2 {C} b c)
+--                            (pa_bc : Product2 {C} a pbc.p) : pab_c.p ~= {C} pa_bc.p =>
+--  product_ob_unique
+--      (prod_of_prod_ass_l a b c pab pab_c)
+--      (prod_of_prod_ass_r a b c pbc pa_bc)
+--  \where{
+--    \func prod_of_prod_ass_l {C : PreCat} (a b c : C.Ob)
+--                             (pab : Product2 {C} a b) (pab_c : Product2 {C} pab.p c)
+--      : LargeProduct {C} three (make3X a b c) pab_c.p =>
+--      \let
+--        | ob   => make3X a b c
+--        | pi idx => \case idx \as i \return (C.Hom pab_c.p (ob i)) \with {
+--          | el3_1 => pab.pi1 cmp {C} pab_c.pi1
+--          | el3_2 => pab.pi2 cmp {C} pab_c.pi1
+--          | el3_3 => pab_c.pi2
+--        }
+--        | prod (x : C.Ob) (f : \Pi (i : three) -> C.Hom x (ob i)) =>
+--          \let
+--            | ut m => \Pi (i : three) -> (pi i cmp {C} m = f i)
+--            | pab_x : Unique => pab.prod x (f el3_1) (f el3_2)
+--            | pab_c_x : Unique => pab_c.prod x pab_x.elem (f el3_3)
+--            | pm => pab_c_x.elem
+--            | prop idx => \case idx \as i \return (pi i cmp {C} pm = f i) \with {
+--              | el3_1 => C.assoc (pab.pi1) (pab_c.pi1) pm *> transport (\lam m => pab.pi1 cmp {C} m = f el3_1) (inv pab_c_x.prop.1) pab_x.prop.1
+--              | el3_2 => C.assoc (pab.pi2) (pab_c.pi1) pm *> transport (\lam m => pab.pi2 cmp {C} m = f el3_2) (inv pab_c_x.prop.1) pab_x.prop.2
+--              | el3_3 => pab_c_x.prop.2
+--            }
+--            | uni (am : C.Hom x pab_c.p) (am_eqs : ut am) : pm = am =>
+--              \let | eq1 : pab_x.elem = pab_c.pi1 cmp {C} am => pab_x.unique (pab_c.pi1 cmp {C} am) (
+--                inv (ass {C}) *> (am_eqs el3_1),
+--                inv (ass {C}) *> (am_eqs el3_2)
+--              )
+--              \in pab_c_x.unique am (inv eq1 , am_eqs el3_3)
+--
+--          \in \new Unique (x ->> {C} pab_c.p) ut pab_c_x.elem prop uni
+--      \in \new LargeProduct {C} three ob pab_c.p {
+--        | pi => pi
+--        | lprod  => prod
+--      }
+--
+--    \func prod_of_prod_ass_r {C : PreCat} (a b c : C.Ob)
+--                             (pbc : Product2 {C} b c) (pa_bc : Product2 {C} a pbc.p)
+--      : LargeProduct {C} three (make3X a b c) pa_bc.p =>
+--      \let
+--        | ob   => make3X a b c
+--        | pi idx => \case idx \as i \return (C.Hom pa_bc.p (ob i)) \with {
+--          | el3_1 => pa_bc.pi1
+--          | el3_2 => pbc.pi1 cmp {C} pa_bc.pi2
+--          | el3_3 => pbc.pi2 cmp {C} pa_bc.pi2
+--        }
+--        | prod (x : C.Ob) (f : \Pi (i : three) -> C.Hom x (ob i)) =>
+--          \let
+--            | ut m => \Pi (i : three) -> (pi i cmp {C} m = f i)
+--            | pbc_x : Unique => pbc.prod x (f el3_2) (f el3_3)
+--            | pa_bc_x : Unique => pa_bc.prod x  (f el3_1) pbc_x.elem
+--            | pm => pa_bc_x.elem
+--            | prop idx => \case idx \as i \return (pi i cmp {C} pm = f i) \with {
+--              | el3_1 => pa_bc_x.prop.1
+--              | el3_2 => C.assoc (pbc.pi1) (pa_bc.pi2) pm *> transport (\lam m => pbc.pi1 cmp {C} m = f el3_2) (inv pa_bc_x.prop.2) pbc_x.prop.1
+--              | el3_3 => C.assoc (pbc.pi2) (pa_bc.pi2) pm *> transport (\lam m => pbc.pi2 cmp {C} m = f el3_3) (inv pa_bc_x.prop.2) pbc_x.prop.2
+--            }
+--            | uni (am : C.Hom x pa_bc.p) (am_eqs : ut am) : pm = am =>
+--              \let | eq1 : pbc_x.elem = pa_bc.pi2 cmp {C} am => pbc_x.unique (pa_bc.pi2 cmp {C} am) (
+--                inv (ass {C}) *> (am_eqs el3_2),
+--                inv (ass {C}) *> (am_eqs el3_3)
+--              )
+--              \in pa_bc_x.unique am (am_eqs el3_1, inv eq1)
+--
+--          \in \new Unique ( x ->> {C} pa_bc.p) ut pa_bc_x.elem prop uni
+--      \in \new LargeProduct {C} three ob pa_bc.p {
+--        | pi => pi
+--        | lprod  => prod
+--      }
+--  }
 
