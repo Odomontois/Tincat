@@ -15,26 +15,15 @@
 \import Function (-o)
 \import Functor (Functor)
 
-\record LargeProduct {C : Precat} {X : \Set} (pget : X -> C) \extends Limit {
-  | IX => discreteCat X
+\record LargeProduct {C : Precat} {X : \Set} (pget : X -> C){
   | pob : C
   | proj (i : X) : pob ->> pget i
   | lprod (x : C) (f : \Pi (i : X) -> x ->> pget i) : Unique (x ->> pob ) (\lam pr => \Pi (j : X) -> proj j `o` pr = f j)
 
 
 
-  | cone => {?}
-  | universal => {?}
 
 
-  \func discreteFunctor : Functor (discreteCat X) C \cowith
-    | ob x => pget x
-    | map {a} {b} f => coeMap f
-    | functor_id a => idp
-    | func_comp f g => {?}  \where {
-    \func arrT (x y : X) => pget x ->> pget y
-    \func coeMap {x x' : X} (u : x = x') => transport (arrT x) u (id _)
-  }
 } \where {
   \func product_ob_unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
     Iso1 (elem {pr'.lprod pr.pob pr.proj}) \cowith
@@ -99,8 +88,6 @@
     }
 
 } \where {
-
-
   \func swap {C : Precat} (a b p : C) (pab : Product2 p a b) : Product2 p b a \cowith
     | pi1 => pab.pi2
     | pi2 => pab.pi1
@@ -111,7 +98,8 @@
         | prop => (f*g.prop.2, f*g.prop.1)
         | unique u pu => f*g.unique u (pu.2, pu.1)
       }
---  \lemma swap-involutive {C : Precat} (a b )
+
+  --  \lemma swap-involutive {C : Precat} (a b )
 }
 
 --

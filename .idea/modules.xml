@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/tincat.iml" filepath="$PROJECT_DIR$/tincat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Tincat.iml" filepath="$PROJECT_DIR$/Tincat.iml" />
     </modules>
   </component>
 </project>

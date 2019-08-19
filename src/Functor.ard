@@ -62,4 +62,19 @@
     | functor_id a => path (\lam i f => id-right f @ i)
     | func_comp f g => path (\lam i h => o-assoc h g f @ i)
 
+  \record DiscreteFunctor {X : \Set} {C : Precat} (pget : X -> C) {
+    \func arrT (s : X) {x y : X} (e : x = y) (i : I) => pget s ->> pget (e @ i)
+
+    \func coeComp {x y z : X} (f : y = z) (g : x = y) =>
+      \let cg => coeMap g right
+      \in coe (\lam i => coeMap f i `o` cg = coe (arrT x f) cg i) (C.id-right cg) right
+
+    \func coeMap {x x' : X} (e : x = x') => coe (arrT x e) (id _)
+
+    \func functor  : Functor (discreteCat X) C \cowith
+      | ob x => pget x
+      | map {a} {b} f => coeMap f right
+      | functor_id a => idp
+      | func_comp f g => coeComp f g *> {?}
+  }
 }
