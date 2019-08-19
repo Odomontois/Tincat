@@ -62,5 +62,4 @@
     | functor_id a => path (\lam i f => id-right f @ i)
     | func_comp f g => path (\lam i h => o-assoc h g f @ i)
 
-
 }

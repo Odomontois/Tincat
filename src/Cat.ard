@@ -4,7 +4,22 @@
 
 \func \infix 6 ->> {Ob : Precat}  (a b : Ob) => Hom a b
 
-\func ~ {A : Precat} (a : A) => \new op A a
+\func discreteCat (A : \Set) : Cat A \cowith
+  | Hom a b => a = b
+  | id a => idp
+  | o f g => g *> f
+  | id-left f => idp_*> f
+  | id-right f => idp
+  | o-assoc f g h => *>-assoc f g h
+  | univalence f _ _ _  => (f, transport_path-right f idp *> idp_*> f)
+
+\func discretePrecat (A : \Type) : Precat A \cowith
+  | Hom a b => \Sigma
+  | id a => ()
+  | o f g => ()
+  | id-left f => idp
+  | id-right f => idp
+  | o-assoc f g h => idp
 
 
 
