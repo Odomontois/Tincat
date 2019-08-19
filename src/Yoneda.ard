@@ -1,0 +1,35 @@
+\import Cat
+\import Category (Precat)
+\import Equiv (QEquiv)
+\import Equiv.Univalence
+\import Functor
+\import NatTrans
+\import Paths
+\import SetCat
+\import Set.Category
+\open Precat
+
+\func Yoneda {C : Precat} (F : Functor C SetCat) (a : C)  : F.ob a = NatTrans (Functor.homFunctor a) F =>
+  YonedaProof.result {\new YonedaProof F a} \where {
+  \record YonedaProof {C : Precat} (F : Functor C SetCat) (a : C){
+    \func Fa => F.ob a
+    \func Ha~>F => NatTrans (Functor.homFunctor a) F
+
+    \func from (p : Fa) : NatTrans (Functor.homFunctor a) F \cowith
+      | trans x f => F.map(f)(p)
+      | naturality {x} {y} f => path (\lam i (g : a ->> x)  => ((inv (F.func_comp f g)) @ i) p )
+
+    \func to (alpha : Ha~>F) : Fa => (alpha.trans a) (id a)
+
+    \lemma from-to (t : Ha~>F) : from (to t) = t =>
+      \let e (b : C) (f : a ->> b) : F.map f ((t.trans a) (id a)) = t.trans b f  =>
+             pmap (\lam g => g (id a)) (inv (t.naturality f)) *> pmap (t.trans b) (id-left f)
+      \in NatTrans.equiv (from (to t)) t (path (\lam i b f => e b f @ i))
+
+    \lemma to-from (p : Fa) : to (from p) = p => pmap (\lam g => g p) (F.functor_id a)
+
+    \func result : Fa = Ha~>F => QEquiv-to-= (\new QEquiv from to to-from from-to)
+  }
+}
+
+
