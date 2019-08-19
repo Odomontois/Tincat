@@ -14,7 +14,7 @@
 \record LargeProduct {C : Precat} {ix : \Set} (pget : ix -> C) {
   | pob : C
   | proj (i : ix) : pob ->> pget i
-  | lprod (x : C) (f : \Pi (i : ix) -> x ->> pget i) : Unique (x ->> pob ) (\lam pr => \Pi (j : ix) -> proj j `o` pr = f j)
+  \property lprod (x : C) (f : \Pi (i : ix) -> x ->> pget i) : Unique (x ->> pob ) (\lam pr => \Pi (j : ix) -> proj j `o` pr = f j)
 } \where {
   \func product_ob_unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
     Iso1 (elem {pr'.lprod pr.pob pr.proj}) \cowith
@@ -63,33 +63,36 @@
 \record Product2 (a b : C) \extends LargeProduct {
   | pi1 : pob ->> a
   | pi2 : pob ->> b
-  | prod2 {x : C.Ob} (f : x ->> a) (g : x ->> b) : Unique (x ->> pob) (\lam pr => \Sigma (pi1 `o`  pr = f) (pi2 `o` pr = g))
+  \property prod2 {x : C.Ob} (f : x ->> a) (g : x ->> b) : Unique (x ->> pob) (\lam pr => \Sigma (pi1 `o`  pr = f) (pi2 `o` pr = g))
 
   | ix => Bool
   | pget i => \case i \with {| true => a | false => b }
   | proj i => \case i \as k \return pob ->> pget k \with {| true => pi1 | false => pi2 }
   | lprod x f  =>
     \let p2 : Unique => prod2 (f true) (f false)
-    \in \new Unique _ _ p2.elem{
+    \in \new Unique _ _ p2.elem {
       | prop j => \case j \as k \return (proj k `o` p2.elem = f k) \with {| true => p2.prop.1 | false => p2.prop.2}
-      | unique => {?}
-
+      | unique q g => p2.unique q (g true, g false)
     }
 
+} \where {
+  
+
+  \func swap {C : Precat} (a b p : C) (pab : Product2 p a b) : Product2 p b a \cowith
+    | pi1 => pab.pi2
+    | pi2 => pab.pi1
+    | prod2 {x} f g =>
+      \let f*g : Unique (x ->> p) => pab.prod2 g f
+      \in \new Unique f*g.A _ {
+        | elem => f*g.elem
+        | prop => (f*g.prop.2, f*g.prop.1)
+        | unique u pu => f*g.unique u (pu.2, pu.1)
+      }
+--  \lemma swap-involutive {C : Precat} (a b )
 }
 
 --
---\func product_inv {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : Product2 {C} b a pab.p \cowith
---  | pi1 => pab.pi2
---  | pi2 => pab.pi1
---  | prod x f1 f2 =>
---    \let orig : Unique => pab.prod x f2 f1
---    \in \new Unique orig.A {
---      | B pr => \Sigma (pab.pi2 cmp {C} pr = f1) (pab.pi1 cmp {C} pr = f2)
---      | elem => orig.elem
---      | prop => (orig.prop.2, orig.prop.1)
---      | unique f' prod' => orig.unique f' (prod'.2, prod'.1)
---    }
+--
 --
 --\func product_symmetry {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab =>
 --  idp
