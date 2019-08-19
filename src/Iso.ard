@@ -8,6 +8,12 @@
   | rev : b ->> a
   \property l_comp : rev `o` f = id a
   \property r_comp : f `o` rev = id b
+
+
+  \func toIso : Iso f \cowith
+    | inv => rev
+    | f_inv => l_comp
+    | inv_f => r_comp
 } \where {
   \lemma unique-rev {C : Precat} {a b : C} {f : a ->> b}
                     (iso1 : Iso1 f)
@@ -45,5 +51,4 @@
     (C.univalence iso.f iso.rev iso.l_comp iso.r_comp).1
 }
 
-\func \infix 4 ~= {C : Precat} (a b : C) => \Sigma (f : a ->> b) (Iso1 f)
-
+\func \infix 4 ~= {C : Precat} (a b : C) => Iso1 {C} {a} {b} \where

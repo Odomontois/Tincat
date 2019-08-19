@@ -1,4 +1,6 @@
 \import Cat
+\import Equiv (QEquiv)
+\import Functor.Limit
 \import Iso
 \import Data.Bool
 \import Unique
@@ -10,11 +12,29 @@
 \import Object
 \import Category
 \open Precat (>>)
+\import Function (-o)
+\import Functor (Functor)
 
-\record LargeProduct {C : Precat} {ix : \Set} (pget : ix -> C) {
+\record LargeProduct {C : Precat} {X : \Set} (pget : X -> C) \extends Limit {
+  | IX => discreteCat X
   | pob : C
-  | proj (i : ix) : pob ->> pget i
-  | lprod (x : C) (f : \Pi (i : ix) -> x ->> pget i) : Unique (x ->> pob ) (\lam pr => \Pi (j : ix) -> proj j `o` pr = f j)
+  | proj (i : X) : pob ->> pget i
+  | lprod (x : C) (f : \Pi (i : X) -> x ->> pget i) : Unique (x ->> pob ) (\lam pr => \Pi (j : X) -> proj j `o` pr = f j)
+
+
+
+  | cone => {?}
+  | universal => {?}
+
+
+  \func discreteFunctor : Functor (discreteCat X) C \cowith
+    | ob x => pget x
+    | map {a} {b} f => coeMap f
+    | functor_id a => idp
+    | func_comp f g => {?}  \where {
+    \func arrT (x y : X) => pget x ->> pget y
+    \func coeMap {x x' : X} (u : x = x') => transport (arrT x) u (id _)
+  }
 } \where {
   \func product_ob_unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
     Iso1 (elem {pr'.lprod pr.pob pr.proj}) \cowith
@@ -29,10 +49,10 @@
         \let | f : Unique => pr'.lprod pr.pob pr.proj
              | f-1 : Unique => pr.lprod pr'.pob pr'.proj
              | res : pr'.pob ->> pr'.pob  => f.elem `o` f-1.elem
-             | eqs (i : pr.ix) : pr'.proj i `o` res = pr'.proj i => o-assoc _ _ _ *> pmap (>> f-1.elem) (f.prop i) *> f-1.prop i
+             | eqs (i : pr.X) : pr'.proj i `o` res = pr'.proj i => o-assoc _ _ _ *> pmap (>> f-1.elem) (f.prop i) *> f-1.prop i
         \in product_eq_id pr' res eqs
 
-      \func product_eq_id {C : Precat} (P : LargeProduct {C}) (f : P.pob ->> P.pob ) (eqs : \Pi (i : P.ix) -> P.proj i `o` f = P.proj i) : f = id _ =>
+      \func product_eq_id {C : Precat} (P : LargeProduct {C}) (f : P.pob ->> P.pob ) (eqs : \Pi (i : P.X) -> P.proj i `o` f = P.proj i) : f = id _ =>
         \let | u : Unique => P.lprod P.pob (P.proj)
              | u_eq_id => u.unique (id _) (\lam i => C.id-left (P.proj i))
              | u_eq_f => u.unique f eqs
@@ -41,31 +61,34 @@
 }
 
 -- product object is unique up to isomorphism
-
---\func product_shuffle {C : Cat} { I : \Set} {a : I -> C.Ob}  (p : C.Ob)
---  (shuffle : QEquiv {I} {I}) (pr : Product {C} I a p)
---  => \new Product {C} I (\lam i => a (shuffle.f i)) p {
---    | pi i => pr.pi (shuffle.f i)
---    | prod x ms =>
---    \let
---          | A => x ->> {C} pr.p
---          | B (m : A ) => \Pi (i : I) -> pr.pi (shuffle.f i) cmp {C} m = ms i
---          | orig : Unique => pr.prod x (\lam i => transport (\lam j => x ->> {C} a j) (shuffle.f_sec i) (ms (shuffle.ret i)))
---    \in \new Unique A B {
---      | elem => orig.elem
---      | prop i => orig.prop (shuffle.f i)
---      | unique => {?}
---    }
---  }
 --
-
+--\func product_shuffle {C : Cat} {ix ix' : \Set} {k : ix -> C}  (p : C) (qe : QEquiv {ix} {ix'}) (P : LargeProduct k p) =>
+--  \new LargeProduct (\lam v => k (qe.ret v)) p {
+--    | proj i => P.proj (qe.ret i)
+--    | lprod x ms =>
+--      \let
+--        | A => x ->> p
+--        | B (m : A) => \Pi (u : ix') -> P.proj (qe.ret u) `o` {C} m = ms u
+--        | orig : Unique (x ->> p) => P.lprod x (\lam (u : ix) => coe (\lam i => x ->> k (qe.ret_f u @ i))  (ms (qe.f u)) right )
+--      \in \new Unique A B {
+--        | elem => orig.elem
+--        | prop u =>
+--          \let | zz  => 1
+--               | uu => coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u)))  left
+--               | uu' => coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u)))  right
+--               | uuu : uu = uu'  => {?}
+--          \in orig.prop (qe.ret u) *> {?}
+--
+--        | unique => {?}
+--      }
+}
 
 \record Product2 (a b : C) \extends LargeProduct {
   | pi1 : pob ->> a
   | pi2 : pob ->> b
   | prod2 {x : C.Ob} (f : x ->> a) (g : x ->> b) : Unique (x ->> pob) (\lam pr => \Sigma (pi1 `o`  pr = f) (pi2 `o` pr = g))
 
-  | ix => Bool
+  | X => Bool
   | pget i => \case i \with {| true => a | false => b }
   | proj i => \case i \as k \return pob ->> pget k \with {| true => pi1 | false => pi2 }
   | lprod x f  =>

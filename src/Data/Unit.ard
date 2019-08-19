@@ -1,8 +1,0 @@
-\import HLevel
-
-\record Unit
-
-\func unit => \new Unit
-
-\func unit_isProp : isProp Unit => Path.inProp
-
