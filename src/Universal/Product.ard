@@ -1,6 +1,6 @@
 \import Cat
 \import Equiv (QEquiv)
-\import Functor.Limit
+\import Universal.Limit
 \import Iso
 \import Data.Bool
 \import Unique
@@ -9,7 +9,7 @@
 
 \import Paths
 \import Data.Three
-\import Object
+\import Universal.Object
 \import Category
 \open Precat (>>)
 \import Function (-o)

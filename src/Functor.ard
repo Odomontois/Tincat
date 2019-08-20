@@ -64,7 +64,6 @@
 
   \func discreteFunctor {X : \Set} {C : Precat} (pget : X -> C) : Functor (discreteCat X) C =>
     DiscreteFunctor.functor {\new DiscreteFunctor pget} \where {
-
     \record DiscreteFunctor {X : \Set} {C : Precat} (pget : X -> C) {
       \func arrT (s : X) {x y : X} (e : x = y) (i : I) => pget s ->> pget (e @ i)
 

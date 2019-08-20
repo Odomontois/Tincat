@@ -1,12 +1,12 @@
 \import Cat
-\import Product
+\import Universal.Product
 \import Set
 \import Unique
 \import Util
 \import Logic
 \import HLevel
 \import Paths
-\import Object
+\import Universal.Object
 
 
 

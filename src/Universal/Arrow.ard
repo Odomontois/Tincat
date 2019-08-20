@@ -1,0 +1,22 @@
+\import Cat
+\import Functor (Functor)
+\import NatTrans (~>, NatTrans)
+\import Unique
+\open Functor (const-functor)
+\import Category
+
+\record UniversalArrow {C D : Precat} (x : D) (F : Functor C D) {
+  \field  ob : C
+}
+
+\record InitialArrow \extends UniversalArrow {
+  | init : x ->> F.ob ob
+  \property divide (z : C) (n : x ->> F.ob z) : Unique (ob ->> z) (\lam f => F.map f `o` init = n)
+}
+
+\record TerminalArrow \extends UniversalArrow {
+  | term : F.ob ob ->> x
+  \property codivide (z : C) (n : F.ob z ->> x):  Unique (z ->> ob) (\lam f => term `o` F.map f = n )
+}
+
+
