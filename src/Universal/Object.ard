@@ -7,6 +7,7 @@
 \record Terminal (C : Precat){
   | ob : C
   \property terminal (x : C) : Singleton (x ->> ob)
+
 } \where {
   \func \infixl 5 term->> {C : Precat} (x : C)  (t : Terminal C) : x ->> ob => elem {t.terminal x}
 
@@ -26,13 +27,12 @@
       | ob => t=t' @ i
       | terminal => p= @ i
     })
+
+  \func uni {C : Cat} (t : Terminal C) : Singleton (Terminal C) \cowith
+    | elem => t
+    | singleton => univ-term-is-prop
 }
 
-\record TerminalUni (UC : Cat) \extends Terminal{
-  | C => UC
-} \where {
-  \use \level terminal-is-prop {UC : Cat} (t t' : TerminalUni UC) : t = t' => Terminal.univ-term-is-prop {UC} t t'
-}
 
 \func Initial {C : Precat} => Terminal (op C)
 

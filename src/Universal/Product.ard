@@ -4,9 +4,6 @@
 \import Iso
 \import Data.Bool
 \import Unique
-
---\import Equiv
-
 \import Paths
 \import Data.Three
 \import Universal.Object
@@ -14,6 +11,8 @@
 \open Precat (>>)
 \import Function (-o)
 \import Functor (Functor)
+\import Set.Category
+\import Data.Or
 
 \record LargeProduct {X : \Set} (pget : X -> C) \extends Limit {
   | IX => discreteCat X
@@ -53,29 +52,6 @@
     }
 }
 
--- product object is unique up to isomorphism
---
---\func product_shuffle {C : Cat} {ix ix' : \Set} {k : ix -> C}  (p : C) (qe : QEquiv {ix} {ix'}) (P : LargeProduct k p) =>
---  \new LargeProduct (\lam v => k (qe.ret v)) p {
---    | proj i => P.proj (qe.ret i)
---    | lprod x ms =>
---      \let
---        | A => x ->> p
---        | B (m : A) => \Pi (u : ix') -> P.proj (qe.ret u) `o` {C} m = ms u
---        | orig : Unique (x ->> p) => P.lprod x (\lam (u : ix) => coe (\lam i => x ->> k (qe.ret_f u @ i))  (ms (qe.f u)) right )
---      \in \new Unique A B {
---        | elem => orig.elem
---        | prop u =>
---          \let | zz  => 1
---               | uu => coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u)))  left
---               | uu' => coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u)))  right
---               | uuu : uu = uu'  => {?}
---          \in orig.prop (qe.ret u) *> {?}
---
---        | unique => {?}
---      }
---}
-
 \record Product2 (a b : C) \extends LargeProduct {
   | pi1 : pob ->> a
   | pi2 : pob ->> b
@@ -92,7 +68,7 @@
     }
 
 } \where {
-  \func swap {C : Precat} (a b p : C) (pab : Product2 p a b) : Product2 p b a \cowith
+  \func swap {C : Precat} {a b p : C} (pab : Product2 p a b) : Product2 p b a \cowith
     | pi1 => pab.pi2
     | pi2 => pab.pi1
     | prod2 {x} f g =>
@@ -103,14 +79,13 @@
         | unique u pu => f*g.unique u (pu.2, pu.1)
       }
 
-  --  \lemma swap-involutive {C : Precat} (a b )
+  \lemma swap-involutive {C : Precat} (a b p : C) (pab : Product2 p a b) : swap (swap pab) = pab => idp
+
+
 }
 
---
---
---
---\func product_symmetry {C : PreCat} (a b : PreCat.Ob {C}) (pab : Product2 {C} a b) : product_inv b a (product_inv a b pab) = pab =>
---  idp
+\func Sum2 {C : Precat} (cp a b : C) => Product2 {op C} cp a b
+
 --
 --\func product_associativity {C : PreCat} (a b c : PreCat.Ob {C})
 --                            (pab : Product2 {C} a b)
@@ -190,3 +165,26 @@
 --      }
 --  }
 
+
+-- product object is unique up to isomorphism
+--
+--\func product_shuffle {C : Cat} {ix ix' : \Set} {k : ix -> C}  (p : C) (qe : QEquiv {ix} {ix'}) (P : LargeProduct k p) =>
+--  \new LargeProduct (\lam v => k (qe.ret v)) p {
+--    | proj i => P.proj (qe.ret i)
+--    | lprod x ms =>
+--      \let
+--        | A => x ->> p
+--        | B (m : A) => \Pi (u : ix') -> P.proj (qe.ret u) `o` {C} m = ms u
+--        | orig : Unique (x ->> p) => P.lprod x (\lam (u : ix) => coe (\lam i => x ->> k (qe.ret_f u @ i))  (ms (qe.f u)) right )
+--      \in \new Unique A B {
+--        | elem => orig.elem
+--        | prop u =>
+--          \let | zz  => 1
+--               | uu => coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u)))  left
+--               | uu' => coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u)))  right
+--               | uuu : uu = uu'  => {?}
+--          \in orig.prop (qe.ret u) *> {?}
+--
+--        | unique => {?}
+--      }
+--}

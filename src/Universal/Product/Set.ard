@@ -1,0 +1,33 @@
+\import Category
+\import Data.Or
+\import Paths
+\import Set.Category
+\import Unique
+\import Universal.Product
+
+\func set-product (a b : \Set): Product2 (\Sigma a b) a b \cowith
+  | pi1 p => p.1
+  | pi2 p => p.2
+  | prod2 f g => \new Unique _ _ {
+    | elem x => (f x, g x)
+    | prop => (idp , idp )
+    | unique u ee => inv (path (\lam i x => ((ee.1 @ i) x, (ee.2 @ i) x)))
+  }
+
+\func set-coproduct (a b : \Set): Product2 {op SetCat} (a `Or` b) a b \cowith
+  | pi1 => inl
+  | pi2 => inr
+  | prod2 {x} f g =>
+    \let e (ab : Or a b) : x => \case ab \with{
+      | Or.inl a => f a
+      | Or.inr b => g b
+    }
+    \in \new Unique _ _ {
+      | elem => e
+      | prop => (idp, idp)
+      | unique u ee => (path (\lam i (x : Or a b) =>
+          (\case x \as x' \return e x' = u x' \with {
+            | inl a => pmap (\lam h => h a) (inv ee.1)
+            | inr b => pmap (\lam h => h b) (inv ee.2)
+          }) @ i))
+    }
