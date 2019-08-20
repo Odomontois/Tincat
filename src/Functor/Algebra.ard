@@ -1,0 +1,38 @@
+\import Cat
+\import Category
+\import Functor
+\import Paths
+\open Precat
+\open Algebra (Homo, =homo)
+
+\record Algebra {C : Precat}(F : Functor C C) {
+  | base : C
+  | algebra : F.ob base ->> base
+} \where {
+  \record Homo {C : Precat} {F : Functor C C} (x y : Algebra F){
+    | m : x.base ->> y.base
+    \property homo : m `o` x.algebra = y.algebra `o` F.map m
+  }
+
+  \lemma =homo {C : Precat} {F : Functor C C } {a b : Algebra F} {u v : Homo a b} (p : u.m = v.m) : u = v =>
+    path(\lam i => \new Homo a b {
+      | m => p @ i
+      | homo => pathInProp (\lam i => (p @ i) `o` a.algebra = b.algebra `o` F.map (p @ i)) u.homo v.homo @ i
+    })
+}
+
+\instance  algebraCat {C : Precat} { F : Functor C C} : Precat (Algebra F) \cowith
+  | Hom a b => Homo a b
+  | id a => \new Homo a {
+    | m => id _
+    | homo => id-right _ *> inv (id-left _) *> pmap (o (algebra {a})) (inv (F.functor_id _))
+  }
+  | o {_} {_} {z : Algebra} (f : Homo) (g : Homo) => \new Homo _ {
+    | m => f.m `o` g.m
+    | homo =>
+      inv (o-assoc _ _ _) *> pmap (o f.m) g.homo *> o-assoc _ _ _ *> (pmap (>> (F.map g.m)) f.homo *>
+      inv (o-assoc _ _ _ ) *> pmap (o z.algebra) (F.func_comp _ _))
+  }
+  | id-left (f : Homo) => =homo (id-left f.m)
+  | id-right (f : Homo) => =homo (id-right f.m)
+  | o-assoc (f : Homo) (g : Homo) (h : Homo) => =homo (o-assoc f.m g.m h.m)
