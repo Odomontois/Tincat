@@ -15,15 +15,19 @@
 \import Function (-o)
 \import Functor (Functor)
 
-\record LargeProduct {C : Precat} {X : \Set} (pget : X -> C){
+\record LargeProduct {X : \Set} (pget : X -> C) \extends Limit {
+  | IX => discreteCat X
+  | D => Functor.discreteFunctor pget
+
   | pob : C
   | proj (i : X) : pob ->> pget i
   | lprod (x : C) (f : \Pi (i : X) -> x ->> pget i) : Unique (x ->> pob ) (\lam pr => \Pi (j : X) -> proj j `o` pr = f j)
 
-
-
-
-
+  | tip => pob
+  | edge (ix : IX) => proj ix
+  | cone {ix1 ix2 : IX} (f : ix1 = ix2) =>
+    coe (\lam i => coe(\lam j => pget ix1 ->> pget (f @ j)) (id (pget ix1)) i `o` proj ix1 = proj (f @ i))  (id-right _)  right
+  | universal (c : Cone D) =>  lprod c.tip c.edge
 } \where {
   \func product_ob_unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
     Iso1 (elem {pr'.lprod pr.pob pr.proj}) \cowith
@@ -70,7 +74,7 @@
 --
 --        | unique => {?}
 --      }
-}
+--}
 
 \record Product2 (a b : C) \extends LargeProduct {
   | pi1 : pob ->> a

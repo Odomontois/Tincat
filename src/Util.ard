@@ -2,6 +2,11 @@
 
 \func flip {A B C : \Type} (f : A -> B -> C) (b : B) (a : A) => f a b
 
+\lemma coe-coe {A : \Set} (B : A -> \Set) {a b c : A}  (e : a = b) (e' : b = c) (b : B a) :
+  coe (\lam i => B (e' @ i)) (coe (\lam i => B (e @ i)) b right) right = coe (\lam i => B ((e *> e') @ i)) b right =>
+  inv (transport_*> B e e' b)
+
+
 \func transportTerm {X Y : \Type} (e : X = Y) (x : X) : Y => coe (@ e) x right
 
 \func transportTermEq {X Y : \Type} (e : X = Y) (x : X) : transportTerm (inv e) (transportTerm e x) = x =>
