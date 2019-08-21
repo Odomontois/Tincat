@@ -6,7 +6,6 @@
   coe (\lam i => B (e' @ i)) (coe (\lam i => B (e @ i)) b right) right = coe (\lam i => B ((e *> e') @ i)) b right =>
   inv (transport_*> B e e' b)
 
-
 \func transportTerm {X Y : \Type} (e : X = Y) (x : X) : Y => coe (@ e) x right
 
 \func transportTermEq {X Y : \Type} (e : X = Y) (x : X) : transportTerm (inv e) (transportTerm e x) = x =>
@@ -14,3 +13,6 @@
 
 \func transportTermEq' {X Y : \Type} (e : X = Y) (y : Y) : transportTerm e (transportTerm (inv e) y) = y =>
   pmap (\lam x => transportTerm x (transportTerm (inv e) y)) (inv (inv_inv e)) *> transportTermEq (inv e) y
+
+\func double-path (A B : I -> \Type) (abl : A left = B left) (abr : A right = B right) (al : A left) (br : B right) :
+

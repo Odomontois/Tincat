@@ -1,8 +1,10 @@
+\import Cat
 \import Functor
 \import NatTrans
 \import Category
 \open NatTrans
 \import Paths
+\open Functor (functor=)
 
 \instance  functorCat {C D : Precat}: Precat (Functor C D)
   | Hom f g => NatTrans f g
@@ -11,4 +13,30 @@
   | id-left u => vr_unit u
   | id-right u => vl_unit u
   | o-assoc u v w => inv (vassoc w v u)
+
+--\instance  functorCatUniv {C D : Cat}: Cat (Functor C D) =>
+--\let cat : Precat (Functor C D) => functorCat {C} {D}
+--\in \new Cat _ {
+--  | Hom => cat.Hom
+--  | id => cat.id
+--  | o => cat.o
+--  | id-left => cat.id-left
+--  | id-right => cat.id-right
+--  | o-assoc => cat.o-assoc
+--  | univalence {x : Functor C D} {y : Functor C D} f g p q =>
+--    \let | uuu => 1
+--         | obuni (a : C)  =>
+--           D.univalence (trans {f} a) (trans {g} a) (pmap (\lam (t : NatTrans x x) => t.trans a) p) (pmap (\lam (t : NatTrans y y) => t.trans a) q)
+--         | obeq a => (obuni a).1
+--         | obt a => (obuni a).2
+--         | meq {a b : C} (f : a ->> b) (i : I) : obeq a @ i ->> obeq b @ i => {?}
+--         | mapeq {a b : C} (f : a ->> b) : Path (\lam i => obeq a @ i ->> obeq b @ i) (x.map f) (y.map f) =>
+--          path (\lam i => {?})
+--    \in (
+--      functor= x y obeq {?},
+--      {?}
+--    )
+--}
+
+
 

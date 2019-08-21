@@ -13,3 +13,7 @@
   \property universal (c' : Cone D) :
   Unique (c'.tip ->> tip) (\lam f => \Pi (ix : IX) ->  edge ix `o` f = c'.edge ix)
 }
+
+\func Cocone {C IX : Precat} (D : Functor IX C) => Cone {op C} {op IX} (Functor.fop {D})
+
+\func Colimit {C IX : Precat} (D : Functor IX C) => Limit {op C} {op IX} (Functor.fop {D})

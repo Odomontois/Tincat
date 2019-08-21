@@ -8,7 +8,9 @@
 \import Data.Three
 \import Universal.Object
 \import Category
+\import Data.Three
 \open Precat (>>)
+\import Equiv.Univalence (=-to-Equiv, QEquiv-to-=)
 \import Function (-o)
 \import Functor (Functor)
 \import Set.Category
@@ -28,7 +30,7 @@
     coe (\lam i => coe(\lam j => pget ix1 ->> pget (f @ j)) (id (pget ix1)) i `o` proj ix1 = proj (f @ i))  (id-right _)  right
   | universal (c : Cone D) =>  lprod c.tip c.edge
 } \where {
-  \func product_ob_unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
+  \lemma product-unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
     Iso1 (elem {pr'.lprod pr.pob pr.proj}) \cowith
     | rev => elem {pr.lprod pr'.pob pr'.proj}
     | l_comp => iso-one-side pr' pr
@@ -81,8 +83,42 @@
 
   \lemma swap-involutive {C : Precat} (a b p : C) (pab : Product2 p a b) : swap (swap pab) = pab => idp
 
-
+  \func product_associativity {C : Precat} (a b c pab pab_c pbc pa_bc : C)
+                              (a*b : Product2 pab a b )
+                              (ab*c : Product2 pab_c pab c )
+                              (b*c : Product2 pbc b c)
+                              (a*bc : Product2 pa_bc a pbc) : pab_c ~= pa_bc => {?}
+    \where {
+      \func threeProduct {C : Precat} {a b c pab pab_c : C} (a*b : Product2 pab a b ) (ab*c : Product2 pab_c pab c ) :
+        LargeProduct {C} {three} (make3X a b c) =>
+        \let
+          | proj (i : three) => \case i \as i' \return pab_c ->> make3X a b c i' \with {
+            | t1 => a*b.pi1 `o` ab*c.pi1
+            | t2 => a*b.pi2 `o` ab*c.pi1
+            | t3 => ab*c.pi2
+          }
+        \in \new LargeProduct _ {
+          | pob => pab_c
+          | proj => proj
+          | lprod c f =>
+            \let | uab : Unique (c ->> pab) => a*b.prod2 (f t1) (f t2)
+                 | uab_c : Unique (c ->> pab_c) => ab*c.prod2 uab.elem (f t3)
+            \in \new Unique _ _ {
+              | elem => uab_c.elem
+              | prop i => \case i \as i' \return proj i' `o` uab_c.elem = f i' \with {
+                | t1 => inv (o-assoc _ _ _) *> pmap (o a*b.pi1) uab_c.prop.1 *> uab.prop.1
+                | t2 => inv (o-assoc _ _ _) *> pmap (o a*b.pi2) uab_c.prop.1 *> uab.prop.2
+                | t3 => uab_c.prop.2
+              }
+              | unique g gu =>
+                \let gab => uab.unique (ab*c.pi1 `o` g) (o-assoc _ _ _ *> gu t1, o-assoc _ _ _ *> gu t2)
+                \in uab_c.unique g (inv gab, gu t3)
+            }
+        }
+    }
 }
+
+\func LargeSum {C : Precat} {X : \Set} (pget : X -> C) => LargeProduct  {op C} {X} pget
 
 \func Sum2 {C : Precat} (cp a b : C) => Product2 {op C} cp a b
 
@@ -168,23 +204,29 @@
 
 -- product object is unique up to isomorphism
 --
---\func product_shuffle {C : Cat} {ix ix' : \Set} {k : ix -> C}  (p : C) (qe : QEquiv {ix} {ix'}) (P : LargeProduct k p) =>
---  \new LargeProduct (\lam v => k (qe.ret v)) p {
---    | proj i => P.proj (qe.ret i)
---    | lprod x ms =>
---      \let
---        | A => x ->> p
---        | B (m : A) => \Pi (u : ix') -> P.proj (qe.ret u) `o` {C} m = ms u
---        | orig : Unique (x ->> p) => P.lprod x (\lam (u : ix) => coe (\lam i => x ->> k (qe.ret_f u @ i))  (ms (qe.f u)) right )
---      \in \new Unique A B {
---        | elem => orig.elem
---        | prop u =>
---          \let | zz  => 1
---               | uu => coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u)))  left
---               | uu' => coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u)))  right
---               | uuu : uu = uu'  => {?}
---          \in orig.prop (qe.ret u) *> {?}
---
---        | unique => {?}
---      }
---}
+
+
+\func product_shuffle {C : Cat} {IX IY : \Set} {k : IX -> C}  (p : C) (qe : QEquiv {IX} {IY}) (P : LargeProduct k p) =>
+  \new LargeProduct (\lam y => k (qe.ret y)) p {
+    | proj y => P.proj (qe.ret y)
+    | lprod x ms =>
+      \let
+        | A => x ->> p
+        | B (m : A) => \Pi (u : IY) -> P.proj (qe.ret u) `o` {C} m = ms u
+        | orig : Unique (x ->> p) => P.lprod x (\lam (u : IX) => coe (\lam i => x ->> k (qe.ret_f u @ i))  (ms (qe.f u)) right )
+      \in \new Unique A B {
+        | elem => orig.elem
+        | prop u =>
+          \let | zzt i => x ->> k (qe.ret (inv (qe.f_sec u) @ i))
+               | zz i  : zzt i  => ms ( inv (qe.f_sec u) @ i)
+               | ut i => x ->> k (qe.ret_f (qe.ret u) @ i)
+               | ms2 => ms (qe.f (qe.ret u))
+               | ms2r : ms u = zz left => idp
+               | ms2l : ms2 = zz right => idp
+               | uul : coe ut ms2 left = ms2 => idp
+               | uur : coe ut ms2 right = coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u))) right => idp
+          \in orig.prop (qe.ret u) *> {?}
+
+        | unique => {?}
+      }
+  }

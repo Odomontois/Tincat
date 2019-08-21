@@ -51,4 +51,4 @@
     (C.univalence iso.f iso.rev iso.l_comp iso.r_comp).1
 }
 
-\func \infix 4 ~= {C : Precat} (a b : C) => Iso1 {C} {a} {b} \where
+\func \infix 4 ~= {C : Precat} (a b : C) => Iso1 {C} {a} {b}

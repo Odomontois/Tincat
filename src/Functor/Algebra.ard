@@ -1,6 +1,7 @@
 \import Cat
 \import Category
 \import Functor
+\import HLevel
 \import Iso
 \import Paths
 \import Unique
@@ -45,8 +46,7 @@
   \let | mu : Algebra F => initMu.ob
        | mualg : F.ob mu.base ->> mu.base => mu.algebra
        | mapped : Algebra F => \new Algebra F _ (F.map mu.algebra)
-       | revsingle : Singleton => initMu.terminal mapped
-       | revhomo : Homo mu mapped => revsingle.elem
+       | revhomo : Homo mu mapped => elem {initMu.terminal mapped}
        | rev : mu.base ->> F.ob (mu.base)  => revhomo.m
        | rev*mu=F_mu*rev : rev `o` mualg = F.map (mualg `o` rev)  => revhomo.homo *> F.func_comp _ _
        | mu*rev-homo : Homo mu mu => \new Homo mu mu{
@@ -57,8 +57,8 @@
          | m => id _
          | homo => id-right _ *> inv (id-left _) *> pmap (o mualg) (inv (F.functor_id _))
        }
-       | mumu-single : Singleton (Homo mu mu) => initMu.terminal mu
-       | mu*rev=id  : mualg `o` rev = id _ => pmap (\lam (h : Homo mu mu) => h.m) (mumu-single.singleton mu*rev-homo idhomo)
+       | mumu-single : isProp (Homo mu mu) => singleton {initMu.terminal mu}
+       | mu*rev=id  : mualg `o` rev = id _ => pmap (\lam (h : Homo mu mu) => h.m) (mumu-single mu*rev-homo idhomo)
        | rev*mu=id : rev `o` mualg = id _  => rev*mu=F_mu*rev *> pmap F.map mu*rev=id *> F.functor_id _
 
   \in \new Iso1 mualg rev {
