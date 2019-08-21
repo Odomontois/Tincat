@@ -217,13 +217,15 @@
       \in \new Unique A B {
         | elem => orig.elem
         | prop u =>
-          \let | zzt i => x ->> k (qe.ret (inv (qe.f_sec u) @ i))
-               | zz i  : zzt i  => ms ( inv (qe.f_sec u) @ i)
+          \let | zzt i => x ->> k (qe.ret (qe.f_sec u @ i))
+               | zz i  : zzt i  => ms ( qe.f_sec u @ i)
                | ut i => x ->> k (qe.ret_f (qe.ret u) @ i)
                | ms2 => ms (qe.f (qe.ret u))
-               | ms2r : ms u = zz left => idp
-               | ms2l : ms2 = zz right => idp
-               | uul : coe ut ms2 left = ms2 => idp
+               | uul : ms2 = coe ut ms2 left => idp
+               | ms2l : ms2 = zz left => idp
+               | ms2r : ms u = zz right => idp
+               | qq1 : zzt left = ut left => idp
+               | qq i => coe (\lam i => zzt i = ut i) idp i
                | uur : coe ut ms2 right = coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u))) right => idp
           \in orig.prop (qe.ret u) *> {?}
 
