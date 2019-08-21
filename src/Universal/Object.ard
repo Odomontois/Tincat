@@ -34,5 +34,5 @@
 }
 
 
-\func Initial {C : Precat} => Terminal (op C)
+\func Initial (C : Precat) => Terminal (op C)
 

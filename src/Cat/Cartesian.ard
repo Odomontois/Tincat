@@ -44,6 +44,6 @@
          | (u2 ,t2) => B.univalence f2 g2 p2 q2
          | u => path (\lam i => (u1 @ i, u2 @ i))
          | t => path (\lam i => (t1 @ i, t2 @ i))
-         | ct => coe_sigma { \lam i => x1 ->> u1 @ i }(\lam i _ => x2 ->> u2 @ i)  (id x1, id x2) right
+         | ct => coe_sigma {\lam i => x1 ->> u1 @ i }(\lam i _ => x2 ->> u2 @ i)  (id x1, id x2) right
     \in (u, ct  *> t)
 }
