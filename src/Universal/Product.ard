@@ -206,29 +206,4 @@
 --
 
 
-\func product_shuffle {C : Cat} {IX IY : \Set} {k : IX -> C}  (p : C) (qe : QEquiv {IX} {IY}) (P : LargeProduct k p) =>
-  \new LargeProduct (\lam y => k (qe.ret y)) p {
-    | proj y => P.proj (qe.ret y)
-    | lprod x ms =>
-      \let
-        | A => x ->> p
-        | B (m : A) => \Pi (u : IY) -> P.proj (qe.ret u) `o` {C} m = ms u
-        | orig : Unique (x ->> p) => P.lprod x (\lam (u : IX) => coe (\lam i => x ->> k (qe.ret_f u @ i))  (ms (qe.f u)) right )
-      \in \new Unique A B {
-        | elem => orig.elem
-        | prop u =>
-          \let | zzt i => x ->> k (qe.ret (qe.f_sec u @ i))
-               | zz i  : zzt i  => ms ( qe.f_sec u @ i)
-               | ut i => x ->> k (qe.ret_f (qe.ret u) @ i)
-               | ms2 => ms (qe.f (qe.ret u))
-               | uul : ms2 = coe ut ms2 left => idp
-               | ms2l : ms2 = zz left => idp
-               | ms2r : ms u = zz right => idp
-               | qq1 : zzt left = ut left => idp
-               | qq i => coe (\lam i => zzt i = ut i) idp i
-               | uur : coe ut ms2 right = coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u))) right => idp
-          \in orig.prop (qe.ret u) *> {?}
 
-        | unique => {?}
-      }
-  }

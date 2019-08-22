@@ -1,0 +1,53 @@
+\import Cat
+\import Category (Cat, Hom, Precat, o)
+\import Equiv (QEquiv)
+\import Iso
+\import Paths
+\import Unique
+\import Universal.Product
+\import Function (o \as oo)
+
+\func product-shuffle-iso
+  {C : Precat} {IX IY : \Set} {k : IX -> C}  (p q : C) (qe : QEquiv {IX} {IY}) (Px : LargeProduct k p) (Py : LargeProduct (\lam y => k (qe.ret y)) q)
+  : p ~= q =>
+  \let | q->p : Unique (q ->> p) => Px.lprod q (\lam ix => transport (Hom q oo k) (qe.ret_f ix) (Py.proj (qe.f ix)) )
+       | p->q : Unique (p ->> q) => Py.lprod p (\lam iy => Px.proj (qe.ret iy) )
+  \in \new Iso1 {
+    | f => p->q.elem
+    | rev => q->p.elem
+    --   Expected type:
+    --    C.o (elem {\this.lprod q (\lam _ => transport (C.Hom q o \this) (\this.ret_f \this) (\this.proj (\this.f \this)))})
+    --        (elem {\this.lprod p (\lam _ => \this.proj (\this.ret \this))}) = C.id p
+    | l_comp => {?}
+    --   Expected type:
+    --    C.o (elem {\this.lprod p (\lam _ => \this.proj (\this.ret \this))})
+    --        (elem {\this.lprod q (\lam _ => transport (C.Hom q o \this) (\this.ret_f \this) (\this.proj (\this.f \this)))}) = C.id q
+    | r_comp => {?}
+  }
+
+\func product_shuffle {C : Cat} {IX IY : \Set} {k : IX -> C}  (p : C) (qe : QEquiv {IX} {IY}) (P : LargeProduct k p) =>
+  \new LargeProduct (\lam y => k (qe.ret y)) p {
+    | proj y => P.proj (qe.ret y)
+    | lprod x ms =>
+      \let
+        | A => x ->> p
+        | B (m : A) => \Pi (u : IY) -> P.proj (qe.ret u) `o` {C} m = ms u
+        | orig : Unique (x ->> p) => P.lprod x (\lam (u : IX) => coe (\lam i => x ->> k (qe.ret_f u @ i))  (ms (qe.f u)) right )
+      \in \new Unique A B {
+        | elem => orig.elem
+        | prop u =>
+          \let | zzt i => x ->> k (qe.ret (qe.f_sec u @ i))
+               | zz i  : zzt i  => ms ( qe.f_sec u @ i)
+               | ut i => x ->> k (qe.ret_f (qe.ret u) @ i)
+               | ms2 => ms (qe.f (qe.ret u))
+               | uul : ms2 = coe ut ms2 left => idp
+               | ms2l : ms2 = zz left => idp
+               | ms2r : ms u = zz right => idp
+               | qq1 : zzt left = ut left => idp
+               | qq i => coe (\lam i => zzt i = ut i) idp i
+               | uur : coe ut ms2 right = coe (\lam i => x ->> k (qe.ret_f (qe.ret u) @ i)) (ms (qe.f (qe.ret u))) right => idp
+          \in orig.prop (qe.ret u) *> {?}
+
+        | unique => {?}
+      }
+  }
