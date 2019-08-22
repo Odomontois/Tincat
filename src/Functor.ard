@@ -55,8 +55,6 @@
            pathInProp  (\lam i => (emap f @ i) `o` (emap g @ i) = emap (f `o` g) @ i) (F.func_comp f g) (G.func_comp f g)
     \in  path (\lam i => \new Functor C D (\lam a => eob a @ i) (\lam f => emap f @ i) (\lam a => idEq a @ i) (\lam f g => compEq f g @ i) )
 
-  --    path (\lam i => equiv (\lam a => eob a @ i) (\lam f => emap f @ i) F G @ i )
-
   \func Id-left {C D : Precat}  (F : Functor C D) : o-functor {C} {D} {D} (id-functor D) F = F => equiv F.ob F.map _ _
 
   \func Id-right {C D : Precat} (F : Functor C D) : o-functor {C} {C} {D} F (id-functor C) = F => equiv F.ob F.map _ _

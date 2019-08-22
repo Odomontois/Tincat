@@ -1,18 +1,11 @@
+\import Equiv
 \import Paths
+\import Set
 
 \func flip {A B C : \Type} (f : A -> B -> C) (b : B) (a : A) => f a b
 
-\lemma coe-coe {A : \Set} (B : A -> \Set) {a b c : A}  (e : a = b) (e' : b = c) (b : B a) :
-  coe (\lam i => B (e' @ i)) (coe (\lam i => B (e @ i)) b right) right = coe (\lam i => B ((e *> e') @ i)) b right =>
-  inv (transport_*> B e e' b)
-
-\func transportTerm {X Y : \Type} (e : X = Y) (x : X) : Y => coe (@ e) x right
-
-\func transportTermEq {X Y : \Type} (e : X = Y) (x : X) : transportTerm (inv e) (transportTerm e x) = x =>
-  (Jl (\lam _ p => \Pi (x : X) -> transportTerm (inv p) (transportTerm p x) = x) (\lam _ => idp) e) x
-
-\func transportTermEq' {X Y : \Type} (e : X = Y) (y : Y) : transportTerm e (transportTerm (inv e) y) = y =>
-  pmap (\lam x => transportTerm x (transportTerm (inv e) y)) (inv (inv_inv e)) *> transportTermEq (inv e) y
-
-\func double-path (A B : I -> \Type) (abl : A left = B left) (abr : A right = B right) (al : A left) (br : B right) :
-
+\func setPath= {A : \Type} (R : A -> A -> \Prop)
+               (refl : \Pi (a : A) -> R a a) (to= : \Pi {a a' : A} -> R a a' -> a = a')
+               {a a' : A} (p q : a = a') : p = q =>
+  \let eqq : QEquiv {a = a'} {R a a'} => Hedberg.propPathEquiv R refl to=
+  \in inv (eqq.ret_f p) *> pmap eqq.ret (Path.inProp _ _) *> eqq.ret_f q

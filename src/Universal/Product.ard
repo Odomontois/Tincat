@@ -6,7 +6,7 @@
 \import Unique
 \import Paths
 \import Data.Three
-\import Universal.Object
+\import Universal.Terminal
 \import Category
 \import Data.Three
 \open Precat (>>)

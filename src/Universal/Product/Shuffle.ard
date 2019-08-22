@@ -17,8 +17,7 @@
        | q->p : Unique (q ->> p) => Px.lprod q (kp right)
        | p->q : Unique (p ->> q) => Py.lprod p lp
        | lproof (ix : IX) : Px.proj ix `o` (q->p.elem `o` p->q.elem) = Px.proj ix =>
-         o-assoc _ _ _ *> pmap (p->q.elem >>) (q->p.prop ix) *>
-                          coe ( \lam i => kp i ix `o` p->q.elem = Px.proj ix ) {?} right
+         o-assoc _ _ _ *> pmap (p->q.elem >>) (q->p.prop ix) *> {?}
   \in \new Iso1 {
     | f => p->q.elem
     | rev => q->p.elem

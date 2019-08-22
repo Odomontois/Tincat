@@ -21,16 +21,6 @@
     | prop => u
     | unique u' _ => Path.inProp u u'
 }
-
--- there is a unique way to create unique things
-
-\func unique_fun (U : \Set) (A : U -> \Set) (B : \Pi (u : U) -> A u -> \Prop)
-                 (f : \Pi (u : U) -> Unique (A u) (B u)):
-  Unique (\Pi (u : U) -> A u) (\lam bf => \Pi (u : U) -> B u (bf u)) \cowith
-  | elem u => elem {f u}
-  | prop u => prop {f u}
-  | unique af' bf' => path (\lam i u => Unique.unique {f u} (af' u) (bf' u) @ i )
-
 -- unique element of A
 
 \record Singleton \extends Unique{

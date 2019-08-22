@@ -5,7 +5,7 @@
 \import Iso
 \import Paths
 \import Unique
-\import Universal.Object
+\import Universal.Terminal
 \open Precat
 \open Algebra (Homo, =homo)
 
