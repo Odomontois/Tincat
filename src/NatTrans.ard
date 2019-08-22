@@ -1,7 +1,9 @@
 \import Cat
+\import Equiv (QEquiv)
 \import Functor
 \import Category
 \import Paths
+\import Set
 \open Precat (>>)
 \open Functor (o-functor, id-functor)
 
@@ -12,6 +14,12 @@
 
   \property naturality  {a b : C} (f : a ->> b) : trans b `o` map f = map f `o` trans a
 }  \where  {
+  \use \level natTrans-is-set {C D : Precat} (F G : Functor C D) (x y : NatTrans F G) (p q : x = y) : p = q =>
+    \let  | Eqv (x y : F ~> G) => x.trans = y.trans
+          | eqq : QEquiv {x = y} {Eqv x y} =>
+            Hedberg.propPathEquiv Eqv (\lam u => idp) (\lam {x} {y} e => equiv x y e ) {x} {y}
+    \in  inv (eqq.ret_f p) *> pmap eqq.ret (Path.inProp _ _) *> eqq.ret_f q
+
   \func id-trans {C D : Precat} (F : Functor C D) : NatTrans F F \cowith
     | trans a => id (F.ob a)
     | naturality f => id-right _ *> inv (id-left _ )
@@ -50,22 +58,22 @@
     vcomp (vcomp u v) w = vcomp u (vcomp v w) =>
     equiv (vcomp (vcomp u v) w) (vcomp u (vcomp v w)) (path (\lam i a => inv (o-assoc (w.trans _) (v.trans _) (u.trans _)) @ i))
 
---  \func hl_unit {C D : Precat} (F G : Functor C D) (alpha : NatTrans F G) :
---    hcomp {C} {D} {D} {id-functor D} {id-functor D} {F} {G} (id-trans (id-functor D)) alpha = coe (ttrans F G) alpha right =>
---    \let  | idf => id-functor D
---          | idt => id-trans idf
---          | eq1 => inv (Functor.Id-left F)
---          | eq2 => inv (Functor.Id-left G)
---          | cmt : NatTrans (o-functor idf F) (o-functor idf G) => hcomp {C} {D} {D} {idf} {idf} idt alpha
---          | t : NatTrans (o-functor idf F) (o-functor idf G)  => coe (\lam i => NatTrans (eq1 @ i) (eq2 @ i) ) alpha right
---          | a=t : alpha = {NatTrans F G} t => path(\lam i => {?})
---          | t= (a : C) : cmt.trans a = t.trans a => id-right (alpha.trans a) *> {?}
+  --  \func hl_unit {C D : Precat} (F G : Functor C D) (alpha : NatTrans F G) :
+  --    hcomp {C} {D} {D} {id-functor D} {id-functor D} {F} {G} (id-trans (id-functor D)) alpha = coe (ttrans F G) alpha right =>
+  --    \let  | idf => id-functor D
+  --          | idt => id-trans idf
+  --          | eq1 => inv (Functor.Id-left F)
+  --          | eq2 => inv (Functor.Id-left G)
+  --          | cmt : NatTrans (o-functor idf F) (o-functor idf G) => hcomp {C} {D} {D} {idf} {idf} idt alpha
+  --          | t : NatTrans (o-functor idf F) (o-functor idf G)  => coe (\lam i => NatTrans (eq1 @ i) (eq2 @ i) ) alpha right
+  --          | a=t : alpha = {NatTrans F G} t => path(\lam i => {?})
+  --          | t= (a : C) : cmt.trans a = t.trans a => id-right (alpha.trans a) *> {?}
 
---    \in {?} \where {
---    \func idl_functor {C D : Precat} (F : Functor C D) (i : I) : Functor C D => inv (Functor.Id-left {C} {D} F) @ i
---
+  --    \in {?} \where {
+  --    \func idl_functor {C D : Precat} (F : Functor C D) (i : I) : Functor C D => inv (Functor.Id-left {C} {D} F) @ i
+  --
 --    \func ttrans {C D : Precat} (F G : Functor C D) (i : I) => NatTrans (idl_functor F i) (idl_functor G i)
---  }
+  --  }
 
 
 }
