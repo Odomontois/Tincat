@@ -1,27 +1,28 @@
 \import Cat
-\import Category (Cat, Hom, Precat, o)
+\import Category
 \import Equiv (QEquiv)
 \import Iso
 \import Paths
 \import Unique
 \import Universal.Product
 \import Function (o \as oo)
+\open Precat (>>)
 
 \func product-shuffle-iso
   {C : Precat} {IX IY : \Set} {k : IX -> C}  (p q : C) (qe : QEquiv {IX} {IY}) (Px : LargeProduct k p) (Py : LargeProduct (\lam y => k (qe.ret y)) q)
   : p ~= q =>
-  \let | q->p : Unique (q ->> p) => Px.lprod q (\lam ix => transport (Hom q oo k) (qe.ret_f ix) (Py.proj (qe.f ix)) )
-       | p->q : Unique (p ->> q) => Py.lprod p (\lam iy => Px.proj (qe.ret iy) )
+  \let | tr ix i => q ->> k (qe.ret_f ix @ i)
+       | kp i ix => coe (tr ix) (Py.proj (qe.f ix)) i
+       | lp iy => Px.proj (qe.ret iy)
+       | q->p : Unique (q ->> p) => Px.lprod q (kp right)
+       | p->q : Unique (p ->> q) => Py.lprod p lp
+       | lproof (ix : IX) : Px.proj ix `o` (q->p.elem `o` p->q.elem) = Px.proj ix =>
+         o-assoc _ _ _ *> pmap (p->q.elem >>) (q->p.prop ix) *>
+                          coe ( \lam i => kp i ix `o` p->q.elem = Px.proj ix ) {?} right
   \in \new Iso1 {
     | f => p->q.elem
     | rev => q->p.elem
-    --   Expected type:
-    --    C.o (elem {\this.lprod q (\lam _ => transport (C.Hom q o \this) (\this.ret_f \this) (\this.proj (\this.f \this)))})
-    --        (elem {\this.lprod p (\lam _ => \this.proj (\this.ret \this))}) = C.id p
-    | l_comp => {?}
-    --   Expected type:
-    --    C.o (elem {\this.lprod p (\lam _ => \this.proj (\this.ret \this))})
-    --        (elem {\this.lprod q (\lam _ => transport (C.Hom q o \this) (\this.ret_f \this) (\this.proj (\this.f \this)))}) = C.id q
+    | l_comp => LargeProduct.proj-product-id Px _ {?}
     | r_comp => {?}
   }
 
