@@ -1,36 +1,68 @@
 \import Cartesian
+\import Cat
 \import Category
 \import Functor
 \import NatTrans.Iso
 \open Functor (<o>, Id, o-functor)
+\open Precat (>>)
 \import Paths
 
-\class Monoidal \extends Precat {
-  | unit : Ob
-  | Tensor : Bifunctor \this \this \this
+\class Tensorial \extends Precat{
+  | Tensor : Functor (\this [x] \this) \this
+  | associator : NatIso (AssocL Tensor) (AssocR Tensor)
 
-  | left-unitor : NatIso (LeftUnitF unit Tensor) (Id \this)
-  | right-unitor : NatIso (RightUnitF unit Tensor) (Id \this)
-  | associator : NatIso (assocL Tensor) (assocR Tensor)
+  \func \infixl 5 :*: (x y : Ob) : Ob => Tensor.ob (x, y)
+  \func \infixl 5 <x> {x y x' y' : Ob} (f : x ->> y) (g : x' ->> y') : x :*: x' ->> y :*: y' => Tensor.map (f, g)
 
-  \property pentagonal : \Sigma
-  \property triagonal : \Sigma
+  \func assr (x y z : Ob) : ((x :*: y) :*: z) ->> (x :*: (y :*: z)) => associator.trans ((x, y), z)
+  \func assl (x y z : Ob) : (x :*: (y :*: z)) ->> ((x :*: y) :*: z) => associator.transBack ((x, y), z)
 } \where {
-  \func LeftUnitF {C : Precat} (u : C) (T : Functor (C [x] C) C) : Functor C C \cowith
+  \func AssocL {C : Precat} (T : Functor (C [x] C) C) => o-functor {C [x] C [x] C} {C [x] C} {C} T (T <<x>> Id C)
+
+  \func AssocR {C : Precat} (T : Functor (C [x] C) C) =>
+    o-functor {C [x] C [x] C} {C [x] C} {C} T
+              (o-functor {C [x] C [x] C} {C [x] (C [x] C)} {C [x] C} (Id C <<x>> T) assoc-functor)
+}
+
+\open Tensorial
+
+\class Semigroupal \extends Tensorial{
+  \property pentagonal (w x y z : Ob) :
+  assr (w :*: x) y z >> assr w x (y :*: z) =  (assr w x y <x> id z) >>  assr w (x :*: y) z >> (id w <x> assr x y z)
+}
+
+\class Unital \extends Tensorial {
+  | unit : Ob
+
+  | right-unitor : NatIso (RightUniF unit Tensor) (Id \this)
+  | left-unitor : NatIso (LeftUnitF unit Tensor) (Id \this)
+
+  \func spawnl (a : Ob): a ->> (unit :*: a) => left-unitor.transBack a
+  \func spawnr (a : Ob): a ->> (a :*: unit) => right-unitor.transBack a
+  \func absorbl (a : Ob): (unit :*: a) ->> a => left-unitor.trans a
+  \func absorbr (a : Ob): (a :*: unit) ->> a => right-unitor.trans a
+} \where {
+  \func RightUniF {C : Precat} (u : C) (T : Functor (C [x] C) C) : Functor C C \cowith
     | ob a => T.ob (a, u)
     | map f => T.map (f, id u)
     | functor_id a => T.functor_id (a, u)
     | func_comp f g  => T.func_comp (f, id u) (g, id u) *> pmap (\lam x => T.map (f `o` g, x)) (C.id-right (id u))
 
-  \func RightUnitF {C : Precat} (u : C) (T : Functor (C [x] C) C) : Functor C C \cowith
+  \func LeftUnitF {C : Precat} (u : C) (T : Functor (C [x] C) C) : Functor C C \cowith
     | ob a => T.ob (u, a)
     | map f => T.map (id u, f)
     | functor_id a => T.functor_id (u, a)
     | func_comp f g  => T.func_comp (id u, f) (id u, g) *> pmap (\lam x => T.map (x, f `o` g)) (C.id-right (id u))
+}
 
-  \func assocL {C : Precat} (T : Functor (C [x] C) C) => o-functor {C [x] C [x] C} {C [x] C} {C} T (T <<x>> Id C)
+\open Unital (absorbl, absorbr)
 
-  \func assocR {C : Precat} (T : Functor (C [x] C) C) =>
-    o-functor {C [x] C [x] C} {C [x] C} {C} T
-              (o-functor {C [x] C [x] C} {C [x] (C [x] C)} {C [x] C} (Id C <<x>> T) assoc-functor)
+\class Monoidal \extends Semigroupal, Unital {
+  \property triagonal (x y : Ob) : assr x unit y >> (id x <x> absorbl y) = absorbr x <x> id y
+
+  \lemma left-triangle (x y : Ob) : absorbl x <x> id y = assr unit x y >> absorbl (x :*: y) => {?}
+  \lemma right-triangle (x y : Ob) : id x <x> absorbr y = assl x y unit >> absorbr (x :*: y) => {?}
+  \lemma absorb-two : absorbr unit = absorbl unit => {?}
+
+} \where {
 }
