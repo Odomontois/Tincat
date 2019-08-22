@@ -18,7 +18,7 @@
     | func_comp f g => func_comp g f
 
 }  \where {
-  \func id-functor (C : Precat) : Functor C C  \cowith
+  \func Id (C : Precat) : Functor C C  \cowith
     | ob x => x
     | map f => f
     | functor_id  f => idp
@@ -29,6 +29,9 @@
     | map {a} {b} f => F.map (G.map f)
     | functor_id f => pmap F.map (G.functor_id f) *> F.functor_id _
     | func_comp {a} {b} {c} f g => F.func_comp (G.map f) (G.map g) *> pmap F.map (G.func_comp f g)
+
+
+  \func \infixr 5 <o> {C D E : Precat} (F : Functor D E) (G : Functor C D) : Functor C E => o-functor F G
 
   \func const-functor {C D : Precat} (d : D) : Functor C D \cowith
     | ob c => d
@@ -55,9 +58,9 @@
            pathInProp  (\lam i => (emap f @ i) `o` (emap g @ i) = emap (f `o` g) @ i) (F.func_comp f g) (G.func_comp f g)
     \in  path (\lam i => \new Functor C D (\lam a => eob a @ i) (\lam f => emap f @ i) (\lam a => idEq a @ i) (\lam f g => compEq f g @ i) )
 
-  \func Id-left {C D : Precat}  (F : Functor C D) : o-functor {C} {D} {D} (id-functor D) F = F => equiv F.ob F.map _ _
+  \func Id-left {C D : Precat}  (F : Functor C D) : o-functor {C} {D} {D} (Id D) F = F => equiv F.ob F.map _ _
 
-  \func Id-right {C D : Precat} (F : Functor C D) : o-functor {C} {C} {D} F (id-functor C) = F => equiv F.ob F.map _ _
+  \func Id-right {C D : Precat} (F : Functor C D) : o-functor {C} {C} {D} F (Id C) = F => equiv F.ob F.map _ _
 
   \func assoc {A B C D : Precat} (F : Functor C D) (G : Functor B C) (H : Functor A B) :
     o-functor (o-functor {B} {C} {D} F G) H = {Functor A D} o-functor F (o-functor {A} {B} {C} G H) =>

@@ -6,7 +6,7 @@
 \import Set
 \import Util
 \open Precat (>>)
-\open Functor (o-functor, id-functor)
+\open Functor (o-functor, Id)
 
 \func \infix 7 ~> {C D : Precat} (F G : Functor C D) => NatTrans F G
 

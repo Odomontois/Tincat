@@ -3,6 +3,7 @@
 \import Unique
 \import Universal.Terminal
 \import Cartesian
+\import Util
 
 \func cartesianTerminal {C D : Precat} (tc : Terminal C) (td : Terminal D) : Terminal (C [x] D) \cowith
   | term => (tc.term, td.term)
@@ -10,4 +11,4 @@
     \let | s1 : Singleton  => tc.terminal x.1
          | s2 : Singleton  => td.terminal x.2
     \in \new Singleton _ (s1.elem, s2.elem)
-                       (\lam y z => pmap2 (\lam a b => (a, b)) (s1.singleton y.1 z.1) (s2.singleton y.2 z.2) )
+                       (\lam y z => pmap2 tuple (s1.singleton y.1 z.1) (s2.singleton y.2 z.2))

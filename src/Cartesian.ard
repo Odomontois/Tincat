@@ -2,6 +2,7 @@
 \import Category
 \import Functor
 \import Paths
+\import Util
 
 \instance precatProduct (A B : Precat) : Precat (\Sigma A B)
   | Hom a b => \Sigma (Hom a.1 b.1) (Hom a.2 b.2)
@@ -11,9 +12,24 @@
   | id-right f => path (\lam i => (id-right f.1 @ i, id-right f.2 @ i))
   | o-assoc f g h => path (\lam i => (o-assoc f.1 g.1 h.1 @ i, o-assoc f.2 g.2 h.2 @ i))
 
+\func assoc-functor {A B C : Precat} : Functor (A [x] B [x] C) (A [x] (B [x] C)) \cowith
+  | ob abc => (abc.1.1, (abc.1.2, abc.2))
+  | map f => (f.1.1, (f.1.2, f.2))
+  | functor_id abc => idp
+  | func_comp f g => idp
+
+
+\func functorProduct {A B A' B' : Precat} (F : Functor A B) (G : Functor A' B') : Functor (A [x] A') (B [x] B') \cowith
+  | ob a => (F.ob a.1, G.ob a.2)
+  | map f => (F.map f.1, G.map f.2)
+  | functor_id a => pmap2 tuple (F.functor_id a.1) (G.functor_id a.2)
+  | func_comp f g => pmap2 tuple (F.func_comp f.1 g.1 ) (G.func_comp f.2 g.2)
+
 \func \infixl 6 [x] (A B : Precat) => precatProduct A B
 
-\func Bifunctor (A B C D : Precat) => Functor (A [x] B) (C [x] D)
+\func \infixl 6 <<x>> {A A' B B' : Precat} (F : Functor A A') (G : Functor B B') => functorProduct F G
+
+\func Bifunctor (A B C : Precat) => Functor (A [x] B) C
 
 \instance catProduct (A B : Cat) : Cat (\Sigma A B) =>
 \let pab : Precat (\Sigma  A B) =>  precatProduct A B
