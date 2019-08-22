@@ -1,0 +1,13 @@
+\import Logic
+\import Unique
+\import Universal.Terminal
+\import Set.Category
+
+\func setTerminal : Terminal SetCat \cowith
+  | term => \Sigma
+  | terminal X => \new Singleton _ (\lam _ => ()) (Path.inProp {X -> \Sigma})
+
+\func setInitial : Initial SetCat => \new Terminal _ {
+  | term => Empty
+  | terminal X => \new Singleton _ absurd (\lam f g => path (\lam i e => absurd {f e = g e} e @ i))
+}

@@ -11,7 +11,9 @@
   | id-right f => path (\lam i => (id-right f.1 @ i, id-right f.2 @ i))
   | o-assoc f g h => path (\lam i => (o-assoc f.1 g.1 h.1 @ i, o-assoc f.2 g.2 h.2 @ i))
 
-\func Bifunctor (A B C D : Precat) => Functor (precatProduct A B) (precatProduct C D)
+\func \infixl 6 [x] (A B : Precat) => precatProduct A B
+
+\func Bifunctor (A B C D : Precat) => Functor (A [x] B) (C [x] D)
 
 \instance catProduct (A B : Cat) : Cat (\Sigma A B) =>
 \let pab : Precat (\Sigma  A B) =>  precatProduct A B
@@ -47,3 +49,5 @@
          | ct => coe_sigma {\lam i => x1 ->> u1 @ i }(\lam i _ => x2 ->> u2 @ i)  (id x1, id x2) right
     \in (u, ct  *> t)
 }
+
+\func \infixl 6 [[x]] (A B : Cat) => catProduct A B

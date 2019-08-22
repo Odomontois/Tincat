@@ -4,27 +4,27 @@
 \import Unique
 \import Paths
 
-\record Terminal (C : Precat){
-  | ob : C
-  \property terminal (x : C) : Singleton (x ->> ob)
+\class Terminal (C : Precat){
+  | term : C
+  \property terminal (x : C) : Singleton (x ->> term)
 
 } \where {
-  \func \infixl 5 term->> {C : Precat} (x : C)  (t : Terminal C) : x ->> ob => elem {t.terminal x}
+  \func \infixl 5 term->> {C : Precat} (x : C)  (t : Terminal C) : x ->> term => elem {t.terminal x}
 
-  \lemma iso {C : Precat} (t t' : Terminal C) : Iso1 (t'.ob term->> t) \cowith
-    | rev => elem {t'.terminal ob}
-    | l_comp => singleton {t'.terminal t'.ob} _ _
-    | r_comp => singleton {terminal ob} _ _
+  \lemma iso {C : Precat} (t t' : Terminal C) : Iso1 (t'.term term->> t) \cowith
+    | rev => elem {t'.terminal term}
+    | l_comp => singleton {t'.terminal t'.term} _ _
+    | r_comp => singleton {terminal term} _ _
 
   \lemma terminal->single {C : Cat} (t : Terminal C) : Singleton (Terminal C) \cowith
     | elem => t
     | singleton => univ-term-is-prop
 
   \lemma univ-term-is-prop {C : Cat} (t t' : Terminal C) : t = t' =>
-    \let  | t=t' : t.ob = t'.ob => Iso1.iso-to-= (iso t' t)
+    \let  | t=t' : t.term = t'.term => Iso1.iso-to-= (iso t' t)
           | p= =>  pathInProp (\lam i => \Pi (x : C) -> Singleton (x ->> (t=t' @ i))) t.terminal t'.terminal
     \in path (\lam i => \new Terminal C{
-      | ob => t=t' @ i
+      | term => t=t' @ i
       | terminal => p= @ i
     })
 
@@ -32,7 +32,6 @@
     | elem => t
     | singleton => univ-term-is-prop
 }
-
 
 \func Initial (C : Precat) => Terminal (op C)
 
