@@ -12,6 +12,8 @@
   | associator : NatIso (AssocL Tensor) (AssocR Tensor)
 
   \func \infixl 5 :*: (x y : Ob) : Ob => Tensor.ob (x, y)
+  -- bad precedence :*: has higher precedence than ->>
+  -- still (x :*: x') ->> (y :*: y') typechecks ok
   \func \infixl 5 <x> {x y x' y' : Ob} (f : x ->> y) (g : x' ->> y') : x :*: x' ->> y :*: y' => Tensor.map (f, g)
 
   \func assr (x y z : Ob) : ((x :*: y) :*: z) ->> (x :*: (y :*: z)) => associator.trans ((x, y), z)
@@ -64,5 +66,4 @@
   \lemma right-triangle (x y : Ob) : id x <x> absorbr y = assl x y unit >> absorbr (x :*: y) => {?}
   \lemma absorb-two : absorbr unit = absorbl unit => {?}
 
-} \where {
 }
