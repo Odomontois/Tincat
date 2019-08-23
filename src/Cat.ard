@@ -2,7 +2,7 @@
 \import Paths
 \open Precat
 
-\func \infix 9 ->> {Ob : Precat}  (a b : Ob) => Hom a b
+\func \infix 4 ->> {Ob : Precat}  (a b : Ob) => Hom a b
 
 \func discreteCat (A : \Set) : Cat A \cowith
   | Hom a b => a = b
