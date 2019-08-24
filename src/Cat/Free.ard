@@ -1,0 +1,38 @@
+\import Category
+\import Paths
+
+\data Free {A : \Set} (arr : A -> A -> \Set) (x y : A)
+  | free-id (x = y)
+  | free-comp {m : A} (f : arr m y) (g : Free arr x m) \where {
+  \use \coerce embed {A : \Set} (arr : A -> A -> \Set) {x y : A} (f : arr x y) : Free arr x y =>
+    free-comp f (free-id idp)
+
+  \func concat {A : \Set} {arr : A -> A -> \Set} {x y z : A} (f : Free arr y z) (g : Free arr x y) : Free arr x z \elim f, g
+    | free-id y=z, free-id x=z => free-id (x=z *> y=z)
+    | free-id y=z, free-comp {m} m->z g' => free-comp (transport (arr m) y=z m->z) g'
+    | free-comp m->y f', g => free-comp m->y (concat f' g)
+
+  \lemma concat-id-left {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : Free arr x y) : concat f (free-id idp) = f \elim f
+    | free-id x=y => pmap free-id (Path.inProp _ _)
+    | free-comp h f' => pmap (free-comp h) (concat-id-left f')
+
+  \lemma concat-id-right {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : Free arr x y) : concat (free-id idp) f = f \elim f
+    | free-id x=y => pmap free-id (Path.inProp _ _)
+    | free-comp h f' => idp
+
+  \lemma concat-assoc {A : \Set} {arr : A -> A -> \Set} {w x y z : A}
+                      (f : Free arr w x) (g : Free arr x y) (h : Free arr y z) : concat h (concat g f) = concat (concat h g) f \elim f, g, h {
+    | free-id w=x, free-id x=y, free-id y=z => pmap free-id (Path.inProp _ _)
+    | free-comp {m} m->x f', free-id x=y, free-id y=z => pmap (\lam x => free-comp x f') (inv (transport_*> (arr m) _ _ _ ))
+    | f, free-comp m->y g', free-id y=z => idp
+    | f, g, free-comp m->z h' => pmap (free-comp m->z) (concat-assoc f g h')
+  }
+}
+
+\func freeCat {A : \Set} (arr : A -> A -> \Set) : Precat A \cowith
+  | Hom => Free arr
+  | id _ => free-id idp
+  | o => Free.concat
+  | id-left => Free.concat-id-left
+  | id-right => Free.concat-id-right
+  | o-assoc => Free.concat-assoc

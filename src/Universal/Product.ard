@@ -54,7 +54,7 @@
 \record Product2 (a b : C) \extends LargeProduct {
   | pi1 : pob ->> a
   | pi2 : pob ->> b
-  \property prod2 {x : C.Ob} (f : x ->> a) (g : x ->> b) : Unique (x ->> pob) (\lam pr => \Sigma (pi1 `o`  pr = f) (pi2 `o` pr = g))
+  \property prod2 {x : C} (f : x ->> a) (g : x ->> b) : Unique (x ->> pob) (\lam pr => \Sigma (pi1 `o`  pr = f) (pi2 `o` pr = g))
 
   | X => Bool
   | pget i => \case i \with {| true => a | false => b }

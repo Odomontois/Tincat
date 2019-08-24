@@ -1,0 +1,49 @@
+\import Cat
+\import Category
+\import Unique
+\import Universal.Limit
+
+\record Pullback {C : Precat} {a b c  : C} (p : C)(f : a ->> c) (g : b ->> c){
+  | pi1 : p ->> a
+  | pi2 : p ->> b
+  \property cross : f `o` pi1 = g `o` pi2
+  \property pullback {x : C} (xa : x ->> a) (xb : x ->> b) (xc : f `o` xa = g `o` xb) :
+  Unique (x ->> p) (\lam pr => \Sigma (pi1 `o` pr = xa) (pi2 `o` pr = xb))
+} \where  {
+
+
+
+
+
+}
+
+\module PullbackDiagramm \where{
+  \data Obj | DA | DB | DC
+
+  \data Arr (dom cod : Obj) \with
+    | DA, DA => Ida
+    | DB, DB => Idb
+    | DC, DC => Idc
+    | DA, DB => A->B
+    | Db, DC => B->C
+
+  \instance pullbackIndexCat : Cat Obj
+    | Hom => Arr
+    | id a => \case a \as a' \return Arr a' a' \with {
+      | DA => Ida
+      | DB => Idb
+      | DC => Idc
+    }
+    | o {x} {y} {z} f g => \case x \as x', y \as y', z \as z', f : Arr y' z', g : Arr x' y' \return Arr x' z' \with{
+      | DA, DA, DA, Ida, Ida => Ida
+      | DB, DB, DB, Idb, Idb => Idb
+      | DC, DC, DC, Idc, Idc => Idc
+      | DA, DA, DC, A->C, Ida => A->C
+      | DB, DB, DC, B->C, Idb => B->C
+      | _ , _ , _ , _ , _ => {?}
+    }
+    | id-left => {?}
+    | id-right => {?}
+    | o-assoc => {?}
+    | univalence => {?}
+}
