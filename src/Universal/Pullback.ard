@@ -53,6 +53,11 @@
       | x, y, free-id x=y => transport (\lam t => ob x ->> ob t) x=y (id _)
       | x, y, free-comp {m} f g => map-comp f g
 
+    \lemma comp-law {x y z : Obj} (f : Free Arr y z) (g : Free Arr x y) :  map f `o` map g = map (Free.concat f g) \elim f, g
+      | free-id y=z, free-id x=y => {?} *> inv (transport_*> (\lam t => ob x ->> ob t) _ _ _)
+      | free-comp {m} m->z f', g => {?}
+      | f, g => {?}
+
     \func functor => \new Functor (freeCat Arr) C {
       | ob => ob
       | map {x} {y} f => map f
