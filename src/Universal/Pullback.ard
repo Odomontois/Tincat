@@ -1,49 +1,63 @@
 \import Cat
 \import Category
+\import Functor
+\import Paths
 \import Unique
 \import Universal.Limit
+\import Cat.Free
+\open PullbackDiagramm
 
-\record Pullback {C : Precat} {a b c  : C} (p : C)(f : a ->> c) (g : b ->> c){
+\record Pullback  {a b c  : C} (p : C) (f : a ->> c) (g : b ->> c) \extends Limit {
   | pi1 : p ->> a
   | pi2 : p ->> b
   \property cross : f `o` pi1 = g `o` pi2
   \property pullback {x : C} (xa : x ->> a) (xb : x ->> b) (xc : f `o` xa = g `o` xb) :
   Unique (x ->> p) (\lam pr => \Sigma (pi1 `o` pr = xa) (pi2 `o` pr = xb))
-} \where  {
 
-
-
-
-
+  | tip => p
+  | IX => freeCat Arr
+  | D => diagramm.functor {\new diagramm f g}
+  --  | edge ix => \case ix \with {
+  --    | DA => a
+  --    | DB => {?}
+  --    | DC => {?}
+  --  }
 }
 
 \module PullbackDiagramm \where{
   \data Obj | DA | DB | DC
 
   \data Arr (dom cod : Obj) \with
-    | DA, DA => Ida
-    | DB, DB => Idb
-    | DC, DC => Idc
-    | DA, DB => A->B
-    | Db, DC => B->C
+    | DA, DC => A->C
+    | DB, DC => B->C
 
-  \instance pullbackIndexCat : Cat Obj
-    | Hom => Arr
-    | id a => \case a \as a' \return Arr a' a' \with {
-      | DA => Ida
-      | DB => Idb
-      | DC => Idc
+  \record diagramm {C : Precat} {a b c : C} (f : a ->> c) (g : b ->> c) {
+    \func  ob (dx : Obj) : C
+      | DA => a
+      | DB => b
+      | DC => c
+
+    \func free-a {x : Obj} (f : Free Arr x DA) : DA = x \elim f
+      | free-id x=da => inv (x=da)
+      | free-comp f g => \case f \with {}
+
+    \func free-b {x : Obj} (f : Free Arr x DB) : DB = x \elim f
+      | free-id x=db => inv (x=db)
+      | free-comp f g => \case f \with {}
+
+    \func map-comp {x y z : Obj} (u : Arr y z) (v : Free Arr x y) : ob x ->> ob z \elim y, z, u
+      | DA, DC, A->C => transport (\lam t => ob t ->> c)  (free-a v) f
+      | DB, DC, B->C => transport (\lam t => ob t ->> c) (free-b v) g
+
+    \func map {x y : Obj} (f : Free Arr x y) : ob x ->> ob y \elim x, y, f
+      | x, y, free-id x=y => transport (\lam t => ob x ->> ob t) x=y (id _)
+      | x, y, free-comp {m} f g => map-comp f g
+
+    \func functor => \new Functor (freeCat Arr) C {
+      | ob => ob
+      | map {x} {y} f => map f
+      | functor_id a => idp
+      | func_comp f g => {?}
     }
-    | o {x} {y} {z} f g => \case x \as x', y \as y', z \as z', f : Arr y' z', g : Arr x' y' \return Arr x' z' \with{
-      | DA, DA, DA, Ida, Ida => Ida
-      | DB, DB, DB, Idb, Idb => Idb
-      | DC, DC, DC, Idc, Idc => Idc
-      | DA, DA, DC, A->C, Ida => A->C
-      | DB, DB, DC, B->C, Idb => B->C
-      | _ , _ , _ , _ , _ => {?}
-    }
-    | id-left => {?}
-    | id-right => {?}
-    | o-assoc => {?}
-    | univalence => {?}
+  }
 }
