@@ -1,68 +1,94 @@
 \import Cat
 \import Category
 \import Functor
+\import Logic
 \import Paths
 \import Unique
 \import Universal.Limit
 \import Cat.Free
 \open PullbackDiagramm
+\open Free (FreeCatFunctor)
+\open FreeCatFunctor (mapId, toFunctor)
 
-\record Pullback  {a b c  : C} (p : C) (f : a ->> c) (g : b ->> c) \extends Limit {
+\record PullbackData {a b c : C} (p : C) (f : a ->> c) (g : b ->> c) \extends BasePrecat{
   | pi1 : p ->> a
   | pi2 : p ->> b
+
   \property cross : f `o` pi1 = g `o` pi2
   \property pullback {x : C} (xa : x ->> a) (xb : x ->> b) (xc : f `o` xa = g `o` xb) :
   Unique (x ->> p) (\lam pr => \Sigma (pi1 `o` pr = xa) (pi2 `o` pr = xb))
 
+  \func  dob (dx : Obj) : C
+    | DA => a
+    | DB => b
+    | DC => c
+
+  \func dmap {x y : Obj} (f : Arr x y) : dob x ->> dob y \elim x, y, f
+    | DA, DC, A->C => f
+    | DB, DC, B->C => g
+
+
+  \func freeFunct => \new FreeCatFunctor Arr C dob dmap
+  \func diagramm : Functor (freeCat Arr) C => FreeCatFunctor.toFunctor {freeFunct}
+
+  \func dedge (x : Obj) : p ->> dob x
+    | DA => pi1
+    | DB => pi2
+    | DC => f `o` pi1
+
+
+
+
+  \lemma dcone {x y : Obj} (f : Free Arr x y) : diagramm.map f `o` dedge x = dedge y \elim f
+    | free-id x=y => dcode-id x=y
+    | free-comp {m} m->y f' => {?} \where {
+    \lemma dcone-idp {x : Obj} (p : x = x) : diagramm.map (free-id p) `o` dedge x = dedge x =>
+      pmap (\lam e => FreeCatFunctor.mapId {freeFunct} e right `o` dedge x) (Path.inProp p idp) *> C.id-right (dedge x)
+
+    \lemma dcode-id {x y : Obj} (p : x = y) : diagramm.map (free-id p)  `o` dedge x = dedge y \elim x, y
+      | DA, DA => dcone-idp p
+      | DA, DB => absurd (discrAB p)
+      | DA, DC => absurd (discrAC p)
+      | DB, DA => absurd (discrAB (inv p))
+      | DB, DB => dcone-idp p
+      | DB, DC => absurd (discrBC p)
+      | DC, DA => absurd (discrAC (inv p))
+      | DC, DB => absurd (discrBC (inv p))
+      | DC, DC => dcone-idp p
+  }
+}
+
+\open PullbackData
+
+\record Pullback \extends PullbackData, Limit {
   | tip => p
   | IX => freeCat Arr
-  | D => diagramm.functor {\new diagramm f g}
-  --  | edge ix => \case ix \with {
-  --    | DA => a
-  --    | DB => {?}
-  --    | DC => {?}
-  --  }
+  | D => diagramm
+  | edge => dedge
 }
 
 \module PullbackDiagramm \where{
   \data Obj | DA | DB | DC
 
+  \func discrOb1 (o : Obj) : \Prop
+    | DA => \Sigma
+    | DB => Empty
+    | DC => Empty
+
+  \func discrOb2 (o : Obj) : \Prop
+    | DA => Empty
+    | DB => \Sigma
+    | DC => Empty
+
+  \lemma discrAB (p : DA = DB) : Empty => transport discrOb1 p ()
+
+  \lemma discrAC (p : DA = DC) : Empty => transport discrOb1 p ()
+
+  \lemma discrBC (p : DB = DC) : Empty => transport discrOb2 p ()
+
   \data Arr (dom cod : Obj) \with
     | DA, DC => A->C
     | DB, DC => B->C
-
-  \record diagramm {C : Precat} {a b c : C} (f : a ->> c) (g : b ->> c) {
-    \func  ob (dx : Obj) : C
-      | DA => a
-      | DB => b
-      | DC => c
-
-    \func free-a {x : Obj} (f : Free Arr x DA) : DA = x \elim f
-      | free-id x=da => inv (x=da)
-      | free-comp f g => \case f \with {}
-
-    \func free-b {x : Obj} (f : Free Arr x DB) : DB = x \elim f
-      | free-id x=db => inv (x=db)
-      | free-comp f g => \case f \with {}
-
-    \func map-comp {x y z : Obj} (u : Arr y z) (v : Free Arr x y) : ob x ->> ob z \elim y, z, u
-      | DA, DC, A->C => transport (\lam t => ob t ->> c)  (free-a v) f
-      | DB, DC, B->C => transport (\lam t => ob t ->> c) (free-b v) g
-
-    \func map {x y : Obj} (f : Free Arr x y) : ob x ->> ob y \elim x, y, f
-      | x, y, free-id x=y => transport (\lam t => ob x ->> ob t) x=y (id _)
-      | x, y, free-comp {m} f g => map-comp f g
-
-    \lemma comp-law {x y z : Obj} (f : Free Arr y z) (g : Free Arr x y) :  map f `o` map g = map (Free.concat f g) \elim f, g
-      | free-id y=z, free-id x=y => {?} *> inv (transport_*> (\lam t => ob x ->> ob t) _ _ _)
-      | free-comp {m} m->z f', g => {?}
-      | f, g => {?}
-
-    \func functor => \new Functor (freeCat Arr) C {
-      | ob => ob
-      | map {x} {y} f => map f
-      | functor_id a => idp
-      | func_comp f g => {?}
-    }
-  }
 }
+
+

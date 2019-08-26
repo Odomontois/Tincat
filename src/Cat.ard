@@ -4,6 +4,8 @@
 
 \func \infix 4 ->> {Ob : Precat}  (a b : Ob) => Hom a b
 
+\record BasePrecat {C : Precat}
+
 \func discreteCat (A : \Set) : Cat A \cowith
   | Hom a b => a = b
   | id a => idp

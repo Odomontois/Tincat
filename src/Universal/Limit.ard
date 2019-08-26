@@ -3,7 +3,7 @@
 \import Functor
 \import Unique
 
-\record Cone {C IX : Precat} (D : Functor IX C) {
+\record Cone {IX : Precat} (D : Functor IX C) \extends BasePrecat {
   | tip : C
   | edge (ix : IX) : tip ->> D.ob ix
   \property cone {ix1 ix2 : IX} (f : ix1 ->> ix2) : D.map f `o` edge ix1 = edge ix2

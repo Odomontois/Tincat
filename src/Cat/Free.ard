@@ -1,33 +1,76 @@
+\import Cat
 \import Category
+\import Functor
 \import Paths
 
 \data Free {A : \Set} (arr : A -> A -> \Set) (x y : A)
   | free-id (x = y)
-  | free-comp {m : A} (f : arr m y) (g : Free arr x m) \where {
-  \use \coerce embed {A : \Set} (arr : A -> A -> \Set) {x y : A} (f : arr x y) : Free arr x y =>
-    free-comp f (free-id idp)
+  | free-comp {m : A} (f : arr m y) (g : Free arr x m)
+  \where {
+    \use \coerce embed {A : \Set} (arr : A -> A -> \Set) {x y : A} (f : arr x y) : Free arr x y =>
+      free-comp f (free-id idp)
 
-  \func concat {A : \Set} {arr : A -> A -> \Set} {x y z : A} (f : Free arr y z) (g : Free arr x y) : Free arr x z \elim f, g
-    | free-id y=z, free-id x=z => free-id (x=z *> y=z)
-    | free-id y=z, free-comp {m} m->z g' => free-comp (transport (arr m) y=z m->z) g'
-    | free-comp m->y f', g => free-comp m->y (concat f' g)
+    \func concat {A : \Set} {arr : A -> A -> \Set} {x y z : A} (f : Free arr y z) (g : Free arr x y) : Free arr x z \elim f, g
+      | free-id y=z, free-id x=z => free-id (x=z *> y=z)
+      | free-id y=z, free-comp {m} m->z g' => free-comp (transport (arr m) y=z m->z) g'
+      | free-comp m->y f', g => free-comp m->y (concat f' g)
 
-  \lemma concat-id-left {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : Free arr x y) : concat f (free-id idp) = f \elim f
-    | free-id x=y => pmap free-id (Path.inProp _ _)
-    | free-comp h f' => pmap (free-comp h) (concat-id-left f')
+    \lemma concat-id-left {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : Free arr x y) : concat f (free-id idp) = f \elim f
+      | free-id x=y => pmap free-id (Path.inProp _ _)
+      | free-comp h f' => pmap (free-comp h) (concat-id-left f')
 
-  \lemma concat-id-right {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : Free arr x y) : concat (free-id idp) f = f \elim f
-    | free-id x=y => pmap free-id (Path.inProp _ _)
-    | free-comp h f' => idp
+    \lemma concat-id-right {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : Free arr x y) : concat (free-id idp) f = f \elim f
+      | free-id x=y => pmap free-id (Path.inProp _ _)
+      | free-comp h f' => idp
 
-  \lemma concat-assoc {A : \Set} {arr : A -> A -> \Set} {w x y z : A}
-                      (f : Free arr w x) (g : Free arr x y) (h : Free arr y z) : concat h (concat g f) = concat (concat h g) f \elim f, g, h {
-    | free-id w=x, free-id x=y, free-id y=z => pmap free-id (Path.inProp _ _)
-    | free-comp {m} m->x f', free-id x=y, free-id y=z => pmap (\lam x => free-comp x f') (inv (transport_*> (arr m) _ _ _ ))
-    | f, free-comp m->y g', free-id y=z => idp
-    | f, g, free-comp m->z h' => pmap (free-comp m->z) (concat-assoc f g h')
+    \lemma concat-assoc {A : \Set} {arr : A -> A -> \Set} {w x y z : A}
+                        (f : Free arr w x) (g : Free arr x y) (h : Free arr y z) : concat h (concat g f) = concat (concat h g) f \elim f, g, h {
+      | free-id w=x, free-id x=y, free-id y=z => pmap free-id (Path.inProp _ _)
+      | free-comp {m} m->x f', free-id x=y, free-id y=z => pmap (\lam x => free-comp x f') (inv (transport_*> (arr m) _ _ _ ))
+      | f, free-comp m->y g', free-id y=z => idp
+      | f, g, free-comp m->z h' => pmap (free-comp m->z) (concat-assoc f g h')
+    }
+
+
+
+    \record FreeCatFunctor {X : \Set} (arr : X -> X -> \Set) (Y : Precat) {
+      \field ob' (a : X) : Y
+      \field morph {a b : X} (f :  arr a b): ob' a ->> ob' b
+
+      \func mapId {a b : X} (p : a = b) (i : I) : ob' a ->> ob' (p @ i) =>
+        coe (\lam j => ob' a ->> ob' (p @ j)) (id _) i
+
+      \func mapfree {a b : X} (f : Free arr a b) : ob' a ->> ob' b \elim f
+        | free-id a=b => mapId a=b right
+        | free-comp {m} m->b f' => morph m->b `o` mapfree f'
+
+      \lemma compFree {a b c : X} (f : Free arr b c) (g : Free arr a b) :
+        mapfree f `o` mapfree g = mapfree (concat f g) \elim f, g
+        | free-id b=c, free-id a=b =>
+          \let | u => id-right (mapId a=b right)
+               | pb => pathInProp (\lam i => a = b=c @ i) a=b (a=b *> b=c)
+          \in coe (\lam i => mapId b=c i `o` mapId a=b right = mapId (pb @ i) right) u right
+        | free-id b=c, free-comp {m} m->b g' =>
+          \let  p1 => coe (\lam i => mapId b=c i `o` morph m->b = morph (coe (\lam j => arr m (b=c @ j)) m->b i) )
+                          (id-right (morph m->b)) right
+          \in o-assoc _ _ _ *> pmap (\lam x => x `o` mapfree g') p1
+        | free-comp {m} m->c f' , g => inv (o-assoc _ _ _ ) *> pmap (o (morph m->c)) (compFree f' g)
+
+      \use \coerce  toFunctor  : Functor (freeCat arr) Y \cowith
+        | ob => ob'
+        | map =>  FreeCatFunctor.mapfree
+        | functor_id f => idp
+        | func_comp => FreeCatFunctor.compFree
+    }
+
+
+
+
+    \func functor {A : \Set} { C : Precat } (arr : A -> A -> \Set)
+                  (obj : A -> C) (map : \Pi {a b : A} (arr a b) -> obj a ->> obj b)
+      : Functor (freeCat {A} arr) C =>
+      FreeCatFunctor.toFunctor {\new FreeCatFunctor {A} arr C obj map }
   }
-}
 
 \func freeCat {A : \Set} (arr : A -> A -> \Set) : Precat A \cowith
   | Hom => Free arr
