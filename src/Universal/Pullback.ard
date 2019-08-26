@@ -44,6 +44,23 @@
   \lemma dcone {x y : Obj} (f : Free Arr x y) : diagramm.map f `o` dedge x = dedge y =>
     FreeCatFunctor.compCone p dedge simpleCone f
 
+  \lemma duniversal (c' : Cone diagramm) =>
+    \let | p1' => c'.edge DA
+         | p2' => c'.edge DB
+         | f= : f = diagramm.map (Free.embed A->C) => inv (id-left _)
+         | g= : diagramm.map (Free.embed B->C) = g => id-left _
+         | xc' :  f `o` p1'  = g `o` p2' =>
+           pmap (\lam u => o u p1') f= *>
+           c'.cone (Free.embed A->C)  *>
+           inv (c'.cone (Free.embed B->C)) *>
+           pmap (\lam u => o u p2') g=
+         | unic : Unique (c'.tip ->> p) => pullback p1' p2' xc'
+
+    \in \new Unique (c'.tip ->> p) (\lam f => \Pi (ix : Obj) ->  dedge ix `o` f = c'.edge ix) {
+      | elem => unic.elem
+      | prop => {?}
+      | unique => {?}
+    }
 }
 
 \open PullbackData

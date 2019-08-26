@@ -7,7 +7,7 @@
   | free-id (x = y)
   | free-comp {m : A} (f : arr m y) (g : Free arr x m)
   \where {
-    \use \coerce embed {A : \Set} (arr : A -> A -> \Set) {x y : A} (f : arr x y) : Free arr x y =>
+    \use \coerce embed {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : arr x y) : Free arr x y =>
       free-comp f (free-id idp)
 
     \func concat {A : \Set} {arr : A -> A -> \Set} {x y z : A} (f : Free arr y z) (g : Free arr x y) : Free arr x z \elim f, g
