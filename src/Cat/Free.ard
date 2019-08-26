@@ -31,8 +31,6 @@
       | f, g, free-comp m->z h' => pmap (free-comp m->z) (concat-assoc f g h')
     }
 
-
-
     \record FreeCatFunctor {X : \Set} (arr : X -> X -> \Set) (Y : Precat) {
       \field ob' (a : X) : Y
       \field morph {a b : X} (f :  arr a b): ob' a ->> ob' b
@@ -56,15 +54,20 @@
           \in o-assoc _ _ _ *> pmap (\lam x => x `o` mapfree g') p1
         | free-comp {m} m->c f' , g => inv (o-assoc _ _ _ ) *> pmap (o (morph m->c)) (compFree f' g)
 
+      \lemma compCone (tip : Y) (edge : \Pi (x : X) -> tip ->> ob' x)
+                  (p : \Pi {x y : X} (a : arr x y) -> morph a `o` edge x = edge y )
+                  {x y : X} (f : Free arr x y)
+        :  mapfree f `o` edge x = edge y \elim f
+        | free-id x=y => coe (\lam i => mapId x=y i `o` edge x = edge (x=y @ i)) (id-right _) right
+        | free-comp {m} my f' => inv (o-assoc _ _ _) *> pmap (o (morph my)) (compCone tip edge p f') *> p my
+
+
       \use \coerce  toFunctor  : Functor (freeCat arr) Y \cowith
         | ob => ob'
         | map =>  FreeCatFunctor.mapfree
         | functor_id f => idp
         | func_comp => FreeCatFunctor.compFree
     }
-
-
-
 
     \func functor {A : \Set} { C : Precat } (arr : A -> A -> \Set)
                   (obj : A -> C) (map : \Pi {a b : A} (arr a b) -> obj a ->> obj b)

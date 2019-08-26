@@ -36,26 +36,14 @@
     | DB => pi2
     | DC => f `o` pi1
 
+  \lemma simpleCone {x y : Obj} (a : Arr x y) : dmap a `o` dedge x = dedge y \elim x, y, a
+    | DA, DC, A->C => idp
+    | DB, DC, B->C => inv cross
 
 
+  \lemma dcone {x y : Obj} (f : Free Arr x y) : diagramm.map f `o` dedge x = dedge y =>
+    FreeCatFunctor.compCone p dedge simpleCone f
 
-  \lemma dcone {x y : Obj} (f : Free Arr x y) : diagramm.map f `o` dedge x = dedge y \elim f
-    | free-id x=y => dcode-id x=y
-    | free-comp {m} m->y f' => {?} \where {
-    \lemma dcone-idp {x : Obj} (p : x = x) : diagramm.map (free-id p) `o` dedge x = dedge x =>
-      pmap (\lam e => FreeCatFunctor.mapId {freeFunct} e right `o` dedge x) (Path.inProp p idp) *> C.id-right (dedge x)
-
-    \lemma dcode-id {x y : Obj} (p : x = y) : diagramm.map (free-id p)  `o` dedge x = dedge y \elim x, y
-      | DA, DA => dcone-idp p
-      | DA, DB => absurd (discrAB p)
-      | DA, DC => absurd (discrAC p)
-      | DB, DA => absurd (discrAB (inv p))
-      | DB, DB => dcone-idp p
-      | DB, DC => absurd (discrBC p)
-      | DC, DA => absurd (discrAC (inv p))
-      | DC, DB => absurd (discrBC (inv p))
-      | DC, DC => dcone-idp p
-  }
 }
 
 \open PullbackData
@@ -65,6 +53,7 @@
   | IX => freeCat Arr
   | D => diagramm
   | edge => dedge
+  | cone => dcone
 }
 
 \module PullbackDiagramm \where{
