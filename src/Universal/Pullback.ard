@@ -78,26 +78,11 @@
   | edge => dedge
   | cone => dcone
   | universal => duniversal
+} \where {
 }
 
 \module PullbackDiagramm \where{
   \data Obj | DA | DB | DC
-
-  \func discrOb1 (o : Obj) : \Prop
-    | DA => \Sigma
-    | DB => Empty
-    | DC => Empty
-
-  \func discrOb2 (o : Obj) : \Prop
-    | DA => Empty
-    | DB => \Sigma
-    | DC => Empty
-
-  \lemma discrAB (p : DA = DB) : Empty => transport discrOb1 p ()
-
-  \lemma discrAC (p : DA = DC) : Empty => transport discrOb1 p ()
-
-  \lemma discrBC (p : DB = DC) : Empty => transport discrOb2 p ()
 
   \data Arr (dom cod : Obj) \with
     | DA, DC => A->C

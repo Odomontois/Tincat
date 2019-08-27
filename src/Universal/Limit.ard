@@ -1,6 +1,8 @@
 \import Cat
 \import Category
 \import Functor
+\import Iso
+\import Paths
 \import Unique
 
 \record Cone {IX : Precat} (D : Functor IX C) \extends BasePrecat {
@@ -12,6 +14,23 @@
 \record Limit \extends Cone{
   \property universal (c' : Cone D) :
   Unique (c'.tip ->> tip) (\lam f => \Pi (ix : IX) ->  edge ix `o` f = c'.edge ix)
+} \where {
+  \lemma limit-iso {C IX : Precat} {D : Functor IX C} (l1 l2 : Limit D) : Iso1 (elem {l2.universal l1}) \cowith
+    | rev => elem {l1.universal l2}
+    | l_comp => one-side l1 l2
+    | r_comp => one-side l2 l1
+    \where {
+      \lemma one-side {C IX : Precat} {D : Functor IX C} (l1 l2 : Limit D) :
+        elem {l1.universal l2} `o` elem {l2.universal l1} = id _ =>
+        map-id l1 _ (\lam ix => o-assoc _ _ _ *>
+        pmap (\lam x => x `o` _) (prop {l1.universal l2} ix) *>
+        prop {l2.universal l1} ix)
+    }
+
+  \lemma map-id {C IX : Precat} {D : Functor IX C} (l : Limit D) (f : l.tip ->> l.tip)
+                (p : \Pi (ix : IX) -> l.edge ix `o` f = l.edge ix) : f = id (l.tip) =>
+    \let uid : Unique => l.universal l
+    \in inv (uid.unique f p) *> uid.unique (id _) (\lam ix => id-left _)
 }
 
 \func Cocone {C IX : Precat} (D : Functor IX C) => Cone {op C} {op IX} (Functor.fop {D})

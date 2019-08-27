@@ -30,7 +30,10 @@
   | cone {ix1 ix2 : IX} (f : ix1 = ix2) =>
     coe (\lam i => coe(\lam j => pget ix1 ->> pget (f @ j)) (id (pget ix1)) i `o` proj ix1 = proj (f @ i))  (id-right _)  right
   | universal (c : Cone D) =>  lprod c.tip c.edge
+
 } \where {
+  \use \coerce toLimit {C : Precat} {X : \Set} {pget : X -> C} (p : LargeProduct pget) : Limit (Functor.discreteFunctor pget) => p
+
   \lemma product-unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
     Iso1 (elem {pr'.lprod pr.pob pr.proj}) \cowith
     | rev => elem {pr.lprod pr'.pob pr'.proj}
