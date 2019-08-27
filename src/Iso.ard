@@ -4,7 +4,7 @@
 \import Category
 \open Precat
 
-\record Iso1 {C : Precat} {a b : C} (f : a ->> b){
+\record Iso1 {a b : C} (f : a ->> b) \extends  BasePrecat{
   | rev : b ->> a
   \property l_comp : rev `o` f = id a
   \property r_comp : f `o` rev = id b

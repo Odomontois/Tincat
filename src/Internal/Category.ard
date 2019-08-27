@@ -1,0 +1,23 @@
+\import Cat
+\import Category
+\import Universal.Pullback
+
+\record InternalCatBase (iob : C) (ihom : C) \extends BasePrecat{
+  | pullback : FinitePullbacks C
+  | source : ihom ->> iob
+  | target : ihom ->> iob
+  | ident  : iob ->> ihom
+
+  \func coinc : Pullback source target => pullback source target
+}
+
+\open InternalCatBase
+
+\record InternalCat  \extends InternalCatBase{
+  | compose : coinc.p ->> ihom
+
+  \property ident-source : source `o` ident = id iob
+  \property ident-target : target `o` ident = id iob
+  \property compose-source : source `o` compose = source `o` coinc.pi1
+  \property compose-target : target `o` compose = target `o` coinc.pi2
+}

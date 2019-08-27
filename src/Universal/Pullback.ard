@@ -10,7 +10,7 @@
 \open Free (FreeCatFunctor)
 \open FreeCatFunctor (mapId, toFunctor)
 
-\record PullbackData {a b c : C} (p : C) (f : a ->> c) (g : b ->> c) \extends BasePrecat{
+\record PullbackData {a b c : C} (f : a ->> c) (g : b ->> c) (p : C)  \extends BasePrecat{
   | pi1 : p ->> a
   | pi2 : p ->> b
 
@@ -103,5 +103,7 @@
     | DA, DC => A->C
     | DB, DC => B->C
 }
+
+\func FinitePullbacks (C : Precat) => \Pi {a b c : C} (f : a ->> c) (g : b ->> c ) -> Pullback f g
 
 

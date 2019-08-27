@@ -1,0 +1,6 @@
+\import Cat
+
+\record BaseProduct2 (a b p : C) \extends BasePrecat{
+  | pi1 : p ->> a
+  | pi2 : p ->> b
+}
