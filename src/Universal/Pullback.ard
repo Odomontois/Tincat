@@ -55,11 +55,17 @@
            inv (c'.cone (Free.embed B->C)) *>
            pmap (\lam u => o u p2') g=
          | unic : Unique (c'.tip ->> p) => pullback p1' p2' xc'
-
+         | (pe1, pe2) => unic.prop
+         | prp (cd : Obj) =>
+           \case cd \as cd' \return dedge cd' `o` unic.elem = c'.edge cd' \with {
+             | DA => pe1
+             | DB => pe2
+             | DC => inv(o-assoc _ _ _ ) *> pmap (o f) (pe1 *> inv (id-right _))  *> o-assoc _ _ _ *> c'.cone (Free.embed A->C)
+           }
     \in \new Unique (c'.tip ->> p) (\lam f => \Pi (ix : Obj) ->  dedge ix `o` f = c'.edge ix) {
       | elem => unic.elem
-      | prop => {?}
-      | unique => {?}
+      | prop => prp
+      | unique c'->p prop' =>  unic.unique c'->p (prop' DA , prop' DB )
     }
 }
 

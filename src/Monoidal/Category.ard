@@ -63,5 +63,4 @@
   \lemma left-triangle (x y : Ob) : absorbl x <x> id y = assr unit x y >> absorbl (x :*: y) => {?}
   \lemma right-triangle (x y : Ob) : id x <x> absorbr y = assl x y unit >> absorbr (x :*: y) => {?}
   \lemma absorb-two : absorbr unit = absorbl unit => {?}
-
 }

@@ -61,7 +61,6 @@
         | free-id x=y => coe (\lam i => mapId x=y i `o` edge x = edge (x=y @ i)) (id-right _) right
         | free-comp {m} my f' => inv (o-assoc _ _ _) *> pmap (o (morph my)) (compCone tip edge p f') *> p my
 
-
       \use \coerce  toFunctor  : Functor (freeCat arr) Y \cowith
         | ob => ob'
         | map =>  FreeCatFunctor.mapfree
