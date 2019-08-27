@@ -17,9 +17,10 @@
 \import Data.Or
 \import Universal.Universal
 
+\open Functor
 \record LargeProduct {X : \Set} (pget : X -> C) \extends Limit {
   | IX => discreteCat X
-  | D => Functor.discreteFunctor pget
+  | D => discreteFunctor pget
 
   | pob : C
   | proj (i : X) : pob ->> pget i
@@ -32,21 +33,19 @@
   | universal (c : Cone D) =>  lprod c.tip c.edge
 
 } \where {
-  \use \coerce toLimit {C : Precat} {X : \Set} {pget : X -> C} (p : LargeProduct pget) : Limit (Functor.discreteFunctor pget) => p
+  \use \coerce toLimit {C : Precat} {X : \Set} {pget : X -> C} (p : LargeProduct pget)
+    : Limit (discreteFunctor pget) => p
+
+  \use \coerce toLimit1 {C : Precat} {X : \Set} {pget : X -> C} (p : LargeProduct pget)
+    : Limit (discreteFunctor pget) \cowith
+    | tip => p.tip
+    | edge => p.edge
+    | cone => p.cone
+    | universal => p.universal
 
   \lemma product-unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
-    Iso1 (elem {pr'.lprod pr.pob pr.proj}) \cowith
-    | rev => elem {pr.lprod pr'.pob pr'.proj}
-    | l_comp => iso-one-side pr' pr
-    | r_comp => iso-one-side pr pr'
-
-  \lemma iso-one-side {C : Precat} {I : \Set } {a : I -> C} (pr pr' : LargeProduct a) :
-    elem {pr'.lprod pr.pob pr.proj} `o` elem {pr.lprod pr'.pob pr'.proj} = id pr'.pob =>
-    \let | f : Unique => pr'.lprod pr.pob pr.proj
-         | f-1 : Unique => pr.lprod pr'.pob pr'.proj
-         | res : pr'.pob ->> pr'.pob  => f.elem `o` f-1.elem
-         | eqs (i : pr.X) : pr'.proj i `o` res = pr'.proj i => o-assoc _ _ _ *> pmap (>> f-1.elem) (f.prop i) *> f-1.prop i
-    \in proj-product-id pr' res eqs
+    Iso1 (elem {pr'.lprod pr.pob pr.proj})  =>
+      Limit.limit-iso (toLimit1 pr) (toLimit1 pr')
 
   \lemma proj-product-id {C : Precat} (P : LargeProduct {C}) (f : P.pob ->> P.pob ) (eqs : \Pi (i : P.X) -> P.proj i `o` f = P.proj i) : f = id _ =>
     \let | u : Unique => P.lprod P.pob (P.proj)
@@ -82,7 +81,6 @@
       }
 
   \lemma swap-involutive {C : Precat} (a b p : C) (pab : Product2 a b p) : swap (swap pab) = pab => idp
-
 
   \func product_associativity {C : Precat} {a b c : C}
                               (a*b : Product2 a b)
