@@ -16,8 +16,8 @@
 \import Set.Category
 \import Data.Or
 \import Universal.Universal
-
 \open Functor
+
 \record LargeProduct {X : \Set} (pget : X -> C) \extends Limit {
   | IX => discreteCat X
   | D => discreteFunctor pget
@@ -32,20 +32,16 @@
     coe (\lam i => coe(\lam j => pget ix1 ->> pget (f @ j)) (id (pget ix1)) i `o` proj ix1 = proj (f @ i))  (id-right _)  right
   | universal (c : Cone D) =>  lprod c.tip c.edge
 
+  \use \coerce toLimit : Limit (discreteFunctor pget) \cowith
+    | tip => tip
+    | edge => edge
+    | cone => cone
+    | universal => universal
+
 } \where {
-  \use \coerce toLimit {C : Precat} {X : \Set} {pget : X -> C} (p : LargeProduct pget)
-    : Limit (discreteFunctor pget) => p
-
-  \use \coerce toLimit1 {C : Precat} {X : \Set} {pget : X -> C} (p : LargeProduct pget)
-    : Limit (discreteFunctor pget) \cowith
-    | tip => p.tip
-    | edge => p.edge
-    | cone => p.cone
-    | universal => p.universal
-
   \lemma product-unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
-    Iso1 (elem {pr'.lprod pr.pob pr.proj})  =>
-      Limit.limit-iso (toLimit1 pr) (toLimit1 pr')
+    Iso1 (elem {pr'.lprod pr.pob pr.proj}) =>
+    Limit.limit-iso (toLimit {pr}) (toLimit {pr'})
 
   \lemma proj-product-id {C : Precat} (P : LargeProduct {C}) (f : P.pob ->> P.pob ) (eqs : \Pi (i : P.X) -> P.proj i `o` f = P.proj i) : f = id _ =>
     \let | u : Unique => P.lprod P.pob (P.proj)

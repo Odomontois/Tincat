@@ -1,0 +1,54 @@
+\import Cat
+\import Category
+\import Equiv.Univalence (=-to-Equiv)
+\import Functor
+\import Equiv (Section, Retraction, QEquiv)
+\import Iso
+\import Paths
+
+\record FunctorProp {C D : Precat} (F : Functor C D)
+
+\record Reversible \extends FunctorProp{
+  | mapRev {a b : C} (f : F.ob a ->> F.ob b) : a ->> b
+}
+
+\record Faithful \extends FunctorProp{
+  | section (a b : C) : Section(F.map {a} {b})
+}
+
+\record Full \extends FunctorProp{
+  | retraction (a b : C) : Retraction (F.map {a} {b})
+}
+
+\record FullFaithful \extends Full, Faithful {
+  | eq (a b : C) : QEquiv (F.map {a} {b})
+
+  | section a b => eq a b
+  | retraction a b => eq a b
+
+  \func obIso {x y : C} (fi : F.ob x ~= F.ob y) : x ~= y =>
+    \let       | qxx : QEquiv  => eq x x
+               | qyx : QEquiv => eq y x
+               | qxy : QEquiv => eq x y
+               | qyy : QEquiv  => eq y y
+    \in \new Iso1 {
+      | f => QEquiv.ret {eq x y} (fi.f)
+      | rev => QEquiv.ret {eq y x} (fi.rev)
+      | l_comp =>
+        inv (qxx.ret_f _) *>
+        pmap qxx.ret (
+          inv (F.func_comp _ _) *>
+          pmap2 o (qyx.f_sec _) (qxy.f_sec _) *>
+          fi.l_comp *>
+          inv (F.functor_id _)
+        ) *> qxx.ret_f _
+      | r_comp =>
+        inv (qyy.ret_f _) *>
+        pmap qyy.ret (
+          inv (F.func_comp _ _) *>
+          pmap2 o (qxy.f_sec _) (qyx.f_sec _) *>
+          fi.r_comp *>
+          inv (F.functor_id _)
+        ) *>  qyy.ret_f _
+    }
+}
