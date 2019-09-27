@@ -1,9 +1,11 @@
 \import Cat
-\import Category (id, o)
+\import Category (Precat, id, o)
+\import Functor
 \import NatTrans
 
 \record NatIso \extends NatTrans {
   | transBack (a : C) : G.ob a ->> F.ob a
   \property t_back (a : C) : transBack a `o` trans a = id (F.ob a)
   \property back_t (a : C) : trans a `o` transBack a = id (G.ob a)
+} \where {
 }

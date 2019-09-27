@@ -11,3 +11,17 @@
                {a a' : A} (p q : a = a') : p = q =>
   \let eqq : QEquiv {a = a'} {R a a'} => Hedberg.propPathEquiv R refl to=
   \in inv (eqq.ret_f p) *> pmap eqq.ret (Path.inProp _ _) *> eqq.ret_f q
+
+\data Sphere2
+  | base2
+  | loop2 I I \with{
+    | _, left => base2
+    | _, right => base2
+    | left, _ => base2
+    | right, _ => base2
+  }
+
+\func base2=_1 : base2 = base2 => path (\lam i => loop2 i i)
+\func base2=_2 : base2 = base2 => path (\lam i => loop2 i left)
+\func base2=_3 : base2 = base2 => path (\lam i => loop2 left i)
+
