@@ -6,7 +6,7 @@
 \import Category
 
 \record UniversalArrow {C D : Precat} (x : D) (F : Functor C D) {
-  \field  ob : C
+  | ob : C
 }
 
 \record InitialArrow \extends UniversalArrow {

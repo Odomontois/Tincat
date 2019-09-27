@@ -1,0 +1,31 @@
+\import Cat
+\import Category
+\import Functor
+\import NatTrans
+\import Paths
+\import Unique
+\import Universal.Arrow
+\open Functor (Id, o-functor)
+
+\record Adjunction {C D : Cat} (left : Functor C D) (right : Functor D C){
+  \field adjunction (A : C) (B : D) : left.ob A ->> B = A ->> right.ob B
+
+  \func unit : NatTrans (Id C) (right `o-functor` left) \cowith
+    | trans _ => transport (\lam t => t) (adjunction _ _) (id _)
+    | naturality f => {?}
+
+  \func counit : NatTrans (left `o-functor` right) (Id D) \cowith
+    | trans _ =>  transport (\lam t => t) (inv (adjunction _ _)) (id _)
+    | naturality => {?}
+
+
+
+  \func initial (A : C) : InitialArrow A right \cowith
+    | ob => left.ob A
+    | init => transport (\lam t => t) (adjunction _ _) (id _)
+    | divide b A->Fb => \new Unique {
+      | elem => transport (\lam t => t) (inv (adjunction _ _ )) A->Fb
+      | prop => {?}
+      | unique => {?}
+    }
+}
