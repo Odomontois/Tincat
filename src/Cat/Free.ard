@@ -1,6 +1,8 @@
 \import Cat
 \import Category
+\import Data.Bool
 \import Functor
+\import Logic
 \import Paths
 
 \data Free {A : \Set} (arr : A -> A -> \Set) (x y : A)
@@ -31,6 +33,12 @@
       | f, g, free-comp m->z h' => pmap (free-comp m->z) (concat-assoc f g h')
     }
 
+    \lemma concat-not-id {A : \Set} (arr : A -> A -> \Set) {x y : A} (f : Free arr x y) (g : arr y x) (eq : x = x) :
+      Not (free-comp g f = free-id eq) => \lam p => true/=false( pmap (distinct arr {x} {x}) p ) \where
+      \func distinct {A : \Set} (arr : A -> A -> \Set) {x y : A} (f : Free arr x y) : Bool \elim f
+        | free-id _ => false
+        | free-comp _ _ => true
+
     \record FreeCatFunctor {X : \Set} (arr : X -> X -> \Set) (Y : Precat) {
       \field ob' (a : X) : Y
       \field morph {a b : X} (f :  arr a b): ob' a ->> ob' b
@@ -55,8 +63,8 @@
         | free-comp {m} m->c f' , g => inv (o-assoc _ _ _ ) *> pmap (o (morph m->c)) (compFree f' g)
 
       \lemma compCone (tip : Y) (edge : \Pi (x : X) -> tip ->> ob' x)
-                  (p : \Pi {x y : X} (a : arr x y) -> morph a `o` edge x = edge y )
-                  {x y : X} (f : Free arr x y)
+                      (p : \Pi {x y : X} (a : arr x y) -> morph a `o` edge x = edge y)
+                      {x y : X} (f : Free arr x y)
         :  mapfree f `o` edge x = edge y \elim f
         | free-id x=y => coe (\lam i => mapId x=y i `o` edge x = edge (x=y @ i)) (id-right _) right
         | free-comp {m} my f' => inv (o-assoc _ _ _) *> pmap (o (morph my)) (compCone tip edge p f') *> p my
@@ -68,16 +76,28 @@
         | func_comp => FreeCatFunctor.compFree
     }
 
-    \func functor {A : \Set} { C : Precat } (arr : A -> A -> \Set)
+    \func functor {A : \Set} {C : Precat} (arr : A -> A -> \Set)
                   (obj : A -> C) (map : \Pi {a b : A} (arr a b) -> obj a ->> obj b)
       : Functor (freeCat {A} arr) C =>
       FreeCatFunctor.toFunctor {\new FreeCatFunctor {A} arr C obj map }
+
+    \lemma univalence {A : \Set} (arr : A -> A -> \Set)  {x y : A} (f : Free arr x y) (g : Free arr y x)
+                      (p : concat g  f = free-id idp) (q : concat f  g = free-id idp)
+      : \Sigma (p : x = y) (transport (Free arr x) p (free-id idp) = f) \elim f
+      | free-id eq => univalence-eq arr eq g p q
+      | free-comp f g => absurd (concat-not-id arr _ _ _ q)
+
+    \lemma univalence-eq {A : \Set} (arr : A -> A -> \Set)  {x y : A} (fe : x = y)(g : Free arr y x)
+                         (p : concat g  (free-id fe) = free-id idp) (q : concat (free-id fe)  g = free-id idp)
+      : \Sigma (p : x = y) (transport (Free arr x) p (free-id idp) = free-id fe) \elim fe
+      | idp => (idp, idp)
   }
 
-\func freeCat {A : \Set} (arr : A -> A -> \Set) : Precat A \cowith
+\func freeCat {A : \Set} (arr : A -> A -> \Set) : Cat A \cowith
   | Hom => Free arr
   | id _ => free-id idp
   | o => Free.concat
   | id-left => Free.concat-id-left
   | id-right => Free.concat-id-right
   | o-assoc => Free.concat-assoc
+  | univalence => Free.univalence arr

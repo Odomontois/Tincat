@@ -7,8 +7,20 @@
 \import Universal.Arrow
 \open Functor (Id, o-functor)
 
-\record Adjunction {C D : Cat} (left : Functor C D) (right : Functor D C){
-  \field adjunction (A : C) (B : D) : left.ob A ->> B = A ->> right.ob B
+\record AdjunctionBase {C D : Cat} (left : Functor C D) (right : Functor D C){
+  | adjunction (A : C) (B : D) : left.ob A ->> B = A ->> right.ob B
+
+  \func adj {A : C} {B : D} (f : left.ob A ->> B) : A ->> right.ob B =>
+    transport (\lam t => t) (adjunction _ _) f
+}
+
+\open AdjunctionBase
+
+\record Adjunction \extends AdjunctionBase{
+  \property a-naturality (A A' : C) (B : D) (f : left.ob A ->> B) (m : A' ->> A) :
+    adj f `o` m = adj (f `o` left.map m)
+  \property b-naturality (B B' : D) (A : C) (f : left.ob A ->> B) (m : B ->> B'):
+    right.map m `o` adj f = adj (m `o` f)
 
   \func unit : NatTrans (Id C) (right `o-functor` left) \cowith
     | trans _ => transport (\lam t => t) (adjunction _ _) (id _)
