@@ -7,7 +7,7 @@
 \open Precat (>>)
 \import Paths
 
-\class Tensorial \extends Precat{
+\class TensorialPrecat \extends Precat{
   | Tensor : Functor (\this [x] \this) \this
   | associator : NatIso (AssocL Tensor) (AssocR Tensor)
 
@@ -24,14 +24,14 @@
               (o-functor {C [x] C [x] C} {C [x] (C [x] C)} {C [x] C} (Id C <<x>> T) assoc-functor)
 }
 
-\open Tensorial
+\open TensorialPrecat
 
-\class Semigroupal \extends Tensorial{
+\class SemigroupalPrecat \extends TensorialPrecat{
   \property pentagonal (w x y z : Ob) :
   assr (w :*: x) y z >> assr w x (y :*: z) =  (assr w x y <x> id z) >>  assr w (x :*: y) z >> (id w <x> assr x y z)
 }
 
-\class Unital \extends Tensorial {
+\class UnitalPrecat \extends TensorialPrecat {
   | unit : Ob
 
   | right-unitor : NatIso (RightUniF unit Tensor) (Id \this)
@@ -55,9 +55,9 @@
     | func_comp f g  => T.func_comp (id u, f) (id u, g) *> pmap (\lam x => T.map (x, f `o` g)) (C.id-right (id u))
 }
 
-\open Unital (absorbl, absorbr)
+\open UnitalPrecat (absorbl, absorbr)
 
-\class Monoidal \extends Semigroupal, Unital {
+\class MonoidalPrecat \extends SemigroupalPrecat, UnitalPrecat {
   \property triagonal (x y : Ob) : assr x unit y >> (id x <x> absorbl y) = absorbr x <x> id y
 
   \lemma left-triangle (x y : Ob) : absorbl x <x> id y = assr unit x y >> absorbl (x :*: y) => {?}

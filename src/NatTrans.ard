@@ -86,3 +86,8 @@
 
 }
 
+\record NatTrans' {C' D' : Cat} \extends NatTrans{
+  | C => C'
+  | D => D'
+}
+

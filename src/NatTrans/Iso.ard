@@ -1,11 +1,33 @@
 \import Cat
 \import Category (Precat, id, o)
+\import Equiv (QEquiv)
+\import Equiv.Univalence
 \import Functor
 \import NatTrans
+\import Paths
+\import Prelude
 
 \record NatIso \extends NatTrans {
   | transBack (a : C) : G.ob a ->> F.ob a
   \property t_back (a : C) : transBack a `o` trans a = id (F.ob a)
   \property back_t (a : C) : trans a `o` transBack a = id (G.ob a)
-} \where {
 }
+
+\record NatIso' \extends NatTrans', NatIso{
+  \func univ (a : C') =>  D'.univalence (trans a) (transBack a) (t_back a) (back_t a)
+
+  \func ob-eq (a : C') : F.ob a = G.ob a => (univ a).1
+
+  \func map-eq {a b : C'} (f : a ->> b) : transport2 D.Hom (ob-eq a) (ob-eq b) (F.map f) = G.map f =>
+    {?} *>  D'.id-right (G.map f)
+
+  \func to-eq : F = G =>
+    path(\lam i => \new Functor C D {
+      | ob a => ob-eq a @ i
+      | map => {?}
+      | functor_id a => {?}
+      | func_comp => {?}
+    })
+}
+
+
