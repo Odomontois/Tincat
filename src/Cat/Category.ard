@@ -1,0 +1,10 @@
+\import Category
+\import Functor
+
+\instance precatPrecat : Precat Precat
+  | Hom C D => Functor C D
+  | id C => Functor.Id C
+  | o f g => Functor.o-functor f g
+  | id-left f => Functor.Id-left f
+  | id-right f => Functor.Id-right f
+  | o-assoc {C} {D} {E} f g h => Functor.assoc {C} {D} {E} h g f

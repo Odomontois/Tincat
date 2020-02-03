@@ -1,0 +1,14 @@
+\import Category
+\import Functor
+\import NatTrans
+\open Functor (Id, <o>)
+\import Cat.Category
+
+\record Monad {C : Precat}{
+  | F : Functor C C
+  | pure : Id C ~> F
+  | flatten : (F <o> F) ~> F
+  \property left-pure (x : C) : flatten.trans x `o` pure.trans (F.ob x) = id _
+  \property right-pure (x : C) : flatten.trans x `o` F.map (pure.trans x) = id _
+  \property monad-assoc (x : C) : flatten.trans x `o` flatten.trans (F.ob x) = flatten.trans x `o` F.map (flatten.trans x)
+}
