@@ -1,3 +1,4 @@
 sourcesDir: src
 binariesDir: .bin
+langVersion: 1.2
 dependencies: [arend-lib]
