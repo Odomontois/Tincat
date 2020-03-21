@@ -37,13 +37,11 @@
     | edge => edge
     | cone => cone
     | universal => universal
-
 } \where {
-  \lemma product-unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
-    Iso1 (elem {pr'.lprod pr.pob pr.proj}) =>
-    Limit.limit-iso (toLimit {pr}) (toLimit {pr'})
+  \func product-unique {C : Precat} {I : \Set} {a : I -> C.Ob} (pr pr' : LargeProduct a) :
+    pr.pob ~= pr'.pob => Limit.limit-iso (toLimit {pr}) (toLimit {pr'})
 
-  \lemma proj-product-id {C : Precat} (P : LargeProduct {C}) (f : P.pob ->> P.pob ) (eqs : \Pi (i : P.X) -> P.proj i `o` f = P.proj i) : f = id _ =>
+  \lemma proj-product-id {C : Precat} (P : LargeProduct {C}) (f : P.pob ->> P.pob) (eqs : \Pi (i : P.X) -> P.proj i `o` f = P.proj i) : f = id _ =>
     \let | u : Unique => P.lprod P.pob (P.proj)
          | u_eq_id => u.unique (id _) (\lam i => C.id-left (P.proj i))
          | u_eq_f => u.unique f eqs
@@ -55,15 +53,20 @@
 
   | pob => p
   | X => Bool
-  | pget i => \case i \with {| true => a | false => b }
-  | proj i => \case i \as k \return pob ->> pget k \with {| true => pi1 | false => pi2 }
+  | pget i => \case i \with {
+    | true => a | false => b
+  }
+  | proj i => \case i \as k \return pob ->> pget k \with {
+    | true => pi1 | false => pi2
+  }
   | lprod x f  =>
     \let p2 : Unique => prod2 (f true) (f false)
     \in \new Unique _ _ p2.elem {
-      | prop j => \case j \as k \return (proj k `o` p2.elem = f k) \with {| true => p2.prop.1 | false => p2.prop.2}
+      | prop j => \case j \as k \return (proj k `o` p2.elem = f k) \with {
+        | true => p2.prop.1 | false => p2.prop.2
+      }
       | unique q g => p2.unique q (g true, g false)
     }
-
 } \where {
   \func swap {C : Precat} {a b p : C} (pab : Product2 a b p) : Product2 b a p \cowith
     | pi1 => pab.pi2
@@ -85,7 +88,7 @@
                               (a*bc : Product2 a b*c.p ab*c.p) : ab*c.p ~= ab*c.p =>
     LargeProduct.product-unique  (threeShuffle (threeProduct a*b ab*c)) (threeProduct b*c (swap a*bc))
     \where {
-      \func threeProduct {C : Precat} {a b c : C} (a*b : Product2 a b ) (ab*c : Product2 a*b.p c ) :
+      \func threeProduct {C : Precat} {a b c : C} (a*b : Product2 a b) (ab*c : Product2 a*b.p c) :
         LargeProduct {C} {three} (make3X a b c) ab*c.p =>
         \let
           | proj (i : three) => \case i \as i' \return ab*c.p ->> make3X a b c i' \with {

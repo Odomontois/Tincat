@@ -3,7 +3,7 @@
 
 -- unique element of A such that B
 
-\record Unique  (A : \Type ) (B : A -> \Prop){
+\record Unique (A : \Set) (B : A -> \Prop){
   | elem : A
   \property prop : B elem
   | unique (a : A) (b : B a) : elem = a
@@ -21,22 +21,24 @@
     | prop => u
     | unique u' _ => Path.inProp u u'
 }
--- unique element of A
 
 \record Singleton \extends Unique{
   \property singleton : isProp A
   | B _ => \Sigma
   | prop => ()
   | unique s' _ => singleton elem s'
-
 } \where {
-  \use \level singleProp {T : \Set} ( s s' : Singleton T) : s = s' =>
-    path (\lam i => \new Singleton T (s.singleton s.elem s'.elem @ i) s.singleton)
+  \func singletonEqs {A : \Set} {s s' : Singleton A} (p : s.elem = s'.elem) : s = s' =>
+    path (\lam i => \new Singleton A (p @ i) s.singleton)
+
+  \use \level singleProp (T : \Set) (s s' : Singleton T) : s = s' => singletonEqs (s.singleton s.elem s'.elem)
 
   \use \coerce prop->Singleton {U : \Prop} (u : U) : Singleton U \cowith
-    | elem => u
-    | singleton => Path.inProp
+      | elem => u
+      | singleton => Path.inProp
 }
+
+
 
 
 

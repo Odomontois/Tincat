@@ -5,7 +5,7 @@
 \import Unique
 \import Universal.Product
 
-\func set-product (a b : \Set): Product2 (\Sigma a b) a b \cowith
+\func set-product (a b : \Set): Product2 a b (\Sigma a b) \cowith
   | pi1 p => p.1
   | pi2 p => p.2
   | prod2 f g => \new Unique _ _ {
@@ -14,7 +14,7 @@
     | unique u ee => inv (path (\lam i x => ((ee.1 @ i) x, (ee.2 @ i) x)))
   }
 
-\func set-coproduct (a b : \Set): Product2 {op SetCat} (a `Or` b) a b \cowith
+\func set-coproduct (a b : \Set): Product2 {op SetCat} a b (a `Or` b)  \cowith
   | pi1 => inl
   | pi2 => inr
   | prod2 {x} f g =>

@@ -7,31 +7,27 @@
 \class Terminal (C : Precat){
   | term : C
   \property terminal (x : C) : Singleton (x ->> term)
-
 } \where {
   \func \infixl 5 term->> {C : Precat} (x : C)  (t : Terminal C) : x ->> term => elem {t.terminal x}
 
-  \lemma iso {C : Precat} (t t' : Terminal C) : Iso1 (t'.term term->> t) \cowith
-    | rev => elem {t'.terminal term}
-    | l_comp => singleton {t'.terminal t'.term} _ _
-    | r_comp => singleton {terminal term} _ _
+  \lemma iso {C : Precat} (t t' : Terminal C) : Iso (t'.term term->> t) \cowith
+    | inv => elem {t'.terminal term}
+    | f_inv => singleton {t'.terminal t'.term} _ _
+    | inv_f => singleton {terminal term} _ _
 
-  \lemma terminal->single {C : Cat} (t : Terminal C) : Singleton (Terminal C) \cowith
-    | elem => t
-    | singleton => univ-term-is-prop
+  \lemma terminal->single {C : Cat} (t : Terminal C) : Singleton (Terminal C)  =>
+    Singleton.prop->Singleton t
 
-  \lemma univ-term-is-prop {C : Cat} (t t' : Terminal C) : t = t' =>
-    \let  | t=t' : t.term = t'.term => Iso1.iso-to-= (iso t' t)
+  \use \level univ-term-is-prop {C : Cat} (t t' : Terminal C) : t = t' =>
+    \let  | t=t' : t.term = t'.term => Cat.iso-to-= (iso t' t)
           | p= =>  pathInProp (\lam i => \Pi (x : C) -> Singleton (x ->> (t=t' @ i))) t.terminal t'.terminal
     \in path (\lam i => \new Terminal C{
       | term => t=t' @ i
       | terminal => p= @ i
     })
-
-  \func uni {C : Cat} (t : Terminal C) : Singleton (Terminal C) \cowith
-    | elem => t
-    | singleton => univ-term-is-prop
 }
+
+\func UTerminal (C : Cat) : \Prop => Terminal C
 
 \func Initial (C : Precat) => Terminal (op C)
 

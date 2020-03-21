@@ -1,9 +1,16 @@
 \import Cat
+\import Equiv (QEquiv)
+\import Equiv.Univalence ()
+\import HLevel
 \import Paths
 \import Category
 \open op
 \import  Set.Category
 \import NatTrans
+\import Paths
+\import Prelude
+\import Equiv.Univalence (univalence \as huniv)
+\import Equiv (Equiv)
 
 \record Functor (C D : Precat) {
   | ob : C -> D
@@ -16,7 +23,6 @@
     | map f => map f
     | functor_id a => functor_id _
     | func_comp f g => func_comp g f
-
 }  \where {
   \func Id (C : Precat) : Functor C C  \cowith
     | ob x => x
@@ -29,7 +35,6 @@
     | map {a} {b} f => F.map (G.map f)
     | functor_id f => pmap F.map (G.functor_id f) *> F.functor_id _
     | func_comp {a} {b} {c} f g => F.func_comp (G.map f) (G.map g) *> pmap F.map (G.func_comp f g)
-
 
   \func \infixr 5 <o> {C D E : Precat} (F : Functor D E) (G : Functor C D) : Functor C E => o-functor F G
 
@@ -52,7 +57,7 @@
 
   \func functor= {C D : Precat}  (F G : Functor C D)
                  (eob : \Pi (a : C) -> F.ob a = G.ob a)
-                 (emap : \Pi {a b : C} (f : a ->> b) -> Path (\lam i => eob a @ i ->> eob b @ i) (F.map f) (G.map f) ) : F = G =>
+                 (emap : \Pi {a b : C} (f : a ->> b) -> Path (\lam i => eob a @ i ->> eob b @ i) (F.map f) (G.map f)) : F = G =>
     \let | idEq (a : C) =>  pathInProp (\lam i => emap (id a) @ i = id (eob a @ i)) (F.functor_id a) (G.functor_id a)
          | compEq {a b c : C} (f : b ->> c) (g : a ->> b) =>
            pathInProp  (\lam i => (emap f @ i) `o` (emap g @ i) = emap (f `o` g) @ i) (F.func_comp f g) (G.func_comp f g)
@@ -93,4 +98,19 @@
         | func_comp {a} f g => coeComp f g *> inv (transport_*>  (\lam x => pget a ->> pget x) g f (id _))
     }
   }
+
+--  \func catCat : Cat Cat \cowith
+--    | Hom C D => Functor C D
+--    | id C => Id C
+--    | o f g => o-functor f g
+--    | id-left f => Id-left f
+--    | id-right f => Id-right f
+--    | o-assoc {a} {b} {c} {d} f g h => assoc {a} {b} {c} {d} h g f
+--    | univalence {C : Cat} {D : Cat} f g e1 e2 =>
+--      \let | c<->d : QEquiv {C.Ob} {D.Ob}=> \new QEquiv (ob {f}) (ob {g})
+--                                                        (\lam x => pmap (\lam (f : Functor C C) => f.ob x) e1)
+--                                                        (\lam x => pmap (\lam (f : Functor D D) => f.ob x) e2)
+--           | uni-c-d : QEquiv {C.Ob = D.Ob} {Equiv {C.Ob} {D.Ob}} => huniv {C} {D}
+--           | c=d : C.Ob = D.Ob => uni-c-d.ret c<->d
+--      \in ({?}, {?})
 }

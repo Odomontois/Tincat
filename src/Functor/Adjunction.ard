@@ -4,40 +4,68 @@
 \import NatTrans
 \import Paths
 \import Unique
-\import Universal.Arrow
+\import Universal.Arrow \hiding (ob)
 \open Functor (Id, o-functor)
+\import  Function (id \as fid)
 
-\record AdjunctionBase {C D : Cat} (left : Functor C D) (right : Functor D C){
-  | adjunction (A : C) (B : D) : left.ob A ->> B = A ->> right.ob B
+\record AdjunctionBase {C D : Cat} (L : Functor C D) (R : Functor D C){
+  | adjunction (a : C) (b : D) : L.ob a ->> b = a ->> R.ob b
 
-  \func adj {A : C} {B : D} (f : left.ob A ->> B) : A ->> right.ob B =>
-    transport (\lam t => t) (adjunction _ _) f
+  \func adj {a : C} {b : D} (f : L.ob a ->> b) : a ->> R.ob b =>
+    transport fid (adjunction _ _) f
+
+  \func iadj {a : C} {b : D} (f : a ->> R.ob b) : L.ob a ->> b =>
+    transport fid (inv (adjunction _ _)) f
 }
 
 \open AdjunctionBase
 
 \record Adjunction \extends AdjunctionBase{
-  \property a-naturality (A A' : C) (B : D) (f : left.ob A ->> B) (m : A' ->> A) :
-    adj f `o` m = adj (f `o` left.map m)
-  \property b-naturality (B B' : D) (A : C) (f : left.ob A ->> B) (m : B ->> B'):
-    right.map m `o` adj f = adj (m `o` f)
+  \property a-naturality {a a' : C} {b : D} (f : L.ob a ->> b) (h : a' ->> a): adj f `o` h = adj (f `o` L.map h)
+  \property b-naturality {b b' : D} {a : C} (f : L.ob a ->> b) (k : b ->> b'): R.map k `o` adj f = adj (k `o` f)
 
-  \func unit : NatTrans (Id C) (right `o-functor` left) \cowith
-    | trans _ => transport (\lam t => t) (adjunction _ _) (id _)
-    | naturality f => {?}
+  \func a-naturality' {a a' : C} {b : D} (g : a ->> R.ob b) (h : a' ->> a): iadj g `o` L.map h = iadj (g `o` h) =>
+    \let | f => iadj g
+         | af=g : adj f = g => transport_id_inv fid _ g
+         | e1  => inv (a-naturality \lp \lh f h)
+         | e2 => transport (\lam (u : a ->> R.ob b) => adj (f `o` L.map h) = u `o` h) af=g e1
+    \in inv (transport_inv_id fid _ _) *> pmap iadj e2
 
-  \func counit : NatTrans (left `o-functor` right) (Id D) \cowith
-    | trans _ =>  transport (\lam t => t) (inv (adjunction _ _)) (id _)
-    | naturality => {?}
+  \lemma b-naturality' {a : C} {b b' : D} (g : a ->> R.ob b) (k : b ->> b'): k `o` iadj g = iadj (R.map k `o` g) =>
+    \let | f => iadj g
+         | af=g : adj f = g => transport_id_inv fid _ g
+         | e1 => inv (b-naturality \lp \lh f k)
+         | e2 => transport (\lam (u : a ->> R.ob b) => adj (k `o` f) = R.map k `o` u) af=g e1
+    \in inv (transport_inv_id fid _ _ ) *> pmap iadj e2
 
+  \func unit : NatTrans (Id C) (R `o-functor` L) \cowith
+    | trans => trans
+    | naturality => nat \where {
+    \func F : Functor C C => o-functor R L
 
+    \func trans (a : C) : a ->> F.ob a => adj (id _)
 
-  \func initial (A : C) : InitialArrow A right \cowith
-    | ob => left.ob A
-    | init => transport (\lam t => t) (adjunction _ _) (id _)
-    | divide b A->Fb => \new Unique {
-      | elem => transport (\lam t => t) (inv (adjunction _ _ )) A->Fb
-      | prop => {?}
-      | unique => {?}
-    }
+    \func nat  {a b : C} (f : a ->> b) : adj (id _) `o` f = F.map f `o` adj (id _) =>
+      a-naturality _ _ *> pmap adj (D.id-right _ *> inv (D.id-left _)) *> inv (b-naturality _ _)
+  }
+
+  \func counit : NatTrans (L `o-functor` R) (Id D) \cowith
+    | trans _ =>  transport fid (inv (adjunction _ _)) (id _)
+    | naturality f => nat \lp \lh f \where {
+    \func F : Functor D D => o-functor L R
+
+    \func trans (a : D) : F.ob a ->> a => iadj (id _)
+
+    \func nat  {a b : D} (f : a ->> b) : iadj (id _) `o` F.map f = f `o` iadj (id _) =>
+      a-naturality' _ _ *> pmap iadj (C.id-right _ *> inv (C.id-left _)) *> inv (b-naturality' _ _)
+  }
+
+--  \func initial (A : C) : InitialArrow A R \cowith
+--    | ob => L.ob A
+--    | init => transport (\lam t => t) (adjunction _ _) (id _)
+--    | divide b A->Fb => \new Unique {
+--      | elem => transport (\lam t => t) (inv (adjunction _ _ )) A->Fb
+--      | prop => {?}
+--      | unique => {?}
+--    }
 }
