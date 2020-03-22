@@ -11,15 +11,8 @@
 \open Free (FreeCatFunctor)
 \open FreeCatFunctor (mapId, toFunctor)
 
-\record PullbackData {a b c : C} (f : a ->> c) (g : b ->> c) (p : C)  \extends BasePrecat{
-  | pi1 : p ->> a
-  | pi2 : p ->> b
-
-  \property cross : f `o` pi1 = g `o` pi2
-  \property pullback {x : C} (xa : x ->> a) (xb : x ->> b) (xc : f `o` xa = g `o` xb) :
-   Unique (x ->> p) (\lam pr => \Sigma (pi1 `o` pr = xa) (pi2 `o` pr = xb))
-
-  \func  dob (dx : Obj) : C
+\record PullbackDiagramm {a b c : C} (f : a ->> c) (g : b ->> c) \extends BasePrecat{
+  \func dob (dx : Obj) : C
     | DA => a
     | DB => b
     | DC => c
@@ -28,9 +21,24 @@
     | DA, DC, A->C => f
     | DB, DC, B->C => g
 
-
   \func freeFunct => \new FreeCatFunctor Arr C dob dmap
+
   \func diagramm : Functor (freeCat Arr) C => FreeCatFunctor.toFunctor {freeFunct}
+} \where{
+  \data Obj | DA | DB | DC
+
+  \data Arr (dom cod : Obj) \with
+    | DA, DC => A->C
+    | DB, DC => B->C
+}
+
+\record PullbackData (p : C) \extends PullbackDiagramm{
+  | pi1 : p ->> a
+  | pi2 : p ->> b
+
+  \property cross : f `o` pi1 = g `o` pi2
+  \property pullback {x : C} (xa : x ->> a) (xb : x ->> b) (xc : f `o` xa = g `o` xb) :
+  Unique (x ->> p) (\lam pr => \Sigma (pi1 `o` pr = xa) (pi2 `o` pr = xb))
 
   \func dedge (x : Obj) : p ->> dob x
     | DA => pi1
@@ -41,11 +49,12 @@
     | DA, DC, A->C => idp
     | DB, DC, B->C => inv cross
 
-
-  \lemma dcone {x y : Obj} (f : Free Arr x y) : diagramm.map f `o` dedge x = dedge y =>
+  \lemma dcone {x y : Obj} (f : Free Arr x y) : Functor.map {diagramm {\this}} f `o` dedge x = dedge y =>
     FreeCatFunctor.compCone p dedge simpleCone f
 
-  \lemma duniversal (c' : Cone diagramm) =>
+  \func diagramm' : Functor (freeCat Arr) C => diagramm
+
+  \lemma duniversal (c' : Cone diagramm') =>
     \let | p1' => c'.edge DA
          | p2' => c'.edge DB
          | f= : f = diagramm.map (Free.embed A->C) => inv (id-left _)
@@ -79,19 +88,17 @@
   | edge => dedge
   | cone => dcone
   | universal => duniversal
+
+  \func toLimit : Limit diagramm \cowith
+    | tip => p
+    | edge => dedge
+    | cone => dcone
+    | universal => duniversal
 } \where {
   \func pullback-unique {C : Precat} {a b c : C} (f : a ->> c) (g : b ->> c)  (pb pb' : Pullback f g) : pb.p ~= pb'.p =>
-    Limit.limit-iso {C} {_} {pb.D} pb pb'
+    Limit.limit-iso (toLimit {pb}) (toLimit {pb'})
 }
 
-\module PullbackDiagramm \where{
-  \data Obj | DA | DB | DC
-
-  \data Arr (dom cod : Obj) \with
-    | DA, DC => A->C
-    | DB, DC => B->C
-}
-
-\func FinitePullbacks (C : Precat) => \Pi {a b c : C} (f : a ->> c) (g : b ->> c ) -> Pullback f g
+\func FinitePullbacks (C : Precat) => \Pi {a b c : C} (f : a ->> c) (g : b ->> c) -> Pullback f g
 
 
