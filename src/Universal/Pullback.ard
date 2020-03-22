@@ -89,7 +89,7 @@
   | cone => dcone
   | universal => duniversal
 
-  \func toLimit : Limit diagramm \cowith
+  \use \coerce toLimit : Limit diagramm \cowith
     | tip => p
     | edge => dedge
     | cone => dcone
