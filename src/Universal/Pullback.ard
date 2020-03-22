@@ -25,6 +25,9 @@
 
   \func diagramm : Functor (freeCat Arr) C => FreeCatFunctor.toFunctor {freeFunct}
 } \where{
+  \func pbdiagramm {C : Precat} {a b c : C} (f : a ->> c) (g : b ->> c) : Functor (freeCat Arr) C =>
+    diagramm {\new PullbackDiagramm f g}
+
   \data Obj | DA | DB | DC
 
   \data Arr (dom cod : Obj) \with
@@ -89,13 +92,14 @@
   | cone => dcone
   | universal => duniversal
 
-  \use \coerce toLimit : Limit diagramm \cowith
+  \use \coerce toLimit : Limit (pbdiagramm f g) \cowith
     | tip => p
     | edge => dedge
     | cone => dcone
     | universal => duniversal
 } \where {
-  \func pullback-unique {C : Precat} {a b c : C} (f : a ->> c) (g : b ->> c)  (pb pb' : Pullback f g) : pb.p ~= pb'.p =>
+  \lemma pullback-unique {C : Precat} {a b c : C} (f : a ->> c) (g : b ->> c)  (pb pb' : Pullback f g) :
+    Iso {C} {pb.p} {pb'.p} (elem {pb'.universal (toLimit {pb})}) =>
     Limit.limit-iso (toLimit {pb}) (toLimit {pb'})
 }
 

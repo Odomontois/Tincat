@@ -1,0 +1,4 @@
+\import Monoidal.Category
+\import Order.PartialOrder
+
+\record MonoidalPoset \extends MonoidalCat, Poset

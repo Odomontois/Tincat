@@ -12,9 +12,11 @@
   | associator : NatIso (AssocL Tensor) (AssocR Tensor)
 
   \func \infixl 5 :*: (x y : Ob) : Ob => Tensor.ob (x, y)
+
   \func \infixl 5 <x> {x y x' y' : Ob} (f : x ->> y) (g : x' ->> y') : x :*: x' ->> y :*: y' => Tensor.map (f, g)
 
   \func assr (x y z : Ob) : ((x :*: y) :*: z) ->> (x :*: (y :*: z)) => associator.trans ((x, y), z)
+
   \func assl (x y z : Ob) : (x :*: (y :*: z)) ->> ((x :*: y) :*: z) => associator.transBack ((x, y), z)
 } \where {
   \func AssocL {C : Precat} (T : Functor (C [x] C) C) => o-functor {C [x] C [x] C} {C [x] C} {C} T (T <<x>> Id C)
@@ -38,8 +40,11 @@
   | left-unitor : NatIso (LeftUnitF unit Tensor) (Id \this)
 
   \func spawnl (a : Ob): a ->> (unit :*: a) => left-unitor.transBack a
+
   \func spawnr (a : Ob): a ->> (a :*: unit) => right-unitor.transBack a
+
   \func absorbl (a : Ob): (unit :*: a) ->> a => left-unitor.trans a
+
   \func absorbr (a : Ob): (a :*: unit) ->> a => right-unitor.trans a
 } \where {
   \func RightUniF {C : Precat} (u : C) (T : Functor (C [x] C) C) : Functor C C \cowith
@@ -61,6 +66,40 @@
   \property triagonal (x y : Ob) : assr x unit y >> (id x <x> absorbl y) = absorbr x <x> id y
 
   \lemma left-triangle (x y : Ob) : absorbl x <x> id y = assr unit x y >> absorbl (x :*: y) => {?}
+
   \lemma right-triangle (x y : Ob) : id x <x> absorbr y = assl x y unit >> absorbr (x :*: y) => {?}
+
   \lemma absorb-two : absorbr unit = absorbl unit => {?}
+}
+
+\class MonoidalCat \extends MonoidalPrecat, Cat
+
+\class HasBraidingPrecat \extends MonoidalPrecat {
+  | brading : NatIso Tensor (Tensor `o-functor` Swap)
+
+  \func braid (a b : Ob) : a :*: b ->> b :*: a => brading.trans (a, b)
+} \where {
+  \func Swap {C : Precat} : Functor (C [x] C) (C [x] C) \cowith
+    | ob ab => (ab.2, ab.1)
+    | map fg => (fg.2, fg.1)
+    | functor_id a => idp
+    | func_comp f g => idp
+}
+
+\open  HasBraidingPrecat
+
+\class BraidingPrecat \extends HasBraidingPrecat{
+  \property hexagonal (a b c : Ob) :
+  assr a b c >> braid a (b :*: c)  >> assr b c a =
+  (braid a b <x> id c) >> assr b a c >> (id b <x> braid a c)
+
+  \property hexagonal2 (a b c : Ob) :
+  assl a b c >> braid (a :*: b) c >> assl c a b =
+  (id a <x> braid b c) >> assl a c b >> (braid a c <x> id b)
+}
+
+\class SymmetricPrecat \extends BraidingPrecat {
+  \property symmetry (a b : Ob) : braid a b >> braid b a = id _
+
+  | hexagonal2 (a b c : Ob) => {?}
 }
