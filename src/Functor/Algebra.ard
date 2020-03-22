@@ -42,7 +42,7 @@
   | o-assoc (f : Homo) (g : Homo) (h : Homo) => =homo (o-assoc f.m g.m h.m)
 
 -- | By Lambek
-\lemma initial-fixpoint {C : Precat} {F : Functor C C} (initMu : Initial (algebraCat {C} {F})) : Iso1 (algebra  {initMu.term}) =>
+\lemma initial-fixpoint {C : Precat} {F : Functor C C} (initMu : Initial (algebraCat {C} {F})) : Iso (algebra  {initMu.term}) =>
   \let | mu : Algebra F => initMu.term
        | mualg : F.ob mu.base ->> mu.base => mu.algebra
        | mapped : Algebra F => \new Algebra F _ (F.map mu.algebra)
@@ -61,7 +61,7 @@
        | mu*rev=id  : mualg `o` rev = id _ => pmap (\lam (h : Homo mu mu) => h.m) (mumu-single mu*rev-homo idhomo)
        | rev*mu=id : rev `o` mualg = id _  => rev*mu=F_mu*rev *> pmap F.map mu*rev=id *> F.functor_id _
 
-  \in \new Iso1 mualg rev {
-    | l_comp => rev*mu=id
-    | r_comp => mu*rev=id
+  \in \new Iso mualg rev {
+    | f_inv => rev*mu=id
+    | inv_f => mu*rev=id
   }

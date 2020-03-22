@@ -19,11 +19,11 @@
 
   \property naturality  {a b : C} (f : a ->> b) : trans b `o` map f = map f `o` trans a
 
-  \func toIso (f : \Pi (a : C) -> Iso1 (trans a)) : NatIso F G trans \cowith
+  \func toIso (f : \Pi (a : C) -> Iso (trans a)) : NatIso F G trans \cowith
     | naturality => naturality
-    | transBack a => Iso1.rev {f a}
-    | t_back a => Iso1.l_comp {f a}
-    | back_t a => Iso1.r_comp {f a}
+    | transBack a => Iso.inv {f a}
+    | t_back a => Iso.f_inv {f a}
+    | back_t a => Iso.inv_f {f a}
 }  \where  {
   \use \level natTrans-is-set {C D : Precat} (F G : Functor C D) (x y : NatTrans F G) (p q : x = y) : p = q =>
     setPath= (\lam (x y : F ~> G) => x.trans = y.trans) (\lam u => idp) (\lam e => equiv _ _ e) p q

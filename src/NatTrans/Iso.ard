@@ -1,8 +1,9 @@
 \import Cat
-\import Category (Precat, id, o)
+\import Category
 \import Equiv (QEquiv)
-\import Equiv.Univalence
+--\import Equiv.Univalence
 \import Functor
+\import Iso
 \import NatTrans
 \import Paths
 \import Prelude
@@ -14,9 +15,13 @@
 }
 
 \record NatIso' \extends NatTrans', NatIso{
-  \func univ (a : C') =>  D'.univalence (trans a) (transBack a) (t_back a) (back_t a)
+  \func iso (a : C') => \new Iso (trans a) (transBack a) (t_back a) (back_t a)
 
-  \func ob-eq (a : C') : F.ob a = G.ob a => (univ a).1
+  \func ob-eq (a : C') : F.ob a = G.ob a => Cat.iso-to-= (iso a)
+
+--  \lemma transport-Hom (e : Iso {(\this : Cat)}) {z : Ob} (g : Hom z e.dom) : transport (Hom z) (iso-to-= e) g = g >> e.f
+--    => Jl (\lam _ q => transport (Hom z) q g = g >> transport (Hom e.dom) q (id e.dom)) (pinv (id-right g)) (iso-to-= e)
+--    *> pmap (g >>) (univalence e.f e.inv e.f_inv e.inv_f).2
 
   \func map-eq {a b : C'} (f : a ->> b) : transport2 D.Hom (ob-eq a) (ob-eq b) (F.map f) = G.map f =>
     {?} *>  D'.id-right (G.map f)
@@ -24,10 +29,16 @@
   \func to-eq : F = G =>
     path(\lam i => \new Functor C D {
       | ob a => ob-eq a @ i
-      | map => {?}
+      | map f => {?}
       | functor_id a => {?}
       | func_comp => {?}
     })
+} \where  {
+--  \func eqf {C D : Cat} {ob ob' : C -> D} (po : ob = ob') :
+--            \Pi {F : Functor C D ob}
+--                {G : Functor C D ob'}
+--                (t : NatTrans F G)
+--                (q : \Pi (a : C) -> transport   t.trans a )
 }
 
 

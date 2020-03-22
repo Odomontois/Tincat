@@ -15,10 +15,10 @@
   \property universal (c' : Cone D) :
     Unique (c'.tip ->> tip : \Set) (\lam f => \Pi (ix : IX) ->  edge ix `o` f = c'.edge ix)
 } \where {
-  \lemma limit-iso {C IX : Precat} {D : Functor IX C} (l1 l2 : Limit D) : Iso1 (elem {l2.universal l1}) \cowith
-    | rev => elem {l1.universal l2}
-    | l_comp => one-side l1 l2
-    | r_comp => one-side l2 l1
+  \lemma limit-iso {C IX : Precat} {D : Functor IX C} (l1 l2 : Limit D) : Iso (elem {l2.universal l1}) \cowith
+    | inv => elem {l1.universal l2}
+    | f_inv => one-side l1 l2
+    | inv_f => one-side l2 l1
     \where {
       \lemma one-side {C IX : Precat} {D : Functor IX C} (l1 l2 : Limit D) :
         elem {l1.universal l2} `o` elem {l2.universal l1} = id _ =>
@@ -26,9 +26,6 @@
         pmap (\lam x => x `o` _) (prop {l1.universal l2} ix) *>
         prop {l2.universal l1} ix)
     }
-
-  \lemma limit-iso' {C IX : Precat} {D : Functor IX C} (l1 l2 : Limit D) : Iso (elem {l2.universal l1}) =>
-     Iso1.toIso {limit-iso l1 l2}
 
   \lemma map-id {C IX : Precat} {D : Functor IX C} (l : Limit D) (f : l.tip ->> l.tip)
                 (p : \Pi (ix : IX) -> l.edge ix `o` f = l.edge ix) : f = id (l.tip) =>

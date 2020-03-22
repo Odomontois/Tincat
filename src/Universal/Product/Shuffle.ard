@@ -18,11 +18,11 @@
        | p->q : Unique (p ->> q) => Py.lprod p lp
        | lproof (ix : IX) : Px.proj ix `o` (q->p.elem `o` p->q.elem) = Px.proj ix =>
          o-assoc _ _ _ *> pmap (p->q.elem >>) (q->p.prop ix) *> {?}
-  \in \new Iso1 {
+  \in \new Iso {
     | f => p->q.elem
-    | rev => q->p.elem
-    | l_comp => LargeProduct.proj-product-id Px _ {?}
-    | r_comp => {?}
+    | inv => q->p.elem
+    | f_inv => LargeProduct.proj-product-id Px _ {?}
+    | inv_f => {?}
   }
 
 \func product_shuffle {C : Cat} {IX IY : \Set} {k : IX -> C}  (p : C) (qe : QEquiv {IX} {IY}) (P : LargeProduct k p) =>

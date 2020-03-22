@@ -31,23 +31,23 @@
                | qyx : QEquiv => eq y x
                | qxy : QEquiv => eq x y
                | qyy : QEquiv  => eq y y
-    \in \new Iso1 {
+    \in \new Iso {
       | f => QEquiv.ret {eq x y} (fi.f)
-      | rev => QEquiv.ret {eq y x} (fi.rev)
-      | l_comp =>
+      | inv => QEquiv.ret {eq y x} (fi.inv)
+      | f_inv =>
         inv (qxx.ret_f _) *>
         pmap qxx.ret (
           inv (F.func_comp _ _) *>
           pmap2 o (qyx.f_sec _) (qxy.f_sec _) *>
-          fi.l_comp *>
+          fi.f_inv *>
           inv (F.functor_id _)
         ) *> qxx.ret_f _
-      | r_comp =>
+      | inv_f =>
         inv (qyy.ret_f _) *>
         pmap qyy.ret (
           inv (F.func_comp _ _) *>
           pmap2 o (qxy.f_sec _) (qyx.f_sec _) *>
-          fi.r_comp *>
+          fi.inv_f *>
           inv (F.functor_id _)
         ) *>  qyy.ret_f _
     }
