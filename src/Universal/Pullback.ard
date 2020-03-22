@@ -1,6 +1,7 @@
 \import Cat
 \import Category
 \import Functor
+\import Iso
 \import Logic
 \import Paths
 \import Unique
@@ -16,7 +17,7 @@
 
   \property cross : f `o` pi1 = g `o` pi2
   \property pullback {x : C} (xa : x ->> a) (xb : x ->> b) (xc : f `o` xa = g `o` xb) :
-  Unique (x ->> p) (\lam pr => \Sigma (pi1 `o` pr = xa) (pi2 `o` pr = xb))
+   Unique (x ->> p) (\lam pr => \Sigma (pi1 `o` pr = xa) (pi2 `o` pr = xb))
 
   \func  dob (dx : Obj) : C
     | DA => a
@@ -79,6 +80,8 @@
   | cone => dcone
   | universal => duniversal
 } \where {
+  \func pullback-unique {C : Precat} {a b c : C} (f : a ->> c) (g : b ->> c)  (pb pb' : Pullback f g) : pb.p ~= pb'.p =>
+    Limit.limit-iso {C} {_} {pb.D} pb pb'
 }
 
 \module PullbackDiagramm \where{
