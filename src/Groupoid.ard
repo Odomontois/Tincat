@@ -1,0 +1,24 @@
+\import Category
+\import Iso
+
+\class PreGroupoid \extends Precat{
+  | invert {a b : Ob} (f : Hom a b) : Hom b a
+  | inv-left {a b : Ob} (f : Hom a b) : invert f `o` f = id a
+  | inv-right {a b : Ob} (f : Hom a b) : f `o` invert f = id b
+
+  \lemma iso {a b : Ob} (f : Hom a b) : Iso f \cowith
+    | inv => invert f
+    | f_inv => inv-left f
+    | inv_f => inv-right f
+}
+
+\func core (C : Precat) : PreGroupoid C \cowith
+  | Hom a b => Iso {C} {a} {b}
+  | id a => idIso
+  | o f g => compose-iso g f
+  | id-left (fi : Iso) => Iso.equals _ _ (id-left fi.f)
+  | id-right (fi : Iso) => Iso.equals _ _ (id-right fi.f)
+  | o-assoc (fi : Iso) (gi : Iso) (hi : Iso) => Iso.equals _ _ (o-assoc fi.f gi.f hi.f)
+  | invert fi => invert-iso fi
+  | inv-left (fi : Iso) => Iso.equals _ _ fi.f_inv
+  | inv-right (fi : Iso ) => Iso.equals _ _ fi.inv_f
