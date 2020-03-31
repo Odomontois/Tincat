@@ -1,0 +1,19 @@
+\import Algebra.Group
+\import Algebra.Monoid
+\import Algebra.Pointed
+
+\record PointHomo {A B : Pointed} (f : A -> B) {
+  \property zero-coh : f A.ide = B.ide
+}
+
+\record MonoidHomo \extends PointHomo {
+  \override A : Monoid
+  \override B : Monoid
+  \property plus-coh (x y : A) : f (x * y) = f x * f y
+}
+
+\record GroupHomo \extends MonoidHomo {
+  \override A : Group
+  \override B : Group
+  \property inv-coh (a : A) : f (inverse a) = inverse (f a)
+}

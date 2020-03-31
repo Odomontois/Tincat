@@ -1,7 +1,20 @@
 \import Algebra.Group
+\import Algebra.Homo
+\import Algebra.Monoid
+\import Algebra.Pointed
 \import Data.Bool
 \import Paths
 \import Prelude
+
+\lemma inv-ide {A : Group} : inverse ide = {A} ide => inv (ide-right _) *> inverse-left _
+
+\lemma inv-* {A : Group} (x y : A): inverse (x * y) = (inverse y) * (inverse x) =>
+  cancel-left (x * y) (inverse (x * y)) (inverse y * inverse x) (
+    inverse-right _ *>
+    inv (inverse-right _) *>
+    pmap (* x ) ( inv (ide-left _) *> pmap (\lam x' => x' * _) (inv (inverse-right y)) *> A.*-assoc y _ _) *>
+    inv (A.*-assoc _ _ _)
+  )
 
 \truncated \data FreeGroup (A : \Set) : \Set
   | zero
@@ -25,11 +38,8 @@
   \func \infixl 5 minus {A : \Set} (x y : FreeGroup A) : FreeGroup A \elim y
     | zero => x
     | cons b a y => cons (not b) a x minus y
-    | cancel b a y i => cons-cancel b a x @ i minus y
+    | cancel b a y i => cancel' (not b) a x @ i minus y
     \where {
-      \lemma cons-cancel {A : \Set} (b : Bool) (a : A) (t : FreeGroup A) : cons (not (not b)) a (cons (not b) a t) = t =>
-        pmap (\lam x => cons x a _) (not-inv b) *> path (cancel b a t)
-
       \lemma minus-swap {A : \Set} (x y z : FreeGroup A) : x plus y minus z = x minus z plus y \elim z
         | zero => idp
         | cons b a z => minus-swap _ _ _
@@ -66,6 +76,38 @@
 
   \lemma plus-negr {A : \Set} (x : FreeGroup A) : x plus (negate x)  = zero =>
     pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl (negate x)
+
+  \record FoldMap {A : \Set} {B : Group} (f : A -> B){
+    \func run (x : FreeGroup A) : B
+      | zero => ide
+      | cons true a x => f a * run x
+      | cons false a x => inverse (f a) * run x
+      | cancel true a x i =>
+        \let e : f a * (inverse (f a) * run x) = run x =>
+               inv (B.*-assoc _ _ _) *> pmap (\lam a' => a' * _) (B.inverse-right _) *> B.ide-left _
+        \in e @ i
+      | cancel false a x i =>
+        \let e : inverse (f a) * (f a * run x) = run x =>
+               inv (B.*-assoc _ _ _) *> pmap (\lam a' => a' * _) (B.inverse-left _) *> B.ide-left _
+        \in e @ i
+
+    \lemma run-minus (x y : FreeGroup A) : run (x minus y) = run x * inverse (run y) \elim y
+      | zero => inv (ide-right _) *> pmap (* (run x)) (inv inv-ide)
+      | cons true a y => {?}
+      | cons false a y => {?}
+
+    --    \lemma run-negate (x : FreeGroup A) : run (negate x) = inverse (run x)
+--      | zero => inv inv-ide
+--      | cons true a x =>  {?} *> pmap (\lam x' => x' * _) (run-negate x) *> inv (inv-* _ _)
+--      | cons false a x => {?}
+
+    \lemma isHomo : GroupHomo {freeGroup} run \cowith
+      | zero-coh => idp
+      | plus-coh x y => {?}
+      | inv-coh x => {?}
+  }
+
+  \func foldMap {A : \Set} {B : Group} (f : A -> B) (x :  FreeGroup A) : B => FoldMap.run {\new FoldMap f} x
 }
 
 \open FreeGroup
@@ -79,3 +121,4 @@
   | inverse => negate
   | inverse-left  => plus-negl
   | inverse-right => plus-negr
+
