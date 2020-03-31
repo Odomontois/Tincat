@@ -8,6 +8,9 @@
 
 \lemma inv-ide {A : Group} : inverse ide = {A} ide => inv (ide-right _) *> inverse-left _
 
+\lemma inv-inv {A : Group} (a : A): inverse (inverse a) = a =>
+  cancel-left (inverse a) _ _ (inverse-right _ *> inv (inverse-left _))
+
 \lemma inv-* {A : Group} (x y : A): inverse (x * y) = (inverse y) * (inverse x) =>
   cancel-left (x * y) (inverse (x * y)) (inverse y * inverse x) (
     inverse-right _ *>
@@ -48,9 +51,9 @@
         | zero => idp
         | cons b a z => double-neg x _ z *>  pmap (\lam b' => cons b' a _ minus y) (not-inv b)
 
-      \lemma minus-assoc {A : \Set} (x y z : FreeGroup A) : x minus (y plus z)  = x minus y minus z \elim y
+      \lemma minus-plus {A : \Set} (x y z : FreeGroup A) : x minus (y plus z)  = x minus y minus z \elim y
         | zero => idp
-        | cons b a y => minus-assoc _ _ _
+        | cons b a y => minus-plus _ _ _
 
       \lemma minus-cancel {A : \Set} (x : FreeGroup A) : x minus x = zero
         | zero => idp
@@ -77,10 +80,14 @@
   \lemma plus-negr {A : \Set} (x : FreeGroup A) : x plus (negate x)  = zero =>
     pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl (negate x)
 
+  \func uinv {B : Group} (b : Bool) (x : B) : B \elim b
+    | true => x
+    | false => inverse x
+
   \record FoldMap {A : \Set} {B : Group} (f : A -> B){
-    \func uinv (b : Bool) (x : B) : B \elim b
-      | true => x
-      | false => inverse x
+    \lemma uinv-not (b : Bool) (x : B) : uinv (not b) x = inverse (uinv b x) \elim b
+      | true => idp
+      | false => inv (inv-inv _)
 
     \lemma uinv-elim (b : Bool) (x : B) : uinv b x * uinv (not b) x = ide \elim b
       | true => inverse-right x
@@ -98,25 +105,37 @@
       | zero => inv (ide-left _)
       | cons b a x => pmap (* (uinv b (f a))) (run-plus x y) *> inv (*-assoc _ _ _)
 
-    \lemma run-minus (x y : FreeGroup A) : run (x minus y) = run x * inverse (run y) \elim y
-      | zero => inv (ide-right _) *> pmap (* (run x)) (inv inv-ide)
+    \lemma run-minus (x y : FreeGroup A) : run (x minus y) = inverse (run y) * run x  \elim y
+      | zero => inv (ide-left _) *> pmap (\lam z => z * (run x)) (inv inv-ide)
       | cons b a y =>
-        pmap run (minus-swap (cons (not b) a zero) x y) *>
-        run-plus _ _ *>
-        {?}
-
-    --    \lemma run-negate (x : FreeGroup A) : run (negate x) = inverse (run x)
-    --      | zero => inv inv-ide
-    --      | cons true a x =>  {?} *> pmap (\lam x' => x' * _) (run-negate x) *> inv (inv-* _ _)
-    --      | cons false a x => {?}
+        run-minus (cons (not b) a x) y *>
+        inv (*-assoc _ _ _) *>
+        pmap (\lam z => z * run x) ( pmap (* (inverse (run y))) (uinv-not b (f a)) *> inv (inv-* _ _))
 
     \lemma isHomo : GroupHomo {freeGroup} run \cowith
       | zero-coh => idp
-      | plus-coh x y => {?}
-      | inv-coh x => {?}
+      | plus-coh => run-plus
+      | inv-coh x => run-minus zero x *> ide-right _
   }
 
-  \func foldMap {A : \Set} {B : Group} (f : A -> B) (x :  FreeGroup A) : B => FoldMap.run {\new FoldMap f} x
+  \func foldMap {A : \Set} {B : Group} (f : A -> B) : GroupHomo {freeGroup {A}} {B} => FoldMap.isHomo {\new FoldMap f}
+
+  \func unfoldMap {A : \Set} {B : Group} (h : GroupHomo {freeGroup {A}} {B}) (a : A) : B => h.f (cons true a zero)
+
+  \lemma unfoldMap-cond {A : \Set} {B : Group}
+                        (a : A) (b : Bool)
+                        (h : GroupHomo {freeGroup {A}} {B})
+    : uinv b (unfoldMap h a)   = h.f (cons b a zero) \elim  b
+    | true => idp
+    | false => inv (h.inv-coh _)
+
+  \lemma fold-unfold {A : \Set} {B : Group} (f : A -> B) (a : A) : unfoldMap (foldMap f) a = f a => ide-right (f a)
+
+  \lemma unfold-fold {A : \Set} {B : Group}
+                     (h : GroupHomo {freeGroup {A}} {B})
+                     (x : FreeGroup A) : GroupHomo.f {foldMap (unfoldMap h)} x = h.f x \elim x
+    | zero => inv (h.zero-coh)
+    | cons b a x => pmap2 (*) (unfoldMap-cond a b h) (unfold-fold  h x) *> inv (h.plus-coh (cons b a zero) x)
 }
 
 \open FreeGroup
