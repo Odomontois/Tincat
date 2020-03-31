@@ -1,0 +1,81 @@
+\import Algebra.Group
+\import Data.Bool
+\import Paths
+\import Prelude
+
+\truncated \data FreeGroup (A : \Set) : \Set
+  | zero
+  | cons Bool A (FreeGroup A)
+  | cancel (b : Bool) (a : A) (t : FreeGroup A) (i : I) \elim i {
+    | left => cons b a (cons (not b) a t)
+    | right => t
+  } \where {
+  \lemma cancel' {A : \Set} (b : Bool) (a : A) (t : FreeGroup A) : cons (not b) a (cons b a t) = t =>
+    pmap (\lam b' => cons (not b) a (cons b' a t)) (inv (not-inv b)) *> path (cancel (not b) a t)
+
+  \func \infixl 5 plus {A : \Set} (x : FreeGroup A) (y : FreeGroup A) : FreeGroup A \elim x
+    | zero => y
+    | cons b a x => cons b a (x plus y)
+    | cancel b a x i => cancel b a (x plus y) i
+
+  \lemma not-inv (b : Bool) : not (not b) = b
+    | true => idp
+    | false => idp
+
+  \func \infixl 5 minus {A : \Set} (x y : FreeGroup A) : FreeGroup A \elim y
+    | zero => x
+    | cons b a y => cons (not b) a x minus y
+    | cancel b a y i => cons-cancel b a x @ i minus y
+    \where {
+      \lemma cons-cancel {A : \Set} (b : Bool) (a : A) (t : FreeGroup A) : cons (not (not b)) a (cons (not b) a t) = t =>
+        pmap (\lam x => cons x a _) (not-inv b) *> path (cancel b a t)
+
+      \lemma minus-assoc {A : \Set} (x y z : FreeGroup A) : x plus y minus z = x minus z plus y \elim z
+        | zero => idp
+        | cons b a z => minus-assoc _ _ _
+
+      \lemma double-neg {A : \Set} (x y z : FreeGroup A) : x minus (y minus z) = z plus x minus y \elim z
+        | zero => idp
+        | cons b a z => double-neg x _ z *>  pmap (\lam b' => cons b' a _ minus y) (not-inv b)
+
+      \lemma anti-assoc {A : \Set} (x y z : FreeGroup A) : x minus (y plus z)  = x minus y minus z \elim y
+        | zero => idp
+        | cons b a y => anti-assoc _ _ _
+
+      \lemma minus-cancel {A : \Set} (x : FreeGroup A) : x minus x = zero
+        | zero => idp
+        | cons b a x => pmap (\lam x' => x' minus x) (cancel' b a x) *> minus-cancel x
+    }
+
+  \func negate {A : \Set} (x : FreeGroup A) : FreeGroup A => zero minus x
+
+  \lemma negate-inv {A : \Set} (x : FreeGroup A) : negate (negate x) = x => double-neg _ _ _ *> plus-zero x
+
+  \lemma plus-zero {A : \Set} (x : FreeGroup A) : x plus zero = x
+    | zero => idp
+    | cons b a x => pmap (cons b a) (plus-zero x)
+
+  \lemma plus-assoc{A : \Set} (x y z : FreeGroup A) : x plus y plus z = x plus (y plus z) \elim x
+    | zero => idp
+    | cons b a x => pmap (cons b a) (plus-assoc x y z)
+
+  \open minus
+
+  \lemma plus-negl {A : \Set} (x : FreeGroup A) : (negate x) plus x = zero =>
+    inv (minus-assoc _ _ _) *> minus-cancel x
+
+  \lemma plus-negr {A : \Set} (x : FreeGroup A) : x plus (negate x)  = zero =>
+    pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl (negate x)
+}
+
+\open FreeGroup
+
+\instance freeGroup {A : \Set} : Group (FreeGroup A)
+  | ide => zero
+  | * => plus
+  | ide-left x => idp
+  | ide-right => plus-zero
+  | *-assoc => plus-assoc
+  | inverse => negate
+  | inverse-left  => plus-negl
+  | inverse-right => plus-negr
