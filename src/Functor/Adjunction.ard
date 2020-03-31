@@ -8,7 +8,7 @@
 \open Functor (Id, o-functor)
 \import  Function (id \as fid)
 
-\record AdjunctionBase {C D : Cat} (L : Functor C D) (R : Functor D C){
+\record AdjunctionBase {C D : Precat} (L : Functor C D) (R : Functor D C){
   | adjunction (a : C) (b : D) : L.ob a ->> b = a ->> R.ob b
 
   \func adj {a : C} {b : D} (f : L.ob a ->> b) : a ->> R.ob b =>

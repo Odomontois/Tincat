@@ -1,6 +1,13 @@
 \import Algebra.Group
 \import Algebra.Monoid
 \import Algebra.Pointed
+\import Category
+\import Functor
+\import Paths
+\import Function (id \as fid, -o)
+\import Set.Category
+
+--\record Homo (C : \Type \lp 2) (toSet : C -> \Set) {A B : C} (f : toSet A -> toSet B) (props : \Prop)
 
 \record PointHomo {A B : Pointed} (f : A -> B) {
   \property zero-coh : f A.ide = B.ide
@@ -16,4 +23,39 @@
   \override A : Group
   \override B : Group
   \property inv-coh (a : A) : f (inverse a) = inverse (f a)
+} \where {
+  \lemma equals' {A B : Group} (f : GroupHomo {A} {B}) {hf : A -> B} (p : f.f = hf) (h : GroupHomo hf) : f = h \elim p
+    | idp => idp
+
+  \lemma equals {A B : Group} (f g : GroupHomo {A} {B}) (p : f.f = g.f) : f = g => equals' f p g
+
+  \lemma ident {A : Group} : GroupHomo (fid {A}) \cowith
+    | zero-coh => idp
+    | plus-coh x y => idp
+    | inv-coh a => idp
+
+  \lemma comp {A B C : Group} {f : A -> B} {g : B -> C} (fh : GroupHomo f) (gh : GroupHomo g) : GroupHomo (-o f g) \cowith
+    | zero-coh => pmap g fh.zero-coh *> gh.zero-coh
+    | plus-coh x y => pmap g (fh.plus-coh x y) *> gh.plus-coh _ _
+    | inv-coh x => pmap g (fh.inv-coh x) *> gh.inv-coh _
 }
+
+\open GroupHomo
+
+\instance GRP : Precat Group
+  | Hom g1 g2 => GroupHomo {g1} {g2}
+  | id x => ident
+  | o f g => comp g f
+  | id-left x => equals _ _ idp
+  | id-right x => equals _ _ idp
+  | o-assoc f g h => equals _ _ idp \where {
+  \func ForgetSet : Functor GRP SetCat \cowith
+    | ob x => x
+    | map (h : GroupHomo) => h.f
+    | functor_id A => idp
+    | func_comp f g => idp
+}
+
+--  | univalence {x} {y} (f : GroupHomo) (g : GroupHomo) p q =>
+--    \let kek => SetCat.univalence f.f g.f (path (\lam i => GroupHomo.f {p @ i})) (path (\lam i => GroupHomo.f {q @ i}))
+--    \in ({?}, equals _ _ {?})
