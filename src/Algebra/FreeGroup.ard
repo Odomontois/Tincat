@@ -7,10 +7,12 @@
 \import Equiv.Univalence
 \import Functor
 \import Functor.Adjunction
+\import HLevel
 \import Paths
 \import Prelude
 \import Set.Category
 \import Function
+\import Util
 
 \lemma inv-ide {A : Group} : inverse ide = {A} ide => inv (ide-right _) *> inverse-left _
 
@@ -25,13 +27,30 @@
     inv (A.*-assoc _ _ _)
   )
 
-\truncated \data FreeGroup (A : \Set) : \Set
+-- TODO prove set level
+
+\data FreeGroup (A : \Set)
   | zero
   | cons Bool A (FreeGroup A)
   | cancel (b : Bool) (a : A) (t : FreeGroup A) (i : I) \elim i {
     | left => cons b a (cons (not b) a t)
     | right => t
   } \where {
+  \data FreeGroupEq {A : \Set} (a a' : FreeGroup A) : \Prop \elim a, a'
+    | zero, zero => zero-eq
+    | cons b a t, cons b' a' t' => cons-eq (b = b') (a = a') (FreeGroupEq t t') \where {
+    \lemma refl {A : \Set} (a : FreeGroup A) : FreeGroupEq a a
+      | zero => zero-eq
+      | cons b a t => cons-eq idp idp (refl t)
+
+    \func toEq {A : \Set} {a a' : FreeGroup A} (p : FreeGroupEq a a') : a = a' \elim a, a', p
+      | zero, zero, zero-eq => idp
+      | cons b a t, cons b' a' t', cons-eq pb pa pt => path(\lam i => cons (pb @ i) (pa @ i) (toEq pt @ i))
+  }
+
+  \use \level freeGroupIsSet (A : \Set) : isSet (FreeGroup A) =>
+    \lam _ _ => setPath= FreeGroupEq FreeGroupEq.refl FreeGroupEq.toEq
+
   \lemma cancel' {A : \Set} (b : Bool) (a : A) (t : FreeGroup A) : cons (not b) a (cons b a t) = t =>
     pmap (\lam b' => cons (not b) a (cons b' a t)) (inv (not-inv b)) *> path (cancel (not b) a t)
 
