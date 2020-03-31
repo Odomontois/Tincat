@@ -19,6 +19,10 @@
 \lemma inv-inv {A : Group} (a : A): inverse (inverse a) = a =>
   cancel-left (inverse a) _ _ (inverse-right _ *> inv (inverse-left _))
 
+\lemma not-inv (b : Bool) : not (not b) = b
+  | true => idp
+  | false => idp
+
 \lemma inv-* {A : Group} (x y : A): inverse (x * y) = (inverse y) * (inverse x) =>
   cancel-left (x * y) (inverse (x * y)) (inverse y * inverse x) (
     inverse-right _ *>
@@ -26,8 +30,6 @@
     pmap (* x ) ( inv (ide-left _) *> pmap (\lam x' => x' * _) (inv (inverse-right y)) *> A.*-assoc y _ _) *>
     inv (A.*-assoc _ _ _)
   )
-
--- TODO prove set level
 
 \data FreeGroup (A : \Set)
   | zero
@@ -58,10 +60,6 @@
     | zero => y
     | cons b a x => cons b a (x plus y)
     | cancel b a x i => cancel b a (x plus y) i
-
-  \lemma not-inv (b : Bool) : not (not b) = b
-    | true => idp
-    | false => idp
 
   \func \infixl 5 minus {A : \Set} (x y : FreeGroup A) : FreeGroup A \elim y
     | zero => x
@@ -169,25 +167,14 @@
     \func freeMap {A B : \Set} (f : A -> B) (x : FreeGroup A) : FreeGroup B => FreeMap.map {\new FreeMap f} x
   }
 
-  \func freeHomo {A B : \Set} (f : A -> B) => FreeMap.homo {\new FreeMap f}
-
-  \func foldMap {A : \Set} {B : Group} (f : A -> B) : GroupHomo {freeGroup A} {B} => FoldMap.isHomo {\new FoldMap f}
-
-  \func unfoldMap {A : \Set} {B : Group} (h : GroupHomo {freeGroup A} {B}) (a : A) : B => h.f (cons true a zero)
-
-  \lemma unfoldMap-cond {A : \Set} {B : Group}
-                        (a : A) (b : Bool)
-                        (h : GroupHomo {freeGroup A} {B})
-    : uinv b (unfoldMap h a)   = h.f (cons b a zero) \elim  b
-    | true => idp
-    | false => inv (h.inv-coh _)
-
   \func FreeFromSet : Functor SetCat GRP \cowith
     | ob A => freeGroup A
     | map => freeHomo
     | functor_id a => GroupHomo.equals _ _ (path (\lam i x => freeMap-id x @ i))
     | func_comp g  f => GroupHomo.equals _ _  (path (\lam i x => freeMap-comp f g x @ i)) \where {
     \open FreeMap (freeMap)
+
+    \func freeHomo {A B : \Set} (f : A -> B) => FreeMap.homo {\new FreeMap f}
 
     \lemma freeMap-id {A : \Set} (x : FreeGroup A): freeMap (id {A}) x = x
       | zero => idp
@@ -209,6 +196,17 @@
     | a-naturality {A} {B} {GA} g h => idp
     | b-naturality {GA} {GB} {A} f g => idp
     \where {
+      \func foldMap {A : \Set} {B : Group} (f : A -> B) : GroupHomo {freeGroup A} {B} => FoldMap.isHomo {\new FoldMap f}
+
+      \func unfoldMap {A : \Set} {B : Group} (h : GroupHomo {freeGroup A} {B}) (a : A) : B => h.f (cons true a zero)
+
+      \lemma unfoldMap-cond {A : \Set} {B : Group}
+                            (a : A) (b : Bool)
+                            (h : GroupHomo {freeGroup A} {B})
+        : uinv b (unfoldMap h a)   = h.f (cons b a zero) \elim  b
+        | true => idp
+        | false => inv (h.inv-coh _)
+
       \lemma fold-unfold {A : \Set} {B : Group} (f : A -> B) (a : A) : unfoldMap (foldMap f) a = f a => ide-right (f a)
 
       \lemma unfold-fold {A : \Set} {B : Group}
