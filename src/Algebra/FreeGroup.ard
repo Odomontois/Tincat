@@ -30,17 +30,17 @@
       \lemma cons-cancel {A : \Set} (b : Bool) (a : A) (t : FreeGroup A) : cons (not (not b)) a (cons (not b) a t) = t =>
         pmap (\lam x => cons x a _) (not-inv b) *> path (cancel b a t)
 
-      \lemma minus-assoc {A : \Set} (x y z : FreeGroup A) : x plus y minus z = x minus z plus y \elim z
+      \lemma minus-swap {A : \Set} (x y z : FreeGroup A) : x plus y minus z = x minus z plus y \elim z
         | zero => idp
-        | cons b a z => minus-assoc _ _ _
+        | cons b a z => minus-swap _ _ _
 
       \lemma double-neg {A : \Set} (x y z : FreeGroup A) : x minus (y minus z) = z plus x minus y \elim z
         | zero => idp
         | cons b a z => double-neg x _ z *>  pmap (\lam b' => cons b' a _ minus y) (not-inv b)
 
-      \lemma anti-assoc {A : \Set} (x y z : FreeGroup A) : x minus (y plus z)  = x minus y minus z \elim y
+      \lemma minus-assoc {A : \Set} (x y z : FreeGroup A) : x minus (y plus z)  = x minus y minus z \elim y
         | zero => idp
-        | cons b a y => anti-assoc _ _ _
+        | cons b a y => minus-assoc _ _ _
 
       \lemma minus-cancel {A : \Set} (x : FreeGroup A) : x minus x = zero
         | zero => idp
@@ -62,7 +62,7 @@
   \open minus
 
   \lemma plus-negl {A : \Set} (x : FreeGroup A) : (negate x) plus x = zero =>
-    inv (minus-assoc _ _ _) *> minus-cancel x
+    inv (minus-swap _ _ _) *> minus-cancel x
 
   \lemma plus-negr {A : \Set} (x : FreeGroup A) : x plus (negate x)  = zero =>
     pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl (negate x)
