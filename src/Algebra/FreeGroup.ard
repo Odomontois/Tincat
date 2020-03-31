@@ -78,28 +78,37 @@
     pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl (negate x)
 
   \record FoldMap {A : \Set} {B : Group} (f : A -> B){
+    \func uinv (b : Bool) (x : B) : B \elim b
+      | true => x
+      | false => inverse x
+
+    \lemma uinv-elim (b : Bool) (x : B) : uinv b x * uinv (not b) x = ide \elim b
+      | true => inverse-right x
+      | false => inverse-left x
+
     \func run (x : FreeGroup A) : B
       | zero => ide
-      | cons true a x => f a * run x
-      | cons false a x => inverse (f a) * run x
-      | cancel true a x i =>
-        \let e : f a * (inverse (f a) * run x) = run x =>
-               inv (B.*-assoc _ _ _) *> pmap (\lam a' => a' * _) (B.inverse-right _) *> B.ide-left _
+      | cons b a x => (uinv b (f a)) * run x
+      | cancel b a x i =>
+        \let e : (uinv b (f a)) * ((uinv (not b) (f a)) * run x) = run x =>
+               inv (B.*-assoc _ _ _) *> pmap (\lam a' => a' * _) (uinv-elim b _) *> B.ide-left _
         \in e @ i
-      | cancel false a x i =>
-        \let e : inverse (f a) * (f a * run x) = run x =>
-               inv (B.*-assoc _ _ _) *> pmap (\lam a' => a' * _) (B.inverse-left _) *> B.ide-left _
-        \in e @ i
+
+    \lemma run-plus (x y : FreeGroup A) : run (x plus y) = run x * run y \elim x
+      | zero => inv (ide-left _)
+      | cons b a x => pmap (* (uinv b (f a))) (run-plus x y) *> inv (*-assoc _ _ _)
 
     \lemma run-minus (x y : FreeGroup A) : run (x minus y) = run x * inverse (run y) \elim y
       | zero => inv (ide-right _) *> pmap (* (run x)) (inv inv-ide)
-      | cons true a y => {?}
-      | cons false a y => {?}
+      | cons b a y =>
+        pmap run (minus-swap (cons (not b) a zero) x y) *>
+        run-plus _ _ *>
+        {?}
 
     --    \lemma run-negate (x : FreeGroup A) : run (negate x) = inverse (run x)
---      | zero => inv inv-ide
---      | cons true a x =>  {?} *> pmap (\lam x' => x' * _) (run-negate x) *> inv (inv-* _ _)
---      | cons false a x => {?}
+    --      | zero => inv inv-ide
+    --      | cons true a x =>  {?} *> pmap (\lam x' => x' * _) (run-negate x) *> inv (inv-* _ _)
+    --      | cons false a x => {?}
 
     \lemma isHomo : GroupHomo {freeGroup} run \cowith
       | zero-coh => idp
