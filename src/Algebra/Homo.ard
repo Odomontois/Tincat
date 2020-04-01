@@ -76,7 +76,7 @@
       | f_sec => equ-f' gi.inv_f
 
     \func gr-eq {A B : Group} (f : A -> B) (g : GroupHomo f) (gi : Iso {GRP} g) : A = {Group} B =>
-          gr-eq''  {A} {B} (QEquiv-to-= (groupEq f g gi)) g gi
+          gr-eq''  {A} {B} (QEquiv-to-= (groupEq' f g gi)) g gi
 
     \func gr-eq'' {A B : Group} (p : A = {\Set} B) (g : GroupHomo (transport (\lam t => t) p)) (gi : Iso {GRP} g) : A = {Group} B =>
       Jl (\lam A' p => \Pi (AG : Group A') (h : GroupHomo {A} {AG} (transport (\lam t => t) p )) (hi : Iso {GRP} h) -> A = {Group} AG )
