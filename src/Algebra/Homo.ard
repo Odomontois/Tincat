@@ -2,6 +2,8 @@
 \import Algebra.Monoid
 \import Algebra.Pointed
 \import Category
+\import Equiv (QEquiv)
+\import Equiv.Univalence (QEquiv-to-=)
 \import Functor
 \import Paths
 \import Function (id \as fid, -o)
@@ -28,6 +30,12 @@
     | idp => idp
 
   \lemma equals {A B : Group} (f g : GroupHomo {A} {B}) (p : f.f = g.f) : f = g => equals' f p g
+
+  \lemma equ-f {A B : Group} {f g : GroupHomo {A} {B}} (p : f = g) : f.f = g.f =>
+    pmap {GroupHomo} (\lam h => GroupHomo.f {h}) p
+
+  \lemma equ-f' {A B : Group} {f g : GroupHomo {A} {B}} (p : f = g) (x : A) : f.f x = g.f x =>
+    pmap {GroupHomo} (\lam h => GroupHomo.f {h} x) p
 
   \lemma ident {A : Group} : GroupHomo (fid {A}) \cowith
     | zero-coh => idp
@@ -59,6 +67,32 @@
       | functor_id A => idp
       | func_comp f g => idp
 
-    \func groupEq {A B : Group} {g : GroupHomo {A} {B}} (gi : Iso g) : A = B => {?}
+    \func groupEq {A B : Group}  (f : A -> B)  (g : GroupHomo f) (gi : Iso {GRP} g) =>
+      SetCat.univalence f (GroupHomo.f {gi.inv}) (equ-f gi.f_inv) (equ-f gi.inv_f)
+
+    \func groupEq' {A B : Group}  (f : A -> B)  (g : GroupHomo f) (gi : Iso {GRP} g) : QEquiv f \cowith
+      | ret => GroupHomo.f {gi.inv}
+      | ret_f => equ-f' gi.f_inv
+      | f_sec => equ-f' gi.inv_f
+
+    \func gr-eq {A B : Group} (f : A -> B) (g : GroupHomo f) (gi : Iso {GRP} g) : A = {Group} B =>
+          gr-eq''  {A} {B} (QEquiv-to-= (groupEq f g gi)) g gi
+
+    \func gr-eq'' {A B : Group} (p : A = {\Set} B) (g : GroupHomo (transport (\lam t => t) p)) (gi : Iso {GRP} g) : A = {Group} B =>
+      Jl (\lam A' p => \Pi (AG : Group A') (h : GroupHomo {A} {AG} (transport (\lam t => t) p )) (hi : Iso {GRP} h) -> A = {Group} AG )
+         (\lam AG h hi => gr-eq' A AG hi)
+         p B g gi
+
+    \func gr-eq' {A : \Set} (G1 G2 : Group A) {g : GroupHomo {G1} {G2} fid} (gi : Iso {GRP} g) : G1 = {Group} G2 =>
+      path (\lam i => \new Group A {
+        | ide => g.zero-coh @ i
+        | * x y => g.plus-coh x y @ i
+        | ide-left x => coe (\lam i => (g.plus-coh (g.zero-coh @ i) x @ i) = x) (G1.ide-left x) i
+        | ide-right x => coe (\lam i => g.plus-coh x (g.zero-coh @ i) @ i = x) (G1.ide-right x) i
+        | *-assoc x y z => coe (\lam i => g.plus-coh (g.plus-coh x y @ i) z @ i = g.plus-coh x (g.plus-coh y z @ i) @ i) (G1.*-assoc x y z) i
+        | inverse x => g.inv-coh x @ i
+        | inverse-left x => coe (\lam i => g.plus-coh (g.inv-coh x @ i) x @ i = g.zero-coh @ i) (G1.inverse-left x) i
+        | inverse-right x => coe(\lam i => g.plus-coh x (g.inv-coh x @ i) @ i = g.zero-coh @ i) (G1.inverse-right x) i
+      })
   }
 

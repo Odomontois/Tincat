@@ -37,187 +37,76 @@
   | cancel (b : Bool) (a : A) (t : FreeGroup A) (i : I) \elim i {
     | left => cons b a (cons (not b) a t)
     | right => t
-  } \where {
-  \data FreeGroupEq {A : \Set} (a a' : FreeGroup A) : \Prop \elim a, a'
-    | zero, zero => zero-eq
-    | cons b a t, cons b' a' t' => cons-eq (b = b') (a = a') (FreeGroupEq t t') \where {
-    \lemma refl {A : \Set} (a : FreeGroup A) : FreeGroupEq a a
-      | zero => zero-eq
-      | cons b a t => cons-eq idp idp (refl t)
-
-    \func toEq {A : \Set} {a a' : FreeGroup A} (p : FreeGroupEq a a') : a = a' \elim a, a', p
-      | zero, zero, zero-eq => idp
-      | cons b a t, cons b' a' t', cons-eq pb pa pt => path(\lam i => cons (pb @ i) (pa @ i) (toEq pt @ i))
   }
 
-  \use \level freeGroupIsSet (A : \Set) : isSet (FreeGroup A) =>
-    \lam _ _ => setPath= FreeGroupEq FreeGroupEq.refl FreeGroupEq.toEq
+\data FreeGroupEq {A : \Set} (a a' : FreeGroup A) : \Prop \elim a, a'
+  | zero, zero => zero-eq
+  | cons b a t, cons b' a' t' => cons-eq (b = b') (a = a') (FreeGroupEq t t') \where {
+  \lemma refl {A : \Set} (a : FreeGroup A) : FreeGroupEq a a
+    | zero => zero-eq
+    | cons b a t => cons-eq idp idp (refl t)
 
-  \lemma cancel' {A : \Set} (b : Bool) (a : A) (t : FreeGroup A) : cons (not b) a (cons b a t) = t =>
-    pmap (\lam b' => cons (not b) a (cons b' a t)) (inv (not-inv b)) *> path (cancel (not b) a t)
-
-  \func \infixl 5 plus {A : \Set} (x : FreeGroup A) (y : FreeGroup A) : FreeGroup A \elim x
-    | zero => y
-    | cons b a x => cons b a (x plus y)
-    | cancel b a x i => cancel b a (x plus y) i
-
-  \func \infixl 5 minus {A : \Set} (x y : FreeGroup A) : FreeGroup A \elim y
-    | zero => x
-    | cons b a y => cons (not b) a x minus y
-    | cancel b a y i => cancel' (not b) a x @ i minus y
-    \where {
-      \lemma minus-swap {A : \Set} (x y z : FreeGroup A) : x plus y minus z = x minus z plus y \elim z
-        | zero => idp
-        | cons b a z => minus-swap _ _ _
-
-      \lemma double-neg {A : \Set} (x y z : FreeGroup A) : x minus (y minus z) = z plus x minus y \elim z
-        | zero => idp
-        | cons b a z => double-neg x _ z *>  pmap (\lam b' => cons b' a _ minus y) (not-inv b)
-
-      \lemma minus-plus {A : \Set} (x y z : FreeGroup A) : x minus (y plus z)  = x minus y minus z \elim y
-        | zero => idp
-        | cons b a y => minus-plus _ _ _
-
-      \lemma minus-cancel {A : \Set} (x : FreeGroup A) : x minus x = zero
-        | zero => idp
-        | cons b a x => pmap (\lam x' => x' minus x) (cancel' b a x) *> minus-cancel x
-    }
-
-  \func negate {A : \Set} (x : FreeGroup A) : FreeGroup A => zero minus x
-
-  \lemma negate-inv {A : \Set} (x : FreeGroup A) : negate (negate x) = x => double-neg _ _ _ *> plus-zero x
-
-  \lemma plus-zero {A : \Set} (x : FreeGroup A) : x plus zero = x
-    | zero => idp
-    | cons b a x => pmap (cons b a) (plus-zero x)
-
-  \lemma plus-assoc{A : \Set} (x y z : FreeGroup A) : x plus y plus z = x plus (y plus z) \elim x
-    | zero => idp
-    | cons b a x => pmap (cons b a) (plus-assoc x y z)
-
-  \open minus
-
-  \lemma plus-negl {A : \Set} (x : FreeGroup A) : (negate x) plus x = zero =>
-    inv (minus-swap _ _ _) *> minus-cancel x
-
-  \lemma plus-negr {A : \Set} (x : FreeGroup A) : x plus (negate x)  = zero =>
-    pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl (negate x)
-
-  \func uinv {B : Group} (b : Bool) (x : B) : B \elim b
-    | true => x
-    | false => inverse x
-
-  \record FoldMap {A : \Set} {B : Group} (f : A -> B){
-    \lemma uinv-not (b : Bool) (x : B) : uinv (not b) x = inverse (uinv b x) \elim b
-      | true => idp
-      | false => inv (inv-inv _)
-
-    \lemma uinv-elim (b : Bool) (x : B) : uinv b x * uinv (not b) x = ide \elim b
-      | true => inverse-right x
-      | false => inverse-left x
-
-    \func run (x : FreeGroup A) : B
-      | zero => ide
-      | cons b a x => (uinv b (f a)) * run x
-      | cancel b a x i =>
-        \let e : (uinv b (f a)) * ((uinv (not b) (f a)) * run x) = run x =>
-               inv (B.*-assoc _ _ _) *> pmap (\lam a' => a' * _) (uinv-elim b _) *> B.ide-left _
-        \in e @ i
-
-    \lemma run-plus (x y : FreeGroup A) : run (x plus y) = run x * run y \elim x
-      | zero => inv (ide-left _)
-      | cons b a x => pmap (* (uinv b (f a))) (run-plus x y) *> inv (*-assoc _ _ _)
-
-    \lemma run-minus (x y : FreeGroup A) : run (x minus y) = inverse (run y) * run x  \elim y
-      | zero => inv (ide-left _) *> pmap (\lam z => z * (run x)) (inv inv-ide)
-      | cons b a y =>
-        run-minus (cons (not b) a x) y *>
-        inv (*-assoc _ _ _) *>
-        pmap (\lam z => z * run x) ( pmap (* (inverse (run y))) (uinv-not b (f a)) *> inv (inv-* _ _))
-
-    \lemma isHomo : GroupHomo {freeGroup A} run \cowith
-      | zero-coh => idp
-      | plus-coh => run-plus
-      | inv-coh x => run-minus zero x *> ide-right _
-  }
-
-  \record FreeMap {A B : \Set} (f : A -> B){
-    \func GA => freeGroup A
-
-    \func GB => freeGroup B
-
-    \func map (x : FreeGroup A): FreeGroup B \elim x
-      | zero => zero
-      | cons b a x => cons b (f a ) (map x)
-      | cancel b a x i => cancel b (f a) (map x) i
-
-    \lemma plus-coh (x y : FreeGroup A) : map (x plus y) = map x plus map y \elim x
-      | zero => idp
-      | cons b a x => pmap (cons b (f a)) (plus-coh x y)
-
-    \lemma minus-coh (x y : FreeGroup A) : map (x minus y) = map x minus map y \elim y
-      | zero => idp
-      | cons b a y => minus-coh (cons (not b ) a x) y
-
-    \lemma homo : GroupHomo {GA} {GB} map \cowith
-      | zero-coh => idp
-      | plus-coh => plus-coh
-      | inv-coh => minus-coh zero
-  } \where {
-    \func freeMap {A B : \Set} (f : A -> B) (x : FreeGroup A) : FreeGroup B => FreeMap.map {\new FreeMap f} x
-  }
-
-  \func FreeFromSet : Functor SetCat GRP \cowith
-    | ob A => freeGroup A
-    | map => freeHomo
-    | functor_id a => GroupHomo.equals _ _ (path (\lam i x => freeMap-id x @ i))
-    | func_comp g  f => GroupHomo.equals _ _  (path (\lam i x => freeMap-comp f g x @ i)) \where {
-    \open FreeMap (freeMap)
-
-    \func freeHomo {A B : \Set} (f : A -> B) => FreeMap.homo {\new FreeMap f}
-
-    \lemma freeMap-id {A : \Set} (x : FreeGroup A): freeMap (id {A}) x = x
-      | zero => idp
-      | cons b a x => pmap (cons b a) (freeMap-id x)
-
-    \lemma freeMap-comp {A B C : \Set} (f : A -> B) (g : B -> C) (x : FreeGroup A):
-      freeMap g( freeMap f  x) = freeMap (g o f) x  \elim x
-      | zero => idp
-      | cons b a x => pmap (cons b (g (f a))) (freeMap-comp f g x)
-  }
-
-  \func FreeAdjunction : Adjunction FreeFromSet GRP.ForgetSet  \cowith
-    | adjunction A B => QEquiv-to-= \new QEquiv {
-      | f => unfoldMap
-      | ret => foldMap
-      | ret_f h => GroupHomo.equals (foldMap (unfoldMap h)) h (path (\lam i x => unfold-fold h x @ i))
-      | f_sec f => path (\lam i x => fold-unfold f x @ i)
-    }
-    | a-naturality {A} {B} {GA} g h => idp
-    | b-naturality {GA} {GB} {A} f g => idp
-    \where {
-      \func foldMap {A : \Set} {B : Group} (f : A -> B) : GroupHomo {freeGroup A} {B} => FoldMap.isHomo {\new FoldMap f}
-
-      \func unfoldMap {A : \Set} {B : Group} (h : GroupHomo {freeGroup A} {B}) (a : A) : B => h.f (cons true a zero)
-
-      \lemma unfoldMap-cond {A : \Set} {B : Group}
-                            (a : A) (b : Bool)
-                            (h : GroupHomo {freeGroup A} {B})
-        : uinv b (unfoldMap h a)   = h.f (cons b a zero) \elim  b
-        | true => idp
-        | false => inv (h.inv-coh _)
-
-      \lemma fold-unfold {A : \Set} {B : Group} (f : A -> B) (a : A) : unfoldMap (foldMap f) a = f a => ide-right (f a)
-
-      \lemma unfold-fold {A : \Set} {B : Group}
-                         (h : GroupHomo {freeGroup A} {B})
-                         (x : FreeGroup A) : GroupHomo.f {foldMap (unfoldMap h)} x = h.f x \elim x
-        | zero => inv (h.zero-coh)
-        | cons b a x => pmap2 (*) (unfoldMap-cond a b h) (unfold-fold  h x) *> inv (h.plus-coh (cons b a zero) x)
-    }
+  \func toEq {A : \Set} {a a' : FreeGroup A} (p : FreeGroupEq a a') : a = a' \elim a, a', p
+    | zero, zero, zero-eq => idp
+    | cons b a t, cons b' a' t', cons-eq pb pa pt => path(\lam i => cons (pb @ i) (pa @ i) (toEq pt @ i))
 }
 
-\open FreeGroup
+\use \level freeGroupIsSet (A : \Set) : isSet (FreeGroup A) =>
+  \lam _ _ => setPath= FreeGroupEq FreeGroupEq.refl FreeGroupEq.toEq
+
+\lemma cancel' {A : \Set} (b : Bool) (a : A) (t : FreeGroup A) : cons (not b) a (cons b a t) = t =>
+  pmap (\lam b' => cons (not b) a (cons b' a t)) (inv (not-inv b)) *> path (cancel (not b) a t)
+
+\func \infixl 5 plus {A : \Set} (x : FreeGroup A) (y : FreeGroup A) : FreeGroup A \elim x
+  | zero => y
+  | cons b a x => cons b a (x plus y)
+  | cancel b a x i => cancel b a (x plus y) i
+
+\func \infixl 5 minus {A : \Set} (x y : FreeGroup A) : FreeGroup A \elim y
+  | zero => x
+  | cons b a y => cons (not b) a x minus y
+  | cancel b a y i => cancel' (not b) a x @ i minus y
+  \where {
+    \lemma minus-swap {A : \Set} (x y z : FreeGroup A) : x plus y minus z = x minus z plus y \elim z
+      | zero => idp
+      | cons b a z => minus-swap _ _ _
+
+    \lemma double-neg {A : \Set} (x y z : FreeGroup A) : x minus (y minus z) = z plus x minus y \elim z
+      | zero => idp
+      | cons b a z => double-neg x _ z *>  pmap (\lam b' => cons b' a _ minus y) (not-inv b)
+
+    \lemma minus-plus {A : \Set} (x y z : FreeGroup A) : x minus (y plus z)  = x minus y minus z \elim y
+      | zero => idp
+      | cons b a y => minus-plus _ _ _
+
+    \lemma minus-cancel {A : \Set} (x : FreeGroup A) : x minus x = zero
+      | zero => idp
+      | cons b a x => pmap (\lam x' => x' minus x) (cancel' b a x) *> minus-cancel x
+  }
+
+\func negate {A : \Set} (x : FreeGroup A) : FreeGroup A => zero minus x
+
+\lemma negate-inv {A : \Set} (x : FreeGroup A) : negate (negate x) = x => double-neg _ _ _ *> plus-zero x
+
+\lemma plus-zero {A : \Set} (x : FreeGroup A) : x plus zero = x
+  | zero => idp
+  | cons b a x => pmap (cons b a) (plus-zero x)
+
+\lemma plus-assoc{A : \Set} (x y z : FreeGroup A) : x plus y plus z = x plus (y plus z) \elim x
+  | zero => idp
+  | cons b a x => pmap (cons b a) (plus-assoc x y z)
+
+\open minus
+
+\lemma plus-negl {A : \Set} (x : FreeGroup A) : (negate x) plus x = zero =>
+  inv (minus-swap _ _ _) *> minus-cancel x
+
+\lemma plus-negr {A : \Set} (x : FreeGroup A) : x plus (negate x)  = zero =>
+  pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl (negate x)
+
+\func uinv {B : Group} (b : Bool) (x : B) : B \elim b
+  | true => x
+  | false => inverse x
 
 \instance freeGroup (A : \Set) : Group (FreeGroup A)
   | ide => zero
@@ -228,4 +117,119 @@
   | inverse => negate
   | inverse-left  => plus-negl
   | inverse-right => plus-negr
+
+\record FoldMap {A : \Set} {B : Group} (f : A -> B){
+  \lemma uinv-not (b : Bool) (x : B) : uinv (not b) x = inverse (uinv b x) \elim b
+    | true => idp
+    | false => inv (inv-inv _)
+
+  \lemma uinv-elim (b : Bool) (x : B) : uinv b x * uinv (not b) x = ide \elim b
+    | true => inverse-right x
+    | false => inverse-left x
+
+  \func run (x : FreeGroup A) : B
+    | zero => ide
+    | cons b a x => (uinv b (f a)) * run x
+    | cancel b a x i =>
+      \let e : (uinv b (f a)) * ((uinv (not b) (f a)) * run x) = run x =>
+             inv (B.*-assoc _ _ _) *> pmap (\lam a' => a' * _) (uinv-elim b _) *> B.ide-left _
+      \in e @ i
+
+  \lemma run-plus (x y : FreeGroup A) : run (x plus y) = run x * run y \elim x
+    | zero => inv (ide-left _)
+    | cons b a x => pmap (* (uinv b (f a))) (run-plus x y) *> inv (*-assoc _ _ _)
+
+  \lemma run-minus (x y : FreeGroup A) : run (x minus y) = inverse (run y) * run x  \elim y
+    | zero => inv (ide-left _) *> pmap (\lam z => z * (run x)) (inv inv-ide)
+    | cons b a y =>
+      run-minus (cons (not b) a x) y *>
+      inv (*-assoc _ _ _) *>
+      pmap (\lam z => z * run x) ( pmap (* (inverse (run y))) (uinv-not b (f a)) *> inv (inv-* _ _))
+
+  \lemma isHomo : GroupHomo run \cowith
+    | zero-coh => idp
+    | plus-coh => run-plus
+    | inv-coh x => run-minus zero x *> ide-right _
+}
+
+\record FreeMap {A B : \Set} (f : A -> B){
+  \func GA => freeGroup A
+
+  \func GB => freeGroup B
+
+  \func map (x : FreeGroup A): FreeGroup B \elim x
+    | zero => zero
+    | cons b a x => cons b (f a ) (map x)
+    | cancel b a x i => cancel b (f a) (map x) i
+
+  \lemma plus-coh (x y : FreeGroup A) : map (x plus y) = map x plus map y \elim x
+    | zero => idp
+    | cons b a x => pmap (cons b (f a)) (plus-coh x y)
+
+  \lemma minus-coh (x y : FreeGroup A) : map (x minus y) = map x minus map y \elim y
+    | zero => idp
+    | cons b a y => minus-coh (cons (not b ) a x) y
+
+  \lemma homo : GroupHomo {GA} {GB} map \cowith
+    | zero-coh => idp
+    | plus-coh => plus-coh
+    | inv-coh => minus-coh zero
+} \where {
+  \func freeMap {A B : \Set} (f : A -> B) (x : FreeGroup A) : FreeGroup B => FreeMap.map {\new FreeMap f} x
+}
+
+\func FreeFromSet : Functor SetCat GRP \cowith
+  | ob A => freeGroup A
+  | map => freeHomo
+  | functor_id a => GroupHomo.equals _ _ (path (\lam i x => freeMap-id x @ i))
+  | func_comp g  f => GroupHomo.equals _ _  (path (\lam i x => freeMap-comp f g x @ i)) \where {
+  \open FreeMap (freeMap)
+
+  \func freeHomo {A B : \Set} (f : A -> B) => FreeMap.homo {\new FreeMap f}
+
+  \lemma freeMap-id {A : \Set} (x : FreeGroup A): freeMap (id {A}) x = x
+    | zero => idp
+    | cons b a x => pmap (cons b a) (freeMap-id x)
+
+  \lemma freeMap-comp {A B C : \Set} (f : A -> B) (g : B -> C) (x : FreeGroup A):
+    freeMap g( freeMap f  x) = freeMap (g o f) x  \elim x
+    | zero => idp
+    | cons b a x => pmap (cons b (g (f a))) (freeMap-comp f g x)
+}
+
+\func FreeAdjunction : Adjunction FreeFromSet GRP.ForgetSet  \cowith
+  | adjunction A B => QEquiv-to-= \new QEquiv {
+    | f => unfoldMap
+    | ret => foldMap
+    | ret_f h => GroupHomo.equals (foldMap (unfoldMap h)) h (path (\lam i x => unfold-fold h x @ i))
+    | f_sec f => path (\lam i x => fold-unfold f x @ i)
+  }
+  | a-naturality {A} {B} {GA} g h => idp
+  | b-naturality {GA} {GB} {A} f g => idp
+  \where {
+    \func FreeHom (A : \Set) (B : Group) => GroupHomo {freeGroup A} {B}
+
+    \func foldMap {A : \Set} {B : Group} (f : A -> B) : FreeHom A B => FoldMap.isHomo {\new FoldMap f}
+
+    \func unfoldMap {A : \Set} {B : Group} (h : FreeHom A B) (a : A) : B => h.f (cons true a zero)
+
+    \lemma unfoldMap-cond {A : \Set} {B : Group}
+                          (a : A) (b : Bool)
+                          (h : FreeHom A B)
+      : uinv b (unfoldMap h a)   = h.f (cons b a zero) \elim  b
+      | true => idp
+      | false => inv (h.inv-coh _)
+
+    \lemma fold-unfold {A : \Set} {B : Group} (f : A -> B) (a : A) : unfoldMap (foldMap f) a = f a => ide-right (f a)
+
+    \lemma unfold-fold {A : \Set} {B : Group}
+                       (h : FreeHom A B)
+                       (x : FreeGroup A) : GroupHomo.f {foldMap (unfoldMap h)} x = h.f x \elim x
+      | zero => inv (h.zero-coh)
+      | cons b a x => pmap2 (*) (unfoldMap-cond a b h) (unfold-fold  h x) *> inv (h.plus-coh (cons b a zero) x)
+  }
+
+\open FreeGroup
+
+
 
