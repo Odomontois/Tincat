@@ -7,7 +7,7 @@
 \import Function (id \as fid, -o)
 \import Set.Category
 
---\record Homo (C : \Type \lp 2) (toSet : C -> \Set) {A B : C} (f : toSet A -> toSet B) (props : \Prop)
+\record Homo (C : \Type \lp 2) (toSet : C -> \Set) {A B : C} (f : toSet A -> toSet B) (props : \Prop)
 
 \record PointHomo {A B : Pointed} (f : A -> B) {
   \property zero-coh : f A.ide = B.ide
@@ -48,14 +48,17 @@
   | o f g => comp g f
   | id-left x => equals _ _ idp
   | id-right x => equals _ _ idp
-  | o-assoc f g h => equals _ _ idp \where {
-  \func ForgetSet : Functor GRP SetCat \cowith
-    | ob x => x
-    | map (h : GroupHomo) => h.f
-    | functor_id A => idp
-    | func_comp f g => idp
-}
-
+  | o-assoc f g h => equals _ _ idp
 --  | univalence {x} {y} (f : GroupHomo) (g : GroupHomo) p q =>
 --    \let kek => SetCat.univalence f.f g.f (path (\lam i => GroupHomo.f {p @ i})) (path (\lam i => GroupHomo.f {q @ i}))
 --    \in ({?}, equals _ _ {?})
+  \where {
+    \func ForgetSet : Functor GRP SetCat \cowith
+      | ob x => x
+      | map (h : GroupHomo) => h.f
+      | functor_id A => idp
+      | func_comp f g => idp
+
+    \func groupEq {A B : Group} {g : GroupHomo {A} {B}} (gi : Iso g) : A = B => {?}
+  }
+
