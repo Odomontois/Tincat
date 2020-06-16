@@ -3,6 +3,9 @@
 \import NatTrans
 \open Functor (Id, <o>)
 \import Cat.Category
+\import Paths
+\open Precat
+\import Cartesian
 
 \record Monad {C : Precat}{
   | F : Functor C C
@@ -11,4 +14,67 @@
   \property left-pure (x : C) : flatten.trans x `o` pure.trans (F.ob x) = id _
   \property right-pure (x : C) : flatten.trans x `o` F.map (pure.trans x) = id _
   \property monad-assoc (x : C) : flatten.trans x `o` flatten.trans (F.ob x) = flatten.trans x `o` F.map (flatten.trans x)
+}
+
+\record HomMonad {C : Precat}{
+  | F' : C -> C
+  | pure' (a : C) : Hom a (F' a)
+  | flatMap {a b : C} (f : Hom a (F' b)) : Hom (F' a) (F' b)
+  \property left-pure' {a b : C} (f : Hom a (F' b)) : pure' _ >> flatMap f  = f
+  \property right-pure' (a : C): flatMap (pure' a) = id _
+  \property monad-assoc' {a b c : C} (f : Hom a (F' b)) (g : Hom b (F' c)) : flatMap f >> flatMap g = flatMap (f >> flatMap g)
+
+  \func F'-functor : Functor C C \cowith
+    | ob => F'
+    | map f => flatMap (f >> pure' _)
+    | functor_id a => pmap flatMap (id-left _) *> right-pure' _
+    | func_comp f g => monad-assoc' _ _ *> pmap flatMap (
+      o-assoc _ _ _ *> pmap (>> _) (left-pure' _) *> inv (o-assoc _ _ _)
+    )
+
+  \func pure-trans : NatTrans (Id C) (F'-functor) \cowith
+    | trans => pure'
+    | naturality f => inv (left-pure' _)
+
+  \func flatten-trans : NatTrans (F'-functor <o> F'-functor) F'-functor \cowith
+    | trans a => flatMap (id _)
+    | naturality f => monad-assoc' _ _ *> pmap flatMap (
+      o-assoc _ _ _ *> pmap (>> _) (left-pure' _) *> id-right _ *> inv (id-left _)
+    ) *> inv (monad-assoc' _ _)
+
+  \func asMonad : Monad (F'-functor) \cowith
+    | pure => pure-trans
+    | flatten => flatten-trans
+    | left-pure a => left-pure' (id _)
+    | right-pure a => monad-assoc' _ _ *> pmap flatMap (
+      o-assoc _ _ _ *> pmap (>> _) (left-pure' _) *> id-right _
+    ) *> right-pure' _
+    | monad-assoc a => monad-assoc' _ _ *> pmap flatMap (
+      id-left _ *> inv (o-assoc _ _ _ *> pmap (>> _) (left-pure' _) *> id-right _)
+    ) *> inv(monad-assoc' _ _)
+}
+
+\record TwinMonad (D : Precat) \extends HomMonad{
+  | C => precatProduct D D
+  | B (e a : D) : D
+  | success (e a : D) : Hom a (B e a)
+  | raise (e a : D) : Hom e (B e a)
+  | foldWith {e1 a1 e2 a2 : D} : Hom e1 (B e2 a2) -> Hom a1 (B e2 a2) -> Hom (B e1 a1) (B e2 a2)
+  | F' p => (B p.1 p.2, B p.1 p.2)
+  | pure' p => (raise p.1 p.2, success p.1 p.2)
+  | flatMap pf => (foldWith pf.1 pf.2, foldWith pf.1 pf.2)
+  \property raise-fold {e1 a1 e2 a2 : D} (f : Hom e1 (B e2 a2)) (g : Hom a1 (B e2 a2)) : raise e1 a1 >> foldWith f g = f
+  \property success-fold {e1 a1 e2 a2 : D} (f : Hom e1 (B e2 a2)) (g : Hom a1 (B e2 a2)) : success e1 a1 >> foldWith f g = g
+  \property fold-pure (e a : D) : foldWith (raise e a) (success e a) = id (B e a)
+  \property fold-assoc {e1 a1 e2 a2 e3 a3 : D}
+    (fe : Hom e1 (B e2 a2))
+    (fa : Hom a1 (B e2 a2))
+    (ge : Hom e2 (B e3 a3))
+    (ga : Hom a2 (B e3 a3)) : foldWith fe fa >> foldWith ge ga = foldWith (fe >> foldWith ge ga) (fa >> foldWith ge ga)
+  | left-pure' f => pmap2 (\lam x y => (x, y)) (raise-fold f.1 f.2) (success-fold f.1 f.2)
+  | right-pure' p => \let common => fold-pure p.1 p.2  \in pmap2 (\lam x y => (x, y)) common common
+  | monad-assoc' f g =>
+    \let common => fold-assoc f.1 f.2 g.1 g.2
+    \in pmap2 (\lam x y => (x, y)) common common
+
 }
