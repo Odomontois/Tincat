@@ -79,6 +79,14 @@
 
   \func swap (e a : D) : Hom (B e a) (B a e) => foldWith success raise
 
+  \func swap-inv (e a : D): swap e a >> swap a e = id _ =>
+    fold-assoc _ _ _ _ *> pmap2 foldWith  (success-fold _ _) (raise-fold _ _) *> fold-pure _ _
+
   \lemma swap-raise (e a : D) : success >> swap e a  = raise => success-fold _ _
+
   \lemma swap-success (e a : D): raise >> swap e a = success => raise-fold _ _
+
+  \lemma swap-fold {e1 a1 e2 a2 : D}(f : Hom e1 (B e2 a2))(g : Hom a1 (B e2 a2)) :
+    swap e1 a1 >> foldWith g f = foldWith f g =>
+    fold-assoc _ _ _ _  *> pmap2 foldWith (success-fold g f) (raise-fold g f)
 }
