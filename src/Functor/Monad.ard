@@ -70,7 +70,8 @@
                        (fe : Hom e1 (B e2 a2))
                        (fa : Hom a1 (B e2 a2))
                        (ge : Hom e2 (B e3 a3))
-                       (ga : Hom a2 (B e3 a3)) : foldWith fe fa >> foldWith ge ga = foldWith (fe >> foldWith ge ga) (fa >> foldWith ge ga)
+                       (ga : Hom a2 (B e3 a3)) :
+  foldWith fe fa >> foldWith ge ga = foldWith (fe >> foldWith ge ga) (fa >> foldWith ge ga)
   | left-pure' f => pmap2 (\lam x y => (x, y)) (raise-fold f.1 f.2) (success-fold f.1 f.2)
   | right-pure' p => \let common => fold-pure p.1 p.2  \in pmap2 (\lam x y => (x, y)) common common
   | monad-assoc' f g =>
