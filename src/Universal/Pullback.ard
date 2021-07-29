@@ -60,8 +60,8 @@
   \lemma duniversal (c' : Cone diagramm') =>
     \let | p1' => c'.edge DA
          | p2' => c'.edge DB
-         | f= : f = diagramm.map (Free.embed A->C) => inv (id-left _)
-         | g= : diagramm.map (Free.embed B->C) = g => id-left _
+         | f= : f = diagramm.map (Free.embed A->C) => inv id-right
+         | g= : diagramm.map (Free.embed B->C) = g => id-right
          | xc' :  f `o` p1'  = g `o` p2' =>
            pmap (\lam u => o u p1') f= *>
            c'.cone (Free.embed A->C)  *>
@@ -73,7 +73,7 @@
            \case cd \as cd' \return dedge cd' `o` unic.elem = c'.edge cd' \with {
              | DA => pe1
              | DB => pe2
-             | DC => inv(o-assoc _ _ _ ) *> pmap (o f) (pe1 *> inv (id-right _))  *> o-assoc _ _ _ *> c'.cone (Free.embed A->C)
+             | DC => o-assoc *> pmap (o f) (pe1 *> inv id-left)  *> inv o-assoc *> c'.cone (Free.embed A->C)
            }
     \in \new Unique (c'.tip ->> p) (\lam f => \Pi (ix : Obj) ->  dedge ix `o` f = c'.edge ix) {
       | elem => unic.elem

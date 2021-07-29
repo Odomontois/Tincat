@@ -17,12 +17,12 @@
 } \where {
   \lemma limit-iso {C IX : Precat} {D : Functor IX C} (l1 l2 : Limit D) : Iso (elem {l2.universal l1}) \cowith
     | inv => elem {l1.universal l2}
-    | f_inv => one-side l1 l2
-    | inv_f => one-side l2 l1
+    | inv_f => one-side l1 l2
+    | f_inv => one-side l2 l1
     \where {
       \lemma one-side {C IX : Precat} {D : Functor IX C} (l1 l2 : Limit D) :
         elem {l1.universal l2} `o` elem {l2.universal l1} = id _ =>
-        map-id l1 _ (\lam ix => o-assoc _ _ _ *>
+        map-id l1 _ (\lam ix => inv o-assoc *>
         pmap (\lam x => x `o` _) (prop {l1.universal l2} ix) *>
         prop {l2.universal l1} ix)
     }
@@ -30,9 +30,9 @@
   \lemma map-id {C IX : Precat} {D : Functor IX C} (l : Limit D) (f : l.tip ->> l.tip)
                 (p : \Pi (ix : IX) -> l.edge ix `o` f = l.edge ix) : f = id (l.tip) =>
     \let uid : Unique => l.universal l
-    \in inv (uid.unique f p) *> uid.unique (id _) (\lam ix => id-left _)
+    \in inv (uid.unique f p) *> uid.unique (id _) (\lam ix => id-right)
 }
 
-\func Cocone {C IX : Precat} (D : Functor IX C) => Cone {op C} {op IX} (Functor.fop {D})
+\func Cocone {C IX : Precat} (D : Functor IX C) => Cone {opP C} {opP IX} (Functor.fop {D})
 
-\func Colimit {C IX : Precat} (D : Functor IX C) => Limit {op C} {op IX} (Functor.fop {D})
+\func Colimit {C IX : Precat} (D : Functor IX C) => Limit {opP C} {opP IX} (Functor.fop {D})

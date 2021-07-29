@@ -51,13 +51,13 @@
     | ob a => T.ob (a, u)
     | map f => T.map (f, id u)
     | functor_id a => T.functor_id (a, u)
-    | func_comp f g  => T.func_comp (f, id u) (g, id u) *> pmap (\lam x => T.map (f `o` g, x)) (C.id-right (id u))
+    | func_comp f g  => T.func_comp (f, id u) (g, id u) *> pmap (\lam x => T.map (f `o` g, x)) C.id-left
 
   \func LeftUnitF {C : Precat} (u : C) (T : Functor (C [x] C) C) : Functor C C \cowith
     | ob a => T.ob (u, a)
     | map f => T.map (id u, f)
     | functor_id a => T.functor_id (u, a)
-    | func_comp f g  => T.func_comp (id u, f) (id u, g) *> pmap (\lam x => T.map (x, f `o` g)) (C.id-right (id u))
+    | func_comp f g  => T.func_comp (id u, f) (id u, g) *> pmap (\lam x => T.map (x, f `o` g)) C.id-left
 }
 
 \open UnitalPrecat (absorbl, absorbr)

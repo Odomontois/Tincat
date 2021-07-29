@@ -4,7 +4,7 @@
 \import Unique
 \import Paths
 
-\class Terminal (C : Precat){
+\record Terminal (C : Precat){
   | term : C
   \property terminal (x : C) : Singleton (x ->> term)
 } \where {
@@ -12,8 +12,8 @@
 
   \lemma iso {C : Precat} (t t' : Terminal C) : Iso (t'.term term->> t) \cowith
     | inv => elem {t'.terminal term}
-    | f_inv => singleton {t'.terminal t'.term} _ _
-    | inv_f => singleton {terminal term} _ _
+    | inv_f => singleton {t'.terminal t'.term} _ _
+    | f_inv => singleton {terminal term} _ _
 
   \lemma terminal->single {C : Cat} (t : Terminal C) : Singleton (Terminal C)  =>
     Singleton.prop->Singleton t
@@ -29,5 +29,5 @@
 
 \func UTerminal (C : Cat) : \Prop => Terminal C
 
-\func Initial (C : Precat) => Terminal (op C)
+\func Initial (C : Precat) => Terminal (opP C)
 

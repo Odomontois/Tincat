@@ -1,6 +1,7 @@
 \import Equiv
 \import Paths
 \import Set
+\import Set.Hedberg
 
 \func flip {A B C : \Type} (f : A -> B -> C) (b : B) (a : A) => f a b
 

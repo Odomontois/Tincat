@@ -27,9 +27,9 @@
   \func F'-functor : Functor C C \cowith
     | ob => F'
     | map f => flatMap (f >> pure' _)
-    | functor_id a => pmap flatMap (id-left _) *> right-pure' _
+    | functor_id a => pmap flatMap id-right *> right-pure' _
     | func_comp f g => monad-assoc' _ _ *> pmap flatMap (
-      o-assoc _ _ _ *> pmap (>> _) (left-pure' _) *> inv (o-assoc _ _ _)
+      inv o-assoc *> pmap (>> _) (left-pure' _) *> o-assoc
     )
 
   \func pure-trans : NatTrans (Id C) (F'-functor) \cowith
@@ -39,7 +39,7 @@
   \func flatten-trans : NatTrans (F'-functor <o> F'-functor) F'-functor \cowith
     | trans a => flatMap (id _)
     | naturality f => monad-assoc' _ _ *> pmap flatMap (
-      o-assoc _ _ _ *> pmap (>> _) (left-pure' _) *> id-right _ *> inv (id-left _)
+      inv o-assoc *> pmap (>> _) (left-pure' _) *> id-left *> inv id-right
     ) *> inv (monad-assoc' _ _)
 
   \func asMonad : Monad (F'-functor) \cowith
@@ -47,10 +47,10 @@
     | flatten => flatten-trans
     | left-pure a => left-pure' (id _)
     | right-pure a => monad-assoc' _ _ *> pmap flatMap (
-      o-assoc _ _ _ *> pmap (>> _) (left-pure' _) *> id-right _
+      inv o-assoc  *> pmap (>> _) (left-pure' _) *> id-left
     ) *> right-pure' _
     | monad-assoc a => monad-assoc' _ _ *> pmap flatMap (
-      id-left _ *> inv (o-assoc _ _ _ *> pmap (>> _) (left-pure' _) *> id-right _)
+      id-right *> inv (inv o-assoc *> pmap (>> _) (left-pure' _) *> id-left)
     ) *> inv(monad-assoc' _ _)
 }
 

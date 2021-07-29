@@ -14,24 +14,24 @@
 \import Function
 \import Util
 
-\lemma inv-ide {A : Group} : inverse ide = {A} ide => inv (ide-right _) *> inverse-left _
+\lemma inv-ide {A : Group} : inverse ide = {A} ide => inv (ide-right) *> inverse-left
 
 \lemma inv-inv {A : Group} (a : A): inverse (inverse a) = a =>
-  cancel-left (inverse a) _ _ (inverse-right _ *> inv (inverse-left _))
+  cancel-left (inverse a) (inverse-right *> inv (inverse-left))
 
 \lemma not-inv (b : Bool) : not (not b) = b
   | true => idp
   | false => idp
 
 \lemma inv-* {A : Group} (x y : A): inverse (x * y) = (inverse y) * (inverse x) =>
-  cancel-left (x * y) (inverse (x * y)) (inverse y * inverse x) (
-    inverse-right _ *>
-    inv (inverse-right _) *>
-    pmap (* x ) ( inv (ide-left _) *> pmap (\lam x' => x' * _) (inv (inverse-right y)) *> A.*-assoc y _ _) *>
-    inv (A.*-assoc _ _ _)
+  cancel-left (x * y) (
+    inverse-right  *>
+    inv inverse-right *>
+    pmap (* x ) ( inv ide-left *> pmap (\lam x' => x' * _) (inv inverse-right) *> A.*-assoc) *>
+    inv A.*-assoc
   )
 
-\data FreeGroup (A : \Set)
+\truncated \data FreeGroup (A : \Set) : \Set
   | zero
   | cons Bool A (FreeGroup A)
   | cancel (b : Bool) (a : A) (t : FreeGroup A) (i : I) \elim i {
@@ -86,23 +86,23 @@
 
 \func negate {A : \Set} (x : FreeGroup A) : FreeGroup A => zero minus x
 
-\lemma negate-inv {A : \Set} (x : FreeGroup A) : negate (negate x) = x => double-neg _ _ _ *> plus-zero x
+\lemma negate-inv {A : \Set} (x : FreeGroup A) : negate (negate x) = x => double-neg _ _ _ *> plus-zero
 
-\lemma plus-zero {A : \Set} (x : FreeGroup A) : x plus zero = x
+\lemma plus-zero {A : \Set} {x : FreeGroup A} : x plus zero = x \elim x
   | zero => idp
-  | cons b a x => pmap (cons b a) (plus-zero x)
+  | cons b a x => pmap (cons b a) (plus-zero)
 
-\lemma plus-assoc{A : \Set} (x y z : FreeGroup A) : x plus y plus z = x plus (y plus z) \elim x
+\lemma plus-assoc{A : \Set} {x y z : FreeGroup A} : x plus y plus z = x plus (y plus z) \elim x
   | zero => idp
-  | cons b a x => pmap (cons b a) (plus-assoc x y z)
+  | cons b a x => pmap (cons b a) plus-assoc
 
 \open minus
 
-\lemma plus-negl {A : \Set} (x : FreeGroup A) : (negate x) plus x = zero =>
+\lemma plus-negl {A : \Set} {x : FreeGroup A} : (negate x) plus x = zero =>
   inv (minus-swap _ _ _) *> minus-cancel x
 
-\lemma plus-negr {A : \Set} (x : FreeGroup A) : x plus (negate x)  = zero =>
-  pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl (negate x)
+\lemma plus-negr {A : \Set} {x : FreeGroup A} : x plus (negate x)  = zero =>
+  pmap (\lam x' => x' plus _) (inv (negate-inv _)) *> plus-negl
 
 \func uinv {B : Group} (b : Bool) (x : B) : B \elim b
   | true => x
@@ -111,7 +111,7 @@
 \instance freeGroup (A : \Set) : Group (FreeGroup A)
   | ide => zero
   | * => plus
-  | ide-left x => idp
+  | ide-left => idp
   | ide-right => plus-zero
   | *-assoc => plus-assoc
   | inverse => negate
@@ -124,32 +124,32 @@
     | false => inv (inv-inv _)
 
   \lemma uinv-elim (b : Bool) (x : B) : uinv b x * uinv (not b) x = ide \elim b
-    | true => inverse-right x
-    | false => inverse-left x
+    | true => inverse-right
+    | false => inverse-left
 
   \func run (x : FreeGroup A) : B
     | zero => ide
     | cons b a x => (uinv b (f a)) * run x
     | cancel b a x i =>
       \let e : (uinv b (f a)) * ((uinv (not b) (f a)) * run x) = run x =>
-             inv (B.*-assoc _ _ _) *> pmap (\lam a' => a' * _) (uinv-elim b _) *> B.ide-left _
+        inv B.*-assoc *> pmap (\lam a' => a' * _) (uinv-elim b _) *> B.ide-left
       \in e @ i
 
   \lemma run-plus (x y : FreeGroup A) : run (x plus y) = run x * run y \elim x
-    | zero => inv (ide-left _)
-    | cons b a x => pmap (* (uinv b (f a))) (run-plus x y) *> inv (*-assoc _ _ _)
+    | zero => inv ide-left
+    | cons b a x => pmap (* (uinv b (f a))) (run-plus x y) *> inv *-assoc
 
   \lemma run-minus (x y : FreeGroup A) : run (x minus y) = inverse (run y) * run x  \elim y
-    | zero => inv (ide-left _) *> pmap (\lam z => z * (run x)) (inv inv-ide)
+    | zero => inv ide-left *> pmap (\lam z => z * (run x)) (inv inv-ide)
     | cons b a y =>
       run-minus (cons (not b) a x) y *>
-      inv (*-assoc _ _ _) *>
+      inv *-assoc *>
       pmap (\lam z => z * run x) ( pmap (* (inverse (run y))) (uinv-not b (f a)) *> inv (inv-* _ _))
 
   \lemma isHomo : GroupHomo run \cowith
     | zero-coh => idp
     | plus-coh => run-plus
-    | inv-coh x => run-minus zero x *> ide-right _
+    | inv-coh x => run-minus zero x *> ide-right
 }
 
 \record FreeMap {A B : \Set} (f : A -> B){
@@ -220,7 +220,7 @@
       | true => idp
       | false => inv (h.inv-coh _)
 
-    \lemma fold-unfold {A : \Set} {B : Group} (f : A -> B) (a : A) : unfoldMap (foldMap f) a = f a => ide-right (f a)
+    \lemma fold-unfold {A : \Set} {B : Group} (f : A -> B) (a : A) : unfoldMap (foldMap f) a = f a => ide-right
 
     \lemma unfold-fold {A : \Set} {B : Group}
                        (h : FreeHom A B)

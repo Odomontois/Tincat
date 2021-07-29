@@ -46,7 +46,7 @@
     \func trans (a : C) : a ->> F.ob a => adj (id _)
 
     \func nat  {a b : C} (f : a ->> b) : adj (id _) `o` f = F.map f `o` adj (id _) =>
-      a-naturality _ _ *> pmap adj (D.id-right _ *> inv (D.id-left _)) *> inv (b-naturality _ _)
+      a-naturality _ _ *> pmap adj (D.id-left *> inv D.id-right) *> inv (b-naturality _ _)
   }
 
   \func counit : NatTrans (L `o-functor` R) (Id D) \cowith
@@ -57,15 +57,15 @@
     \func trans (a : D) : F.ob a ->> a => iadj (id _)
 
     \func nat  {a b : D} (f : a ->> b) : iadj (id _) `o` F.map f = f `o` iadj (id _) =>
-      a-naturality' _ _ *> pmap iadj (C.id-right _ *> inv (C.id-left _)) *> inv (b-naturality' _ _)
+      a-naturality' _ _ *> pmap iadj (C.id-left *> inv C.id-right) *> inv (b-naturality' _ _)
   }
 
---  \func initial (A : C) : InitialArrow A R \cowith
---    | ob => L.ob A
---    | init => transport (\lam t => t) (adjunction _ _) (id _)
---    | divide b A->Fb => \new Unique {
---      | elem => transport (\lam t => t) (inv (adjunction _ _ )) A->Fb
---      | prop => {?}
---      | unique => {?}
---    }
+  --  \func initial (A : C) : InitialArrow A R \cowith
+  --    | ob => L.ob A
+  --    | init => transport (\lam t => t) (adjunction _ _) (id _)
+  --    | divide b A->Fb => \new Unique {
+  --      | elem => transport (\lam t => t) (inv (adjunction _ _ )) A->Fb
+  --      | prop => {?}
+  --      | unique => {?}
+  --    }
 }

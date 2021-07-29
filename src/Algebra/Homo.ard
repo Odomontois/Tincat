@@ -54,9 +54,9 @@
   | Hom g1 g2 => GroupHomo {g1} {g2}
   | id x => ident
   | o f g => comp g f
-  | id-left x => equals _ _ idp
-  | id-right x => equals _ _ idp
-  | o-assoc f g h => equals _ _ idp
+  | id-left => equals _ _ idp
+  | id-right => equals _ _ idp
+  | o-assoc {X} {_} {_} {Y} {f} {g} {h} => equals (comp (comp h g) f) (comp h (comp g f)) idp
 --  | univalence {x} {y} (f : GroupHomo) (g : GroupHomo) p q =>
 --    \let kek => SetCat.univalence f.f g.f (path (\lam i => GroupHomo.f {p @ i})) (path (\lam i => GroupHomo.f {q @ i}))
 --    \in ({?}, equals _ _ {?})

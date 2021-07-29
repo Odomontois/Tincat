@@ -8,29 +8,29 @@
 
 \lemma compose-iso {C : Precat} {a b c : C} {f : Hom a b} {g : Hom b c} (fi : Iso f) (gi : Iso g) : Iso (f >> g) \cowith
   | inv => gi.inv >> fi.inv
-  | f_inv =>
-    \let | f' => fi.inv | g' => gi.inv
-         | e1 =>
-           g >> (g' >> f') ==< inv (o-assoc _ _ _ ) >==
-           (g >> g') >> f' ==< pmap (o f') gi.f_inv >==
-           id _ >> f'      ==< id-left _            >==
-           f'              `qed
-    \in
-      f >> g >> (g' >> f')   ==< o-assoc _ _ _  >==
-      f >> (g >> (g' >> f')) ==< pmap (>> f) e1 >==
-      f >> f'                ==< fi.f_inv       >==
-      id a                   `qed
   | inv_f =>
     \let | f' => fi.inv | g' => gi.inv
+         | e1 =>
+           g >> (g' >> f') ==< o-assoc              >==
+           (g >> g') >> f' ==< pmap (o f') gi.inv_f >==
+           id _ >> f'      ==< id-right             >==
+           f'              `qed
+    \in
+      f >> g >> (g' >> f')   ==< inv o-assoc    >==
+      f >> (g >> (g' >> f')) ==< pmap (>> f) e1 >==
+      f >> f'                ==< fi.inv_f       >==
+      id a                   `qed
+  | f_inv =>
+    \let | f' => fi.inv | g' => gi.inv
          | e1  : f' >> (f >> g) = g =>
-           f' >> (f >> g) ==< inv (o-assoc _ _ _) >==
-           (f' >> f) >> g ==< pmap (o g) fi.inv_f >==
-           id _ >> g      ==< id-left _           >==
+           f' >> (f >> g) ==< o-assoc             >==
+           (f' >> f) >> g ==< pmap (o g) fi.f_inv >==
+           id _ >> g      ==< id-right            >==
            g              `qed
     \in
-      g' >> f' >> (f >> g)   ==< o-assoc _ _ _   >==
+      g' >> f' >> (f >> g)   ==< inv o-assoc     >==
       g' >> (f' >> (f >> g)) ==< pmap (>> g') e1 >==
-      g' >> g                ==< gi.inv_f        >==
+      g' >> g                ==< gi.f_inv        >==
       id c                   `qed
 
 \lemma invert-iso {C : Precat} {a b : C} {f : Hom a b} (fi : Iso f) : Iso (fi.inv) \cowith

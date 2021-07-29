@@ -8,17 +8,17 @@
 
   \lemma iso {a b : Ob} (f : Hom a b) : Iso f \cowith
     | inv => invert f
-    | f_inv => inv-left f
-    | inv_f => inv-right f
+    | inv_f => inv-left f
+    | f_inv => inv-right f
 }
 
 \func core (C : Precat) : PreGroupoid C \cowith
   | Hom a b => Iso {C} {a} {b}
   | id a => idIso
   | o f g => compose-iso g f
-  | id-left (fi : Iso) => Iso.equals _ _ (id-left fi.f)
-  | id-right (fi : Iso) => Iso.equals _ _ (id-right fi.f)
-  | o-assoc (fi : Iso) (gi : Iso) (hi : Iso) => Iso.equals _ _ (o-assoc fi.f gi.f hi.f)
+  | id-right => Iso.equals _ _ id-right
+  | id-left  => Iso.equals _ _ id-left
+  | o-assoc => Iso.equals _ _ o-assoc
   | invert fi => invert-iso fi
-  | inv-left (fi : Iso) => Iso.equals _ _ fi.f_inv
-  | inv-right (fi : Iso ) => Iso.equals _ _ fi.inv_f
+  | inv-left (fi : Iso) => Iso.equals _ _ fi.inv_f
+  | inv-right (fi : Iso) => Iso.equals _ _ fi.f_inv

@@ -29,17 +29,17 @@
   | Hom a b => Homo a b
   | id a => \new Homo a {
     | m => id _
-    | homo => id-right _ *> inv (id-left _) *> pmap (o (algebra {a})) (inv (F.functor_id _))
+    | homo => id-left *> inv id-right *> pmap (o (algebra {a})) (inv (F.functor_id _))
   }
   | o {_} {_} {z : Algebra} (f : Homo) (g : Homo) => \new Homo _ {
     | m => f.m `o` g.m
     | homo =>
-      inv (o-assoc _ _ _) *> pmap (o f.m) g.homo *> o-assoc _ _ _ *> (pmap (>> (F.map g.m)) f.homo *>
-      inv (o-assoc _ _ _ ) *> pmap (o z.algebra) (F.func_comp _ _))
+      o-assoc *> pmap (o f.m) g.homo *> inv o-assoc *> (pmap (>> (F.map g.m)) f.homo *>
+      o-assoc *> pmap (o z.algebra) (F.func_comp _ _))
   }
-  | id-left (f : Homo) => =homo (id-left f.m)
-  | id-right (f : Homo) => =homo (id-right f.m)
-  | o-assoc (f : Homo) (g : Homo) (h : Homo) => =homo (o-assoc f.m g.m h.m)
+  | id-left  => =homo id-left
+  | id-right => =homo id-right
+  | o-assoc  => =homo o-assoc
 
 -- | By Lambek
 \lemma initial-fixpoint {C : Precat} {F : Functor C C} (initMu : Initial (algebraCat {C} {F})) : Iso (algebra  {initMu.term}) =>
@@ -51,17 +51,17 @@
        | rev*mu=F_mu*rev : rev `o` mualg = F.map (mualg `o` rev)  => revhomo.homo *> F.func_comp _ _
        | mu*rev-homo : Homo mu mu => \new Homo mu mu{
          | m => mualg `o` rev
-         | homo => inv (o-assoc _ _ _) *> pmap (o mualg) rev*mu=F_mu*rev
+         | homo => o-assoc *> pmap (o mualg) rev*mu=F_mu*rev
        }
        | idhomo : Homo mu mu => \new Homo mu mu {
          | m => id _
-         | homo => id-right _ *> inv (id-left _) *> pmap (o mualg) (inv (F.functor_id _))
+         | homo => id-left *> inv id-right *> pmap (o mualg) (inv (F.functor_id _))
        }
        | mumu-single : isProp (Homo mu mu) => singleton {initMu.terminal mu}
        | mu*rev=id  : mualg `o` rev = id _ => pmap (\lam (h : Homo mu mu) => h.m) (mumu-single mu*rev-homo idhomo)
        | rev*mu=id : rev `o` mualg = id _  => rev*mu=F_mu*rev *> pmap F.map mu*rev=id *> F.functor_id _
 
   \in \new Iso mualg rev {
-    | f_inv => rev*mu=id
-    | inv_f => mu*rev=id
+    | inv_f => rev*mu=id
+    | f_inv => mu*rev=id
   }

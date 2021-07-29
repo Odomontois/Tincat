@@ -22,15 +22,15 @@
   \func toIso (f : \Pi (a : C) -> Iso (trans a)) : NatIso F G trans \cowith
     | naturality => naturality
     | transBack a => Iso.inv {f a}
-    | t_back a => Iso.f_inv {f a}
-    | back_t a => Iso.inv_f {f a}
+    | t_back a => Iso.inv_f {f a}
+    | back_t a => Iso.f_inv {f a}
 }  \where  {
   \use \level natTrans-is-set {C D : Precat} (F G : Functor C D) (x y : NatTrans F G) (p q : x = y) : p = q =>
     setPath= (\lam (x y : F ~> G) => x.trans = y.trans) (\lam u => idp) (\lam e => equiv _ _ e) p q
 
   \func id-trans {C D : Precat} (F : Functor C D) : NatTrans F F \cowith
     | trans a => id (F.ob a)
-    | naturality f => id-right _ *> inv (id-left _ )
+    | naturality f => id-left *> inv id-right
 
   \func vcomp {C D : Precat} {F G H : Functor C D} (u : NatTrans G H) (v : NatTrans F G) : NatTrans F H \cowith
     | trans a => u.trans a `o` v.trans a
@@ -56,15 +56,15 @@
     })
 
   \func vl_unit {C D : Precat} {F G : Functor C D} (u : NatTrans F G) : vcomp (id-trans G) u = u =>
-    equiv (vcomp (id-trans G) u) u (path (\lam i a => D.id-right (u.trans a) @ i))
+    equiv (vcomp (id-trans G) u) u (path (\lam i a => D.id-left {_} {_} {u.trans a} @ i))
 
   \func vr_unit {C D : Precat} {F G : Functor C D} (u : NatTrans F G) : vcomp u (id-trans F) = u =>
-    equiv (vcomp u (id-trans F) ) u (path (\lam i a => D.id-left (u.trans a) @ i))
+    equiv (vcomp u (id-trans F) ) u (path (\lam i a => D.id-right {_} {_} {u.trans a} @ i))
 
   \func vassoc {C D : Precat} {F G H K : Functor C D}
                (u : NatTrans H K) (v : NatTrans G H) (w : NatTrans F G) :
     vcomp (vcomp u v) w = vcomp u (vcomp v w) =>
-    equiv (vcomp (vcomp u v) w) (vcomp u (vcomp v w)) (path (\lam i a => inv (o-assoc (w.trans _) (v.trans _) (u.trans _)) @ i))
+    equiv (vcomp (vcomp u v) w) (vcomp u (vcomp v w)) (path (\lam i a => (o-assoc {_} {_} {_} {_} {_}  {u.trans _} {v.trans _}  {w.trans _}) @ i))
 
   --  \func hl_unit {C D : Precat} (F G : Functor C D) (alpha : NatTrans F G) :
   --    hcomp {C} {D} {D} {id-functor D} {id-functor D} {F} {G} (id-trans (id-functor D)) alpha = coe (ttrans F G) alpha right =>

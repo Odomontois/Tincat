@@ -1,5 +1,6 @@
 \import Cat
 \import Category
+\import Function.Meta
 \import Functor
 \import Paths
 \import Util
@@ -8,16 +9,15 @@
   | Hom a b => \Sigma (Hom a.1 b.1) (Hom a.2 b.2)
   | id x => (id x.1, id x.2)
   | o f g => (f.1 `o` g.1, f.2 `o` g.2)
-  | id-left f => path (\lam i => (id-left f.1 @ i, id-left f.2 @ i))
-  | id-right f => path (\lam i => (id-right f.1 @ i, id-right f.2 @ i))
-  | o-assoc f g h => path (\lam i => (o-assoc f.1 g.1 h.1 @ i, o-assoc f.2 g.2 h.2 @ i))
+  | id-left => path (\lam i => (id-left @ i, id-left  @ i))
+  | id-right => path (\lam i => (id-right @ i, id-right @ i))
+  | o-assoc => path (\lam i => (o-assoc @ i, o-assoc @ i))
 
 \func assoc-functor {A B C : Precat} : Functor (A [x] B [x] C) (A [x] (B [x] C)) \cowith
   | ob abc => (abc.1.1, (abc.1.2, abc.2))
   | map f => (f.1.1, (f.1.2, f.2))
   | functor_id abc => idp
   | func_comp f g => idp
-
 
 \func functorProduct {A B A' B' : Precat} (F : Functor A B) (G : Functor A' B') : Functor (A [x] A') (B [x] B') \cowith
   | ob a => (F.ob a.1, G.ob a.2)
@@ -40,12 +40,16 @@
   | id-left => pab.id-left
   | id-right => pab.id-right
   | o-assoc => pab.o-assoc
-  | univalence {x} {y} f g p q =>
-    \let | (u1, t1) => A.univalence f.1 g.1 (pmap (\lam x => x.1) p ) (pmap (\lam x => x.1) q)
-         | (u2, t2) => B.univalence f.2 g.2 (pmap (\lam x => x.2) p ) (pmap (\lam x => x.2) q)
+  | univalence (fg : Iso) =>
+    \let | (u1, t1) => A.univalence \new Iso fg.f.1 fg.inv.1 (pmap (\lam x => x.1) fg.inv_f) (pmap (\lam x => x.1) fg.f_inv)
+         | (u2, t2) => B.univalence \new Iso fg.f.2 fg.inv.2 (pmap (\lam x => x.2) fg.inv_f ) (pmap (\lam x => x.2) fg.f_inv)
          | u => path (\lam i => (u1 @ i, u2 @ i))
          | t => path (\lam i => (t1 @ i, t2 @ i))
-    \in univ f.1 f.2 g.1 g.2 (pmap (\lam x => x.1) p ) (pmap (\lam x => x.2) p) (pmap (\lam x => x.1) q ) (pmap (\lam x => x.2) q)
+    \in univ fg.f.1 fg.f.2 fg.inv.1 fg.inv.2
+        (pmap (\lam x => x.1) fg.inv_f )
+        (pmap (\lam x => x.2) fg.inv_f)
+        (pmap (\lam x => x.1) fg.f_inv)
+        (pmap (\lam x => x.2) fg.f_inv)
 } \where {
   \func fst {A B : \Type} (x : \Sigma A B) : A => x.1
 
@@ -58,8 +62,8 @@
              (q1 : f1 `o` g1 = id _) (q2 : f2 `o` g2 = id _) :
     \Sigma (p : (x1, x2) = (y1, y2))
            (transport (\lam (o : \Sigma A B) => \Sigma (x1 ->> o.1)(x2 ->> o.2)) p (id x1, id x2) = (f1, f2)) =>
-    \let | (u1, t1) => A.univalence f1 g1 p1 q1
-         | (u2 ,t2) => B.univalence f2 g2 p2 q2
+    \let | (u1, t1) => A.univalence $ \new Iso f1 g1 p1 q1
+         | (u2 ,t2) => B.univalence $ \new Iso f2 g2 p2 q2
          | u => path (\lam i => (u1 @ i, u2 @ i))
          | t => path (\lam i => (t1 @ i, t2 @ i))
          | ct => coe_sigma {\lam i => x1 ->> u1 @ i }(\lam i _ => x2 ->> u2 @ i)  (id x1, id x2) right

@@ -24,7 +24,7 @@
 --    *> pmap (g >>) (univalence e.f e.inv e.f_inv e.inv_f).2
 
   \func map-eq {a b : C'} (f : a ->> b) : transport2 D.Hom (ob-eq a) (ob-eq b) (F.map f) = G.map f =>
-    {?} *>  D'.id-right (G.map f)
+    {?} *>  D'.id-left 
 
   \func to-eq : F = G =>
     path(\lam i => \new Functor C D {

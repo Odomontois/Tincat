@@ -18,7 +18,7 @@
   \property functor_id (a : C) : map (id a) = id (ob a)
   \property func_comp {a b c : C} (f : b ->> c) (g : a ->> b) : (map f) `o` (map g) = map (f `o` g)
 
-  \func fop : Functor (op C) (op D)  \cowith
+  \func fop : Functor (opP C) (opP D)  \cowith
     | ob c => ob c
     | map f => map f
     | functor_id a => functor_id _
@@ -42,7 +42,7 @@
     | ob c => d
     | map _ => id d
     | functor_id c => idp
-    | func_comp f g => id-left _
+    | func_comp f g => id-left
 
   \func equiv {C D : Precat}
               (ob : C -> D)
@@ -75,8 +75,8 @@
   \func homFunctor {C : Precat} (u : C.Ob) : Functor C SetCat \cowith
     | ob a => (Hom u a)
     | map f g => o f g
-    | functor_id a => path (\lam i f => id-right f @ i)
-    | func_comp f g => path (\lam i h => o-assoc h g f @ i)
+    | functor_id a => path (\lam i f => id-left {_} {_} {_} {f} @ i)
+    | func_comp f g => path (\lam i h => inv (o-assoc {_} {_} {_} {_} {_} {f} {g} {h}) @ i)
 
   \func discreteFunctor {X : \Set} {C : Precat} (pget : X -> C) : Functor (discreteCat X) C =>
     DiscreteFunctor.functor {\new DiscreteFunctor pget} \where {
@@ -85,7 +85,7 @@
 
       \lemma coeComp {x y z : X} (f : y = z) (g : x = y) =>
         \let cg => coeMap g right
-        \in coe (\lam i => coeMap f i `o` cg = coe (arrT x f) cg i) (C.id-right cg) right
+        \in coe (\lam i => coeMap f i `o` cg = coe (arrT x f) cg i) (C.id-left {_} {_} {cg}) right
 
       \func coeMap {x x' : X} (e : x = x') => coe (arrT x e) (id _)
 

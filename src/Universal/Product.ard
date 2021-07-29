@@ -43,7 +43,7 @@
 
   \lemma proj-product-id {C : Precat} (P : LargeProduct {C}) (f : P.pob ->> P.pob) (eqs : \Pi (i : P.X) -> P.proj i `o` f = P.proj i) : f = id _ =>
     \let | u : Unique => P.lprod P.pob (P.proj)
-         | u_eq_id => u.unique (id _) (\lam i => C.id-left (P.proj i))
+         | u_eq_id => u.unique (id _) (\lam i => C.id-right)
          | u_eq_f => u.unique f eqs
     \in (inv u_eq_f) *> u_eq_id
 }
@@ -104,12 +104,12 @@
             \in \new Unique _ _ {
               | elem => uab_c.elem
               | prop i => \case i \as i' \return proj i' `o` uab_c.elem = f i' \with {
-                | t1 => inv (o-assoc _ _ _) *> pmap (o a*b.pi1) uab_c.prop.1 *> uab.prop.1
-                | t2 => inv (o-assoc _ _ _) *> pmap (o a*b.pi2) uab_c.prop.1 *> uab.prop.2
+                | t1 => inv (inv o-assoc) *> pmap (o a*b.pi1) uab_c.prop.1 *> uab.prop.1
+                | t2 => inv (inv o-assoc) *> pmap (o a*b.pi2) uab_c.prop.1 *> uab.prop.2
                 | t3 => uab_c.prop.2
               }
               | unique g gu =>
-                \let gab => uab.unique (ab*c.pi1 `o` g) (o-assoc _ _ _ *> gu t1, o-assoc _ _ _ *> gu t2)
+                \let gab => uab.unique (ab*c.pi1 `o` g) (inv o-assoc *> gu t1, inv o-assoc *> gu t2)
                 \in uab_c.unique g (inv gab, gu t3)
             }
         }
@@ -147,6 +147,6 @@
     }
 }
 
-\func LargeSum {C : Precat} {X : \Set} (pget : X -> C) => LargeProduct  {op C} {X} pget
+\func LargeSum {C : Precat} {X : \Set} (pget : X -> C) => LargeProduct  {opP C} {X} pget
 
-\func Sum2 {C : Precat} (cp a b : C) => Product2 {op C} cp a b
+\func Sum2 {C : Precat} (cp a b : C) => Product2 {opP C} cp a b

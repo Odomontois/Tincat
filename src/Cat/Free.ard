@@ -1,6 +1,7 @@
 \import Cat
 \import Category
 \import Data.Bool
+\import Function.Meta
 \import Functor
 \import Logic
 \import Paths
@@ -22,20 +23,20 @@
       | free-id y=z, free-comp {m} m->z g' => free-comp (transport (arr m) y=z m->z) g'
       | free-comp m->y f', g => free-comp m->y (concat f' g)
 
-    \lemma concat-id-left {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : Free arr x y) : concat f (free-id idp) = f \elim f
+    \lemma concat-id-left {A : \Set} {arr : A -> A -> \Set} {x y : A} {f : Free arr x y} : concat f (free-id idp) = f \elim f
       | free-id x=y => pmap free-id (Path.inProp _ _)
-      | free-comp h f' => pmap (free-comp h) (concat-id-left f')
+      | free-comp h f' => pmap (free-comp h) concat-id-left
 
-    \lemma concat-id-right {A : \Set} {arr : A -> A -> \Set} {x y : A} (f : Free arr x y) : concat (free-id idp) f = f \elim f
+    \lemma concat-id-right {A : \Set} {arr : A -> A -> \Set} {x y : A} {f : Free arr x y} : concat (free-id idp) f = f \elim f
       | free-id x=y => pmap free-id (Path.inProp _ _)
       | free-comp h f' => idp
 
     \lemma concat-assoc {A : \Set} {arr : A -> A -> \Set} {w x y z : A}
-                        (f : Free arr w x) (g : Free arr x y) (h : Free arr y z) : h o: (g o: f) = (h o: g) o: f \elim f, g, h {
-      | free-id w=x, free-id x=y, free-id y=z => pmap free-id (Path.inProp _ _)
-      | free-comp {m} m->x f', free-id x=y, free-id y=z => pmap (\lam x => free-comp x f') (inv (transport_*> (arr m) _ _ _ ))
-      | f, free-comp m->y g', free-id y=z => idp
-      | f, g, free-comp m->z h' => pmap (free-comp m->z) (concat-assoc f g h')
+                        {h : Free arr y z} {g : Free arr x y} {f : Free arr w x}  : (h o: g) o: f  = h o: (g o: f) \elim h, g, f {
+      | free-id y=z , free-id x=y, free-id w=x => pmap free-id (Path.inProp _ _)
+      | free-id y=z , free-id x=y, free-comp {m} m->x f' => pmap (\lam x => free-comp x f') (transport_*> (arr m) _ _ _ )
+      | free-id y=z, free-comp m->y g', f => idp
+      | free-comp m->z h', g, f => pmap (free-comp m->z) concat-assoc
     }
 
     \record FreeCatFunctor {X : \Set} (arr : X -> X -> \Set) (Y : Precat) {
@@ -52,21 +53,21 @@
       \lemma compFree {a b c : X} (f : Free arr b c) (g : Free arr a b) :
         mapfree f `o` mapfree g = mapfree (concat f g) \elim f, g
         | free-id b=c, free-id a=b =>
-          \let | u => id-right (mapId a=b right)
+          \let | u => id-left
                | pb => pathInProp (\lam i => a = b=c @ i) a=b (a=b *> b=c)
           \in coe (\lam i => mapId b=c i `o` mapId a=b right = mapId (pb @ i) right) u right
         | free-id b=c, free-comp {m} m->b g' =>
           \let  p1 => coe (\lam i => mapId b=c i `o` morph m->b = morph (coe (\lam j => arr m (b=c @ j)) m->b i) )
-                          (id-right (morph m->b)) right
-          \in o-assoc _ _ _ *> pmap (\lam x => x `o` mapfree g') p1
-        | free-comp {m} m->c f' , g => inv (o-assoc _ _ _ ) *> pmap (o (morph m->c)) (compFree f' g)
+              id-left right
+          \in inv o-assoc *> pmap (\lam x => x `o` mapfree g') p1
+        | free-comp {m} m->c f' , g => o-assoc *> pmap (o (morph m->c)) (compFree f' g)
 
       \lemma compCone (tip : Y) (edge : \Pi (x : X) -> tip ->> ob' x)
                       (p : \Pi {x y : X} (a : arr x y) -> morph a `o` edge x = edge y)
                       {x y : X} (f : Free arr x y)
         :  mapfree f `o` edge x = edge y \elim f
-        | free-id x=y => coe (\lam i => mapId x=y i `o` edge x = edge (x=y @ i)) (id-right _) right
-        | free-comp {m} my f' => inv (o-assoc _ _ _) *> pmap (o (morph my)) (compCone tip edge p f') *> p my
+        | free-id x=y => coe (\lam i => mapId x=y i `o` edge x = edge (x=y @ i)) id-left right
+        | free-comp {m} my f' => o-assoc *> pmap (o (morph my)) (compCone tip edge p f') *> p my
 
       \use \coerce toFunctor  : Functor (freeCat arr) Y \cowith
         | ob => ob'
@@ -81,7 +82,7 @@
       FreeCatFunctor.toFunctor {\new FreeCatFunctor {A} arr C obj map }
 
     \lemma univalence {A : \Set} (arr : A -> A -> \Set)  {x y : A} (f : Free arr x y) (g : Free arr y x)
-                      (p : concat g  f = free-id idp) (q : concat f  g = free-id idp)
+                      (p :  g concat f = free-id idp) (q :  f concat g = free-id idp)
       : \Sigma (p : x = y) (transport (Free arr x) p (free-id idp) = f) \elim f
       | free-id eq => univalence-eq arr eq g p q
       | free-comp f g => contradiction
@@ -96,10 +97,10 @@
   | Hom => Free arr
   | id _ => free-id idp
   | o => Free.concat
-  | id-left => Free.concat-id-left
-  | id-right => Free.concat-id-right
+  | id-right => Free.concat-id-left
+  | id-left => Free.concat-id-right
   | o-assoc => Free.concat-assoc
-  | univalence => Free.univalence arr
+  | univalence (fg : Iso) => Free.univalence arr fg.f fg.inv fg.inv_f fg.f_inv
 
 \open Free \hiding (univalence)
 
@@ -120,13 +121,13 @@
 
   \lemma pconcat-r {e : R} {x y z : A} (f : Free arr y z) (q : Free arr (tgt e) y) (p : Free arr x (src e)) :
     chain (f o: q o: (left-eq e) o: p) = chain (f o: q o: (right-eq e) o: p) =>
-    pmap chain (concat-assoc _ _ _) *> path (\lam i => quot e p (f o: q) i)  *> pmap chain (inv (concat-assoc _ _ _))
+    pmap chain (inv concat-assoc) *> path (\lam i => quot e p (f o: q) i)  *> pmap chain (concat-assoc)
 
   \lemma pconcat-l {e : R} {x y z : A} (f : Free arr x y) (q : Free arr (tgt e) z) (p : Free arr y (src e)) :
     chain ((q o: (left-eq e) o: p) o: f) = chain ((q o: (right-eq e) o: p) o: f) =>
-    pmap chain (inv (concat-assoc _ _ _) *> pmap (concat q) (inv (concat-assoc _ _ _))) *>
+    pmap chain (concat-assoc *> pmap (concat q) (concat-assoc)) *>
     path (\lam i => quot e (p o: f) q i)  *>
-    pmap chain (pmap (concat q) (concat-assoc _ _ _ )*> concat-assoc _ _ _ )
+    pmap chain (pmap (concat q) (inv concat-assoc) *> inv concat-assoc)
 
   \func pconcat {x y z : A} (f : PHom y z) (g : PHom x y) : PHom x z
     | chain f, chain g => chain (f concat g)
@@ -134,20 +135,20 @@
     | quot e p q i, chain f => pconcat-l f q p @ i
 
   \lemma pconcat-id-left {x y : A} (f : PHom x y) : pconcat f (chain (free-id idp)) = f
-    | chain f => pmap chain (concat-id-left f)
+    | chain f => pmap chain concat-id-left
 
   \lemma pconcat-id-right {x y : A} (f : PHom x y) : pconcat (chain (free-id idp)) f = f
-    | chain f => pmap chain (concat-id-right f)
+    | chain f => pmap chain concat-id-right
 
-  \lemma pconcat-assoc {x y z w : A} (f : PHom x y) (g : PHom y z) (h : PHom z w)  : pconcat h (pconcat g f) = pconcat (pconcat h g) f
-    | chain f, chain g, chain h => pmap chain (concat-assoc f g h)
+  \lemma pconcat-assoc {x y z w : A} {f : PHom x y} {g : PHom y z} {h : PHom z w}  :  pconcat (pconcat h g) f = pconcat h (pconcat g f) \elim f, g, h
+    | chain f, chain g, chain h => pmap chain $ concat-assoc
 
   \func presentedCat : Precat A \cowith
     | Hom => PHom
     | id x => chain (free-id idp)
     | o f g => pconcat f g
-    | id-left => pconcat-id-left
-    | id-right => pconcat-id-right
+    | id-right => pconcat-id-left _
+    | id-left => pconcat-id-right _
     | o-assoc => pconcat-assoc
 }
 

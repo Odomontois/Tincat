@@ -22,7 +22,7 @@
 
     \lemma from-to (t : Ha~>F) : from (to t) = t =>
       \let e (b : C) (f : a ->> b) : F.map f ((t.trans a) (id a)) = t.trans b f  =>
-             pmap (\lam g => g (id a)) (inv (t.naturality f)) *> pmap (t.trans b) (id-left f)
+             pmap (\lam g => g (id a)) (inv (t.naturality f)) *> pmap (t.trans b) id-right
       \in NatTrans.equiv (from (to t)) t (path (\lam i b f => e b f @ i))
 
     \lemma to-from (p : Fa) : to (from p) = p => pmap (\lam g => g p) (F.functor_id a)

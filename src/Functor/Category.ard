@@ -10,9 +10,9 @@
   | Hom f g => NatTrans f g
   | id f => id-trans f
   | o u v => vcomp u v
-  | id-left u => vr_unit u
-  | id-right u => vl_unit u
-  | o-assoc u v w => inv (vassoc w v u)
+  | id-right => vr_unit _
+  | id-left  => vl_unit _
+  | o-assoc => vassoc _ _ _
 
 --\instance  functorCatUniv {C D : Cat}: Cat (Functor C D) =>
 --\let cat : Precat (Functor C D) => functorCat {C} {D}
