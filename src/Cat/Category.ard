@@ -1,10 +1,29 @@
 \import Category
+\import Function.Meta ($)
 \import Functor
+\import Meta
+\import Paths
+\import Paths.Meta
+\import Set
 
---\instance precatPrecat : Precat Precat
---  | Hom C D => Functor C D
---  | id C => Functor.Id C
---  | o f g => Functor.o-functor f g
---  | id-left f => Functor.Id-left f
---  | id-right f => Functor.Id-right f
---  | o-assoc {C} {D} {E} f g h => Functor.assoc {C} {D} {E} h g f
+\module trunc0 \where{
+  \func map {A B : \Type} (f : A -> B) (pa : Trunc0 A): Trunc0 B  \elim pa
+    | in0 a => in0 (f a)
+
+  \func map2 {A B C : \Type} (f : A -> B -> C) (pa : Trunc0 A) (pb : Trunc0 B): Trunc0 C  \elim pa, pb
+    | in0 a, in0 b => in0 (f a b)
+
+  \func transp {A : \Type} {a b : A} (e : a = b) : in0 a = in0 b => pmap in0 e
+}
+
+\instance precatPrecat : Precat Precat
+  | Hom C D => Trunc0 (Functor C D)
+  | id C => in0 (Functor.Id C)
+  | o {X} {Y} {Z} fp gp => \case fp, gp \with {
+    | in0 f, in0 g => in0 (Functor.o-functor f g)
+  }
+  | id-left {_} {_} {f} => mcases {_} {arg addPath} \with {| in0 idd, p, in0 ff => {?}}
+  | id-right => {?}
+  | o-assoc => {?} \where {
+
+}

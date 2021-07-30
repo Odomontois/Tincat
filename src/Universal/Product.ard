@@ -29,7 +29,7 @@
   | tip => pob
   | edge (ix : IX) => proj ix
   | cone {ix1 ix2 : IX} (f : ix1 = ix2) =>
-    coe (\lam i => coe(\lam j => pget ix1 ->> pget (f @ j)) (id (pget ix1)) i `o` proj ix1 = proj (f @ i))  (id-right _)  right
+    coe (\lam i => coe(\lam j => pget ix1 ->> pget (f @ j)) (id (pget ix1)) i `o` proj ix1 = proj (f @ i))  id-left  right
   | universal (c : Cone D) =>  lprod c.tip c.edge
 
   \use \coerce toLimit : Limit (discreteFunctor pget) \cowith

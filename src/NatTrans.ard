@@ -34,16 +34,16 @@
 
   \func vcomp {C D : Precat} {F G H : Functor C D} (u : NatTrans G H) (v : NatTrans F G) : NatTrans F H \cowith
     | trans a => u.trans a `o` v.trans a
-    | naturality {a} {b} f => inv (o-assoc _ _ _) *>
+    | naturality {a} {b} f => o-assoc *>
     pmap (o (u.trans _)) (v.naturality f) *>
-    o-assoc _ _ _ *> pmap (>> (v.trans _)) (u.naturality f) *> inv (o-assoc _ _ _)
+    inv o-assoc *> pmap (>> (v.trans _)) (u.naturality f) *> o-assoc
 
   \func hcomp {C D E : Precat} {F G : Functor D E} {H K : Functor C D}
               (alpha : NatTrans F G) (beta : NatTrans H K) : NatTrans {C} {E} (o-functor F H)  (o-functor G K) \cowith
     | trans a => alpha.trans _ `o` map (beta.trans _)
-    | naturality f => inv (o-assoc _ _ _) *>
+    | naturality f => o-assoc *>
     pmap (o (alpha.trans _)) (F.func_comp _ _ *> pmap F.map (beta.naturality f) *> inv (F.func_comp _ _)) *>
-    o-assoc _ _ _ *> pmap (>> (F.map (beta.trans _))) (alpha.naturality _) *> inv (o-assoc _ _ _)
+    inv o-assoc *> pmap (>> (F.map (beta.trans _))) (alpha.naturality _) *> o-assoc
 
   \func equiv {C D : Precat} {F G : Functor C D}
               (alpha beta : NatTrans F G)
