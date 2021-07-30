@@ -1,19 +1,24 @@
+\import Cartesian
 \import Category
 \import Function.Meta ($)
 \import Functor
+\import Logic
 \import Meta
 \import Paths
 \import Paths.Meta
 \import Set
+\import Unique
+\import Universal.Product
 
 \module trunc0 \where{
-  \func map {A B : \Type} (f : A -> B) (pa : Trunc0 A): Trunc0 B  \elim pa
-    | in0 a => in0 (f a)
+  \lemma unwrapPathT {A : \Type} {x y : A} (p : in0 x = in0 y) : TruncP (x = y) =>
+    \let | P (a b : Trunc0 A): \Prop => \case \elim a, \elim b \with {
+      | in0 x, in0 y => TruncP (x = y)
+    }
+    \in transport (\lam z => P (in0 x) z) p (inP idp)
 
-  \func map2 {A B C : \Type} (f : A -> B -> C) (pa : Trunc0 A) (pb : Trunc0 B): Trunc0 C  \elim pa, pb
-    | in0 a, in0 b => in0 (f a b)
-
-  \func transp {A : \Type} {a b : A} (e : a = b) : in0 a = in0 b => pmap in0 e
+  \lemma unwrapPath {A : \Type} {B : \Prop}{x y : A} (p : in0 x = in0 y) (f : (x = y) -> B) : B =>
+    TruncP.rec Path.inProp (unwrapPathT p) f
 }
 
 \instance precatPrecat : Precat Precat
@@ -22,8 +27,53 @@
   | o {X} {Y} {Z} fp gp => \case fp, gp \with {
     | in0 f, in0 g => in0 (Functor.o-functor f g)
   }
-  | id-left {_} {_} {f} => mcases {_} {arg addPath} \with {| in0 idd, p, in0 ff => {?}}
-  | id-right => {?}
-  | o-assoc => {?} \where {
+  | id-left {_} {_} {f0} => \case \elim f0 \with {
+    | in0 f => rewrite Functor.Id-left idp
+  }
+  | id-right {_} {_} {f0} => \case \elim f0 \with {
+    | in0 f => rewrite Functor.Id-right idp
+  }
+  | o-assoc {_} {_} {_} {_} {h0} {g0} {f0} => \case \elim h0, \elim g0, \elim f0 \with {
+    | in0 h, in0 g, in0 f => rewrite Functor.assoc idp
+  }
 
+\open trunc0 (unwrapPath)
+
+\func precatProduct {A B : Precat} : Product2 A B (A [x] B) \cowith
+  | pi1 => in0 Pi1
+  | pi2 => in0 Pi2
+  | prod2 {C} f0 g0 => \case \elim f0, \elim g0 \with {
+    | in0 f, in0 g => \new Unique _ _ (in0 (cprod f g)){
+      | prop => (idp, idp)
+      | unique h0 pe => \case \elim h0, \elim pe \with {
+        | in0 h, (p, q) =>
+          \let P : \Prop => in0 (cprod f g) = in0 h
+          \in unwrapPath p (\lam p1 => unwrapPath {_} {P} q ( \lam q1 => pmap in0 (inv (cprodUnique p1 q1))))
+      }
+    }
+  } \where{
+  \open Functor (o-functor)
+
+  \func Pi1 {A B : Precat} : Functor (A [x] B) A \cowith
+    | ob ab => ab.1
+    | map f => f.1
+    | functor_id a => idp
+    | func_comp f g => idp
+
+  \func Pi2 {A B : Precat} : Functor (A [x] B) B \cowith
+    | ob ab => ab.2
+    | map f => f.2
+    | functor_id a => idp
+    | func_comp f g => idp
+
+  \func cprod {A B C : Precat} (F : Functor A B) (G : Functor A C) : Functor A (B [x] C) \cowith
+    | ob a => (F.ob a, G.ob a)
+    | map f => (F.map f, G.map f)
+    | functor_id a => rewrite F.functor_id $ rewrite G.functor_id $ idp
+    | func_comp f g => rewriteI F.func_comp $ rewriteI G.func_comp idp
+
+  \func cprodUnique {A B C : Precat} {F : Functor C A} {G : Functor C B} {H : Functor C (A [x] B)}
+                    (p : Pi1 `o-functor` H = F) (q : Pi2 `o-functor` H = G) :  H = cprod F G =>
+    Functor.functor=  H (cprod F G) (\lam a => path (\lam i => (ob {p @ i} a, ob {q @ i} a)))
+        (\lam {a} {b} f => path (\lam i => (map {p @ i} f, map {q @ i} f)))
 }

@@ -1,3 +1,4 @@
+\import Cartesian
 \import Cat
 \import Equiv (QEquiv)
 \import Equiv.Univalence ()
@@ -99,18 +100,21 @@
     }
   }
 
---  \func catCat : Cat Cat \cowith
---    | Hom C D => Functor C D
---    | id C => Id C
---    | o f g => o-functor f g
---    | id-left f => Id-left f
---    | id-right f => Id-right f
---    | o-assoc {a} {b} {c} {d} f g h => assoc {a} {b} {c} {d} h g f
---    | univalence {C : Cat} {D : Cat} f g e1 e2 =>
---      \let | c<->d : QEquiv {C.Ob} {D.Ob}=> \new QEquiv (ob {f}) (ob {g})
---                                                        (\lam x => pmap (\lam (f : Functor C C) => f.ob x) e1)
---                                                        (\lam x => pmap (\lam (f : Functor D D) => f.ob x) e2)
---           | uni-c-d : QEquiv {C.Ob = D.Ob} {Equiv {C.Ob} {D.Ob}} => huniv {C} {D}
---           | c=d : C.Ob = D.Ob => uni-c-d.ret c<->d
---      \in ({?}, {?})
+
+
+
+  --  \func catCat : Cat Cat \cowith
+  --    | Hom C D => Functor C D
+  --    | id C => Id C
+  --    | o f g => o-functor f g
+  --    | id-left f => Id-left f
+  --    | id-right f => Id-right f
+  --    | o-assoc {a} {b} {c} {d} f g h => assoc {a} {b} {c} {d} h g f
+  --    | univalence {C : Cat} {D : Cat} f g e1 e2 =>
+  --      \let | c<->d : QEquiv {C.Ob} {D.Ob}=> \new QEquiv (ob {f}) (ob {g})
+  --                                                        (\lam x => pmap (\lam (f : Functor C C) => f.ob x) e1)
+  --                                                        (\lam x => pmap (\lam (f : Functor D D) => f.ob x) e2)
+  --           | uni-c-d : QEquiv {C.Ob = D.Ob} {Equiv {C.Ob} {D.Ob}} => huniv {C} {D}
+  --           | c=d : C.Ob = D.Ob => uni-c-d.ret c<->d
+  --      \in ({?}, {?})
 }
